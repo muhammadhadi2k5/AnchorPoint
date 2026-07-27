@@ -35,4 +35,11 @@ def process_all_pdfs(pdf_directory):
     return all_documents
             
 all_pdf_documents = process_all_pdfs("data\pdf")
-    
+
+def chunking(documents, chunk_size=1000, chunk_overlap=200):
+    text_splitter = RecursiveCharacterTextSplitter(
+        chunk_size = chunk_size,
+        chunk_overlap = chunk_overlap,
+        length_function = len,
+        separators=["\n\n", "\n", " ", ""] #an array containing markers to chunk at
+    )
