@@ -34,7 +34,6 @@ def process_all_pdfs(pdf_directory):
     print(f"\nTotal Documents Loaded:  {len(all_documents)}")
     return all_documents
             
-all_pdf_documents = process_all_pdfs("data\pdf")
 
 def chunking(documents, chunk_size=1000, chunk_overlap=200):
     text_splitter = RecursiveCharacterTextSplitter(
@@ -43,3 +42,15 @@ def chunking(documents, chunk_size=1000, chunk_overlap=200):
         length_function = len,
         separators=["\n\n", "\n", " ", ""] #an array containing markers to chunk at
     )
+
+    split_docs = text_splitter.split_documents(documents)
+    print(f"Split {len(documents)} documents into {len(split_docs)} chunks")
+
+    print(f"\nExample Chunk")
+    print(f"Content: {split_docs[0].page_content[:200]}")
+    print(f"MetaData: {split_docs[0].metadata}")
+
+    return chunking
+
+all_pdf_documents = process_all_pdfs("data\pdf")
+chunks = chunking(all_pdf_documents)
