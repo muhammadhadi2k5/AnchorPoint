@@ -18,14 +18,14 @@ from langchain_core.documents import Document
 # document = loader.load()
 # print(document)
 
-from langchain_community.document_loaders import DirectoryLoader, TextLoader, PyPDFLoader, PyMuPDFLoader
+# from langchain_community.document_loaders import DirectoryLoader, TextLoader, PyPDFLoader, PyMuPDFLoader
 
-dir_loader = DirectoryLoader(
-    "data/pdf",
-    glob="**/*.pdf", 
-    loader_cls= PyMuPDFLoader,
-    show_progress = False
-)
+# dir_loader = DirectoryLoader(
+#     "data/pdf",
+#     glob="**/*.pdf", 
+#     loader_cls= PyMuPDFLoader,
+#     show_progress = False
+# )
 
-pdf_documents = dir_loader.load()
-print(pdf_documents)
+# pdf_documents = dir_loader.load()
+# print(pdf_documents)
