@@ -9,10 +9,13 @@ def process_all_pdfs(pdf_directory):
     all_documents = []
     pdf_dir = Path(pdf_directory)
 
+    #stores all the files with .pdf extension in a list called pdf_files
     pdf_files = list(pdf_dir.glob("**/*.pdf"))
 
-    print(f"Found {len(pdf_files)} PDF files in {pdf_directory}")
+    #measure the len of list and output how many files detected
+    print(f"\nFound {len(pdf_files)} PDF files in {pdf_directory}")
 
+    #loop thru each file to process it
     for pdf_file in pdf_files:
         print(f"\nProcessing PDF file: {pdf_file.name}")
         try:
