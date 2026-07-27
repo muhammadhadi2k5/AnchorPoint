@@ -2,9 +2,15 @@ import os
 from langchain_community.document_loaders import PyPDFLoader, PyMuPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from pathlib import Path
+import numpy as np
+from sentence_transformers import SentenceTransformer
+import chromadb
+from chromadb.config import Settings
+import uuid
+from typing import List, Dict, Any, Tuple
+from sklearn.metrics.pairwise import cosine_similarity
 
-#read the pdfs
-
+# Read the pdfs
 def process_all_pdfs(pdf_directory):
     all_documents = []
     pdf_dir = Path(pdf_directory)
@@ -34,7 +40,7 @@ def process_all_pdfs(pdf_directory):
     print(f"\nTotal Documents Loaded:  {len(all_documents)}")
     return all_documents
             
-
+# Chunking the documents
 def chunking(documents, chunk_size=1000, chunk_overlap=200):
     text_splitter = RecursiveCharacterTextSplitter(
         chunk_size = chunk_size,
@@ -54,3 +60,35 @@ def chunking(documents, chunk_size=1000, chunk_overlap=200):
 
 all_pdf_documents = process_all_pdfs("data\pdf")
 chunks = chunking(all_pdf_documents)
+
+class EmbeddingManager:
+
+    def __init__(self, model_name: str = "all-MiniLM-L6-v2"):
+        self.model_name = model_name
+        self.model = None
+        self._load_model()
+
+    def _load_model(self):
+        try:
+            print(f"Loading embedding model: {self.model_name}")
+            self.model = SentenceTransformer(self.model_name)
+            print(f"Model successfully loaded. Embedding dimension: {self.model.get_embedding_dimension()}")
+        except Exception as e:
+            print(f"Error loading embedding model: {e}")
+            raise
+
+    def generate_embeddings(self, texts: List[str]) -> np.ndarray:
+        if not self.model:
+            raise ValueError("Embedding model is not loaded.")
+
+        print(f"Generating embeddings for {len(texts)} texts...")
+        embeddings = self.model.encode(texts, show_progress_bar=True)
+        print(f"Generated embeddings with shape: {embeddings.shape}")
+        return embeddings
+
+    def get_embedding_dimension(self) -> int:
+        if not self.model:
+            raise ValueError("Embedding model is not loaded.")
+        return self.model.get_sentence_embedding_dimension()
+
+embedding_manager = EmbeddingManager()
