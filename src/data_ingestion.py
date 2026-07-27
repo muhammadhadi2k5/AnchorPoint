@@ -70,9 +70,9 @@ class EmbeddingManager:
 
     def _load_model(self):
         try:
-            print(f"Loading embedding model: {self.model_name}")
+            print(f"\n\nLoading embedding model: {self.model_name}\n")
             self.model = SentenceTransformer(self.model_name)
-            print(f"Model successfully loaded. Embedding dimension: {self.model.get_embedding_dimension()}")
+            print(f"\n\nModel successfully loaded. Embedding dimensions: {self.model.get_embedding_dimension()}\n")
         except Exception as e:
             print(f"Error loading embedding model: {e}")
             raise
