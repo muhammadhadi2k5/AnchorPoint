@@ -1,8 +1,8 @@
 import os
 from dotenv import load_dotenv
 from google import genai
-from google.genai import types
-from rate_limit_guard import RateLimitGuard
+from google.genai import types, errors
+from rate_limit_guard import RateLimitGuard, QuotaExceededError
 
 load_dotenv()
 
@@ -35,21 +35,33 @@ class Generator:
             parts.append(f"[Source {i}: {source}]\n{result['text']}")
         return "\n\n".join(parts)
 
-    #generates an answer to the query, grounded only in the retrieved chunks
+    #generates an answer to the query, grounded only in the retrieved chunks.
+    #yields text pieces as they're generated
     def generate_answer(self, query, results):
         if not results:
-            return "I don't have any relevant information to answer that question."
+            yield "I don't have any relevant information to answer that question."
+            return
 
         context = self._format_context(results)
         prompt = f"Context:\n{context}\n\nQuestion: {query}"
 
-        response = self.guard.call(
-            self.client.models.generate_content,
-            model=MODEL_NAME,
-            contents=prompt,
-            config=types.GenerateContentConfig(
-                system_instruction=SYSTEM_INSTRUCTION,
-            ),
-        )
+        #proactive local check, same as the non-streaming path used before
+        self.guard.check_and_increment()
 
-        return response.text
+        try:
+            stream = self.client.models.generate_content_stream(
+                model=MODEL_NAME,
+                contents=prompt,
+                config=types.GenerateContentConfig(
+                    system_instruction=SYSTEM_INSTRUCTION,
+                ),
+            )
+            for chunk in stream:
+                if chunk.text:
+                    yield chunk.text
+        except errors.APIError as e:
+            if e.code == 429:
+                raise QuotaExceededError(
+                    f"[{self.guard.name}] Google's API reports the quota is exceeded: {e.message}"
+                ) from e
+            raise
