@@ -18,10 +18,12 @@ while True:
         break
 
     results = retriever.retrieve(query, top_k=5, threshold=0.3)
-    retriever.print_results(results, query)
-
     answer = generator.generate_answer(query, results)
+
+    print(f"\nQuery: {query}")
     print("\n" + "=" * 80)
     print("ANSWER")
     print("=" * 80)
     print(answer)
+
+    retriever.print_results(results)

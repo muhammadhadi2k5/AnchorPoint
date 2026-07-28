@@ -43,14 +43,12 @@ class Retriever:
         return results[:top_k]
 
     #prints results in a clean, readable format
-    def print_results(self, results, query):
+    def print_results(self, results):
         if not results:
             print("\nNo matching chunks found.")
             return
 
-        print(f"\nQuery: {query}")
-        
-        print(f"\nFound {len(results)} matching chunk(s):\n")
+        print(f"\nSOURCES ({len(results)} chunk(s)):\n")
         for rank, result in enumerate(results, start=1):
             metadata = result["metadata"]
             print("=" * 80)
