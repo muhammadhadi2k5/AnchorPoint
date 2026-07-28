@@ -1,11 +1,14 @@
-import os
 import sys
-import json
 sys.stdout.reconfigure(encoding="utf-8")
-from langchain_core.documents import Document
-import numpy as np
-from sentence_transformers import SentenceTransformer
-import chromadb
-from chromadb.config import Settings
-from typing import List, Dict, Any, Tuple
-from sklearn.metrics.pairwise import cosine_similarity
+
+from vector_db import VectorDB
+from embedding_manager import EmbeddingManager
+from retriever import Retriever
+
+vectorDB = VectorDB()
+embedding_manager = EmbeddingManager()
+retriever = Retriever(vectorDB, embedding_manager)
+
+query = "What is Amlodipine used for?"
+results = retriever.retrieve(query, top_k=5, threshold=0.3)
+retriever.print_results(results, query)
