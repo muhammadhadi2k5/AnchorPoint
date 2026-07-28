@@ -9,8 +9,7 @@ class Retriever:
 
     #turns the user's query text into a single embedding vector
     def _embed_query(self, query):
-        query_embedding = self.embedding_manager.generate_embeddings([query])
-        return query_embedding[0]
+        return self.embedding_manager.embed_query(query)
 
     #pulls every stored chunk's embedding, text, and metadata out of the vectorDB
     def _get_all_stored(self):

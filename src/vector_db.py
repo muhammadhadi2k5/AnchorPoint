@@ -5,8 +5,8 @@ from typing import List, Any
 from qdrant_client import QdrantClient
 from qdrant_client.models import Distance, VectorParams, PointStruct
 
-#matches the output size of the all-MiniLM-L6-v2 embedding model
-EMBEDDING_DIM = 384
+#matches the output_dimensionality configured in embedding_manager.py
+EMBEDDING_DIM = 768
 
 
 # Same chunk (same source file, page, and text) always gets the same id.
