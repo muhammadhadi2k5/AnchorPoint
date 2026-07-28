@@ -36,24 +36,27 @@ class RateLimitGuard:
         with open(self.state_file, "w", encoding="utf-8") as f:
             json.dump(state, f)
 
-    #call before making an API request - refuses if we're already at the cap
-    def check_and_increment(self):
+    #call before making an API request - refuses if this request would push
+    #us over the cap. count = how many quota units this request uses (e.g.
+    #Google counts each text in a batch as its own unit, not each API call)
+    def check_and_increment(self, count=1):
         state = self._load_state()
 
-        if state["count"] >= self.daily_limit:
+        if state["count"] + count > self.daily_limit:
             raise QuotaExceededError(
-                f"[{self.name}] Daily request limit ({self.daily_limit}) reached. "
-                f"Refusing to make more requests today to avoid exceeding the free tier. "
-                f"Check your real usage/limits at https://aistudio.google.com/rate-limit"
+                f"[{self.name}] This request ({count} unit(s)) would exceed the daily limit "
+                f"({state['count']}/{self.daily_limit} used so far). Refusing to send it to "
+                f"avoid exceeding the free tier. Check your real usage/limits at "
+                f"https://aistudio.google.com/rate-limit"
             )
 
-        state["count"] += 1
+        state["count"] += count
         self._save_state(state)
 
     #wraps an API call: checks the local cap first, and turns Google's own
     #429 quota error into the same clear exception type if we ever hit that
-    def call(self, api_function, *args, **kwargs):
-        self.check_and_increment()
+    def call(self, api_function, *args, count=1, **kwargs):
+        self.check_and_increment(count=count)
 
         try:
             return api_function(*args, **kwargs)

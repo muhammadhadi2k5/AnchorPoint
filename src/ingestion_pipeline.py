@@ -22,7 +22,7 @@ print(f"\n{len(new_chunks)} new chunk(s) out of {len(chunks)} need embedding")
 if new_chunks:
     #convert the new chunks' text to embeddings
     texts = [doc.page_content for doc in new_chunks]
-    embeddings = embedding_manager.generate_embeddings(texts)
+    embeddings = embedding_manager.embed_documents(texts)
 
     #store embeddings in vectorDB
     vectorDB.add_documents(new_chunks, embeddings)
