@@ -11,8 +11,8 @@ retriever = Retriever(vectorDB, embedding_manager)
 
 #model is already loaded above, so queries in this loop don't pay that cost again
 while True:
-    query = input("\nEnter your query (or 'exit' to quit): ")
-    if query.strip().lower() == "exit":
+    query = input("\nEnter your query (or 'q' to quit): ")
+    if query.strip().lower() == "q":
         break
 
     results = retriever.retrieve(query, top_k=5, threshold=0.3)
