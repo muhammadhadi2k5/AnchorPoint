@@ -1,6 +1,8 @@
 import os
 import sys
+import json
 sys.stdout.reconfigure(encoding="utf-8")
+from langchain_core.documents import Document
 from langchain_community.document_loaders import (
     PyPDFLoader,
     PyMuPDFLoader,
@@ -43,9 +45,31 @@ def load_pdf(file_path, min_chars_per_page=20):
 
     if avg_chars < min_chars_per_page:
         print(f" Low text yield ({avg_chars:.0f} chars/page) — retrying with OCR")
-        documents = UnstructuredPDFLoader(file_path, strategy="ocr_only").load()
+        documents = UnstructuredPDFLoader(file_path, strategy="ocr_only", languages=["eng"]).load()
 
     return documents
+
+# Cache of already-loaded documents, so unchanged files (especially slow OCR'd
+# PDFs) don't get reprocessed on every run.
+CACHE_DIR = Path("data/.doc_cache")
+
+def get_file_hash(file_path):
+    return hashlib.md5(Path(file_path).read_bytes()).hexdigest()
+
+def load_from_cache(file_hash):
+    cache_file = CACHE_DIR / f"{file_hash}.json"
+    if not cache_file.exists():
+        return None
+    with open(cache_file, "r", encoding="utf-8") as f:
+        cached = json.load(f)
+    return [Document(page_content=d["page_content"], metadata=d["metadata"]) for d in cached]
+
+def save_to_cache(file_hash, documents):
+    CACHE_DIR.mkdir(parents=True, exist_ok=True)
+    cache_file = CACHE_DIR / f"{file_hash}.json"
+    serializable = [{"page_content": d.page_content, "metadata": d.metadata} for d in documents]
+    with open(cache_file, "w", encoding="utf-8") as f:
+        json.dump(serializable, f)
 
 # Read every supported document type in a directory
 def process_all_documents(data_directory):
@@ -66,19 +90,27 @@ def process_all_documents(data_directory):
         file_type = file.suffix.lower().lstrip(".")
         print(f"\nProcessing {file_type.upper()} file: {file.name}")
         try:
-            if file.suffix.lower() == ".pdf":
-                documents = load_pdf(str(file))
-            else:
-                loader_cls, loader_kwargs = LOADER_REGISTRY[file.suffix.lower()]
-                loader = loader_cls(str(file), **loader_kwargs)
-                documents = loader.load()
+            file_hash = get_file_hash(file)
+            documents = load_from_cache(file_hash)
 
-            for doc in documents:
-                doc.metadata['source_file'] = file.name
-                doc.metadata['file_type'] = file_type
+            if documents is not None:
+                print(f" Loaded {len(documents)} document(s) from cache")
+            else:
+                if file.suffix.lower() == ".pdf":
+                    documents = load_pdf(str(file))
+                else:
+                    loader_cls, loader_kwargs = LOADER_REGISTRY[file.suffix.lower()]
+                    loader = loader_cls(str(file), **loader_kwargs)
+                    documents = loader.load()
+
+                for doc in documents:
+                    doc.metadata['source_file'] = file.name
+                    doc.metadata['file_type'] = file_type
+
+                save_to_cache(file_hash, documents)
+                print(f" Loaded {len(documents)} document(s)")
 
             all_documents.extend(documents)
-            print(f" Loaded {len(documents)} document(s)")
 
         except Exception as e:
             print(f"Error loading {file.name}: {e}")
