@@ -71,6 +71,12 @@ def save_to_cache(file_hash, documents):
     with open(cache_file, "w", encoding="utf-8") as f:
         json.dump(serializable, f)
 
+# Same chunk (same source file, page, and text) always gets the same id.
+# Used to tell "already embedded" chunks apart from new ones.
+def make_doc_id(doc):
+    id_source = f"{doc.metadata.get('source_file', '')}_{doc.metadata.get('page', '')}_{doc.page_content}"
+    return hashlib.md5(id_source.encode('utf-8')).hexdigest()
+
 # Read every supported document type in a directory
 def process_all_documents(data_directory):
     all_documents = []
@@ -206,9 +212,7 @@ class VectorDB:
         embeddings_list=[]
 
         for i, (doc, embedding) in enumerate(zip(documents, embeddings)):
-            #deterministic id based on content, so the same chunk always hashes to the same id
-            id_source = f"{doc.metadata.get('source_file', '')}_{doc.metadata.get('page', '')}_{doc.page_content}"
-            doc_id = hashlib.md5(id_source.encode('utf-8')).hexdigest()
+            doc_id = make_doc_id(doc)
 
             #skip chunks already stored in the vectorDB
             if doc_id in existing_ids:
@@ -246,14 +250,21 @@ class VectorDB:
 
 vectorDB=VectorDB()
 
-#convert the text to embeddings
-texts = [doc.page_content for doc in chunks]
+#skip chunks that are already embedded and stored, so reruns don't waste
+#time re-embedding chunks we already have
+existing_ids = set(vectorDB.collection.get(include=[])['ids'])
+new_chunks = [chunk for chunk in chunks if make_doc_id(chunk) not in existing_ids]
+print(f"\n{len(new_chunks)} new chunk(s) out of {len(chunks)} need embedding")
 
-#generate the embeddings
-embeddings = embedding_manager.generate_embeddings(texts)
+if new_chunks:
+    #convert the new chunks' text to embeddings
+    texts = [doc.page_content for doc in new_chunks]
+    embeddings = embedding_manager.generate_embeddings(texts)
 
-#store embeddings in vectorDB
-vectorDB.add_documents(chunks, embeddings)
+    #store embeddings in vectorDB
+    vectorDB.add_documents(new_chunks, embeddings)
+else:
+    print("Nothing new to embed, vectorDB is already up to date.")
 
 
 # ============================================================
@@ -273,10 +284,14 @@ for i, chunk in enumerate(chunks[:3]):
 print("\n" + "=" * 80)
 print("SAMPLE EMBEDDINGS")
 print("=" * 80)
-for i in range(3):
+#pulled straight from the vectorDB, so this works whether or not this run
+#embedded anything new
+sample_ids = [make_doc_id(chunk) for chunk in chunks[:3]]
+sample_stored = vectorDB.collection.get(ids=sample_ids, include=["embeddings"])
+for i, vector in enumerate(sample_stored["embeddings"]):
     print(f"\n--- Embedding {i + 1} (for chunk {i + 1}) ---")
-    print(f"Shape: {embeddings[i].shape}")
-    print(f"First 10 dims: {np.round(embeddings[i][:10], 4)}")
+    print(f"Dims: {len(vector)}")
+    print(f"First 10 dims: {np.round(vector[:10], 4)}")
 
 print("\n" + "=" * 80)
 print("VECTORDB STORAGE CHECK")
