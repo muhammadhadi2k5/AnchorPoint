@@ -8,6 +8,7 @@ from langchain_community.document_loaders import (
     UnstructuredExcelLoader,
     UnstructuredWordDocumentLoader,
     UnstructuredImageLoader,
+    UnstructuredPDFLoader,
     TextLoader,
 )
 from langchain_text_splitters import RecursiveCharacterTextSplitter
@@ -34,33 +35,53 @@ LOADER_REGISTRY = {
     ".jpeg": (UnstructuredImageLoader, {}),
 }
 
-# Read the pdfs
-def process_all_pdfs(pdf_directory):
-    all_documents = []
-    pdf_dir = Path(pdf_directory)
+# Loads a PDF the normal (fast) way first. If barely any text came out,
+# assume it's a scanned/image-based PDF and retry using OCR instead.
+def load_pdf(file_path, min_chars_per_page=20):
+    documents = PyPDFLoader(file_path).load()
+    avg_chars = sum(len(d.page_content) for d in documents) / max(len(documents), 1)
 
-    #stores all the files with .pdf extension in a list called pdf_files
-    pdf_files = list(pdf_dir.glob("**/*.pdf"))
+    if avg_chars < min_chars_per_page:
+        print(f" Low text yield ({avg_chars:.0f} chars/page) — retrying with OCR")
+        documents = UnstructuredPDFLoader(file_path, strategy="ocr_only").load()
+
+    return documents
+
+# Read every supported document type in a directory
+def process_all_documents(data_directory):
+    all_documents = []
+    data_dir = Path(data_directory)
+
+    #find every file whose extension we have a loader for
+    supported_files = [
+        f for f in data_dir.glob("**/*")
+        if f.is_file() and f.suffix.lower() in LOADER_REGISTRY
+    ]
 
     #measure the len of list and output how many files detected
-    print(f"\nFound {len(pdf_files)} PDF files in {pdf_directory}")
+    print(f"\nFound {len(supported_files)} supported files in {data_directory}")
 
     #loop thru each file to process it
-    for pdf_file in pdf_files:
-        print(f"\nProcessing PDF file: {pdf_file.name}")
+    for file in supported_files:
+        file_type = file.suffix.lower().lstrip(".")
+        print(f"\nProcessing {file_type.upper()} file: {file.name}")
         try:
-            loader = PyPDFLoader(str(pdf_file))
-            documents = loader.load()
+            if file.suffix.lower() == ".pdf":
+                documents = load_pdf(str(file))
+            else:
+                loader_cls, loader_kwargs = LOADER_REGISTRY[file.suffix.lower()]
+                loader = loader_cls(str(file), **loader_kwargs)
+                documents = loader.load()
 
             for doc in documents:
-                doc.metadata['source_file'] = pdf_file.name
-                doc.metadata['file_type'] = 'pdf'
+                doc.metadata['source_file'] = file.name
+                doc.metadata['file_type'] = file_type
 
             all_documents.extend(documents)
-            print(f" Loaded {len(documents)} pages")
+            print(f" Loaded {len(documents)} document(s)")
 
         except Exception as e:
-            print(f"Error loading {pdf_file.name}: {e}")
+            print(f"Error loading {file.name}: {e}")
     print(f"\nTotal Documents Loaded:  {len(all_documents)}")
     return all_documents
             
@@ -82,8 +103,8 @@ def chunking(documents, chunk_size=1000, chunk_overlap=200):
 
     return split_docs
 
-all_pdf_documents = process_all_pdfs("data\pdf")
-chunks = chunking(all_pdf_documents)
+all_documents = process_all_documents("data")
+chunks = chunking(all_documents)
 
 class EmbeddingManager:
 
