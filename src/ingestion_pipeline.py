@@ -1,7 +1,15 @@
 import os
 import sys
 sys.stdout.reconfigure(encoding="utf-8")
-from langchain_community.document_loaders import PyPDFLoader, PyMuPDFLoader
+from langchain_community.document_loaders import (
+    PyPDFLoader,
+    PyMuPDFLoader,
+    CSVLoader,
+    UnstructuredExcelLoader,
+    UnstructuredWordDocumentLoader,
+    UnstructuredImageLoader,
+    TextLoader,
+)
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from pathlib import Path
 import numpy as np
@@ -11,6 +19,20 @@ from chromadb.config import Settings
 import hashlib
 from typing import List, Dict, Any, Tuple
 from sklearn.metrics.pairwise import cosine_similarity
+
+# Maps a file extension to the loader class that knows how to read it,
+# plus any extra settings that loader needs.
+LOADER_REGISTRY = {
+    ".pdf": (PyPDFLoader, {}),
+    ".txt": (TextLoader, {"encoding": "utf-8"}),
+    ".csv": (CSVLoader, {"encoding": "utf-8"}),
+    ".xlsx": (UnstructuredExcelLoader, {"mode": "elements"}),
+    ".xls": (UnstructuredExcelLoader, {"mode": "elements"}),
+    ".docx": (UnstructuredWordDocumentLoader, {}),
+    ".png": (UnstructuredImageLoader, {}),
+    ".jpg": (UnstructuredImageLoader, {}),
+    ".jpeg": (UnstructuredImageLoader, {}),
+}
 
 # Read the pdfs
 def process_all_pdfs(pdf_directory):
