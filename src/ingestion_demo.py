@@ -11,8 +11,7 @@ from document_loader import process_all_documents
 from chunker import chunking
 from vector_db import VectorDB, make_doc_id
 
-#cheap to redo standalone: document loading is cached, chunking is pure CPU,
-#and VectorDB() just connects to the already-populated Qdrant collection
+
 all_documents = process_all_documents("data")
 chunks = chunking(all_documents)
 vectorDB = VectorDB()
