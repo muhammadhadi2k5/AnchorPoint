@@ -1,29 +1,52 @@
-from sentence_transformers import SentenceTransformer
+import os
 import numpy as np
 from typing import List
+from dotenv import load_dotenv
+from google import genai
+from google.genai import types
+from rate_limit_guard import RateLimitGuard
+
+load_dotenv()
+
+MODEL_NAME = "gemini-embedding-001"
+#must match EMBEDDING_DIM in vector_db.py, since that's what Qdrant is
+#configured to store
+EMBEDDING_DIM = 768
 
 
 class EmbeddingManager:
 
-    def __init__(self, model_name: str = "all-MiniLM-L6-v2"):
-        self.model_name = model_name
-        self.model = None
-        self._load_model()
+    #free tier: 1000 requests/day for gemini-embedding-001, per your AI Studio dashboard
+    def __init__(self, daily_limit=1000):
+        api_key = os.environ.get("GEMINI_API_KEY")
+        if not api_key:
+            raise ValueError("GEMINI_API_KEY is not set. Add it to your .env file.")
 
-    def _load_model(self):
-        try:
-            print(f"\n\nLoading embedding model: {self.model_name}\n")
-            self.model = SentenceTransformer(self.model_name)
-            print(f"\n\nModel successfully loaded. Embedding dimensions: {self.model.get_sentence_embedding_dimension()}\n")
-        except Exception as e:
-            print(f"Error loading embedding model: {e}")
-            raise
+        self.client = genai.Client(api_key=api_key)
+        self.guard = RateLimitGuard(name="embedding", daily_limit=daily_limit)
 
-    def generate_embeddings(self, texts: List[str]) -> np.ndarray:
-        if not self.model:
-            raise ValueError("Embedding model is not loaded.")
+    #for text being stored/indexed
+    def embed_documents(self, texts: List[str]) -> np.ndarray:
+        return self._embed(texts, task_type="RETRIEVAL_DOCUMENT")
 
-        print(f"Generating embeddings for {len(texts)} texts...")
-        embeddings = self.model.encode(texts, show_progress_bar=True)
+    #for a search query - a different task_type than documents, since
+    #matching a short question against long stored chunks is asymmetric
+    def embed_query(self, text: str) -> np.ndarray:
+        return self._embed([text], task_type="RETRIEVAL_QUERY")[0]
+
+    def _embed(self, texts: List[str], task_type: str) -> np.ndarray:
+        print(f"Generating {task_type} embeddings for {len(texts)} text(s)...")
+
+        result = self.guard.call(
+            self.client.models.embed_content,
+            model=MODEL_NAME,
+            contents=texts,
+            config=types.EmbedContentConfig(
+                task_type=task_type,
+                output_dimensionality=EMBEDDING_DIM,
+            ),
+        )
+
+        embeddings = np.array([e.values for e in result.embeddings])
         print(f"Generated embeddings with shape: {embeddings.shape}")
         return embeddings
