@@ -9,6 +9,6 @@ vectorDB = VectorDB()
 embedding_manager = EmbeddingManager()
 retriever = Retriever(vectorDB, embedding_manager)
 
-query = "What is Amlodipine used for?"
+query = input("Enter your query: ")
 results = retriever.retrieve(query, top_k=5, threshold=0.3)
 retriever.print_results(results, query)
