@@ -14,7 +14,7 @@ class Retriever:
 
     #pulls every stored chunk's embedding, text, and metadata out of the vectorDB
     def _get_all_stored(self):
-        return self.vectorDB.collection.get(include=["embeddings", "documents", "metadatas"])
+        return self.vectorDB.get_all()
 
     #embeds the query, compares it against every stored chunk, and returns
     #the top matches above the similarity threshold

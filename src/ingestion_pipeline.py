@@ -15,7 +15,7 @@ vectorDB = VectorDB()
 
 #skip chunks that are already embedded and stored, so reruns don't waste
 #time re-embedding chunks we already have
-existing_ids = set(vectorDB.collection.get(include=[])['ids'])
+existing_ids = vectorDB.get_existing_ids()
 new_chunks = [chunk for chunk in chunks if make_doc_id(chunk) not in existing_ids]
 print(f"\n{len(new_chunks)} new chunk(s) out of {len(chunks)} need embedding")
 
@@ -50,7 +50,7 @@ print("=" * 80)
 #pulled straight from the vectorDB, so this works whether or not this run
 #embedded anything new
 sample_ids = [make_doc_id(chunk) for chunk in chunks[:3]]
-sample_stored = vectorDB.collection.get(ids=sample_ids, include=["embeddings"])
+sample_stored = vectorDB.get_by_ids(sample_ids)
 for i, vector in enumerate(sample_stored["embeddings"]):
     print(f"\n--- Embedding {i + 1} (for chunk {i + 1}) ---")
     print(f"Dims: {len(vector)}")
@@ -59,8 +59,8 @@ for i, vector in enumerate(sample_stored["embeddings"]):
 print("\n" + "=" * 80)
 print("VECTORDB STORAGE CHECK")
 print("=" * 80)
-stored = vectorDB.collection.get(limit=3, include=["embeddings", "documents", "metadatas"])
-print(f"Total vectors stored in collection: {vectorDB.collection.count()}")
+stored = vectorDB.peek(limit=3)
+print(f"Total vectors stored in collection: {vectorDB.count()}")
 for i, doc_id in enumerate(stored["ids"]):
     print(f"\n--- Stored Entry {i + 1} ---")
     print(f"ID: {doc_id}")
