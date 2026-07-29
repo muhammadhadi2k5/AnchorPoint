@@ -10,6 +10,7 @@ MODEL_NAME = "gemini-3.5-flash-lite"
 
 SYSTEM_INSTRUCTION = (
     "You are a helpful assistant answering questions using ONLY the provided context. "
+    "throughly study the context and give a well formatted clean answer"
     "If the answer isn't in the context, say you don't know - don't make anything up. "
     "Mention which source file each part of your answer comes from."
 )
@@ -23,7 +24,13 @@ class Generator:
         if not api_key:
             raise ValueError("GEMINI_API_KEY is not set. Add it to your .env file.")
 
-        self.client = genai.Client(api_key=api_key)
+        #60s timeout - generous enough for the free tier's normal ~20s
+        #queueing delay, but finite so a genuinely stalled connection
+        #raises an error instead of hanging forever
+        self.client = genai.Client(
+            api_key=api_key,
+            http_options=types.HttpOptions(timeout=60000),
+        )
         self.guard = RateLimitGuard(name="llm", daily_limit=daily_limit)
 
     #turns retrieved chunks into one labeled text block, so the model can

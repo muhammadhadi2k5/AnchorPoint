@@ -28,7 +28,13 @@ class EmbeddingManager:
         if not api_key:
             raise ValueError("GEMINI_API_KEY is not set. Add it to your .env file.")
 
-        self.client = genai.Client(api_key=api_key)
+        #60s timeout - generous enough for the free tier's normal ~20s
+        #queueing delay, but finite so a genuinely stalled connection
+        #raises an error instead of hanging forever
+        self.client = genai.Client(
+            api_key=api_key,
+            http_options=types.HttpOptions(timeout=60000),
+        )
         self.guard = RateLimitGuard(name="embedding", daily_limit=daily_limit)
 
     #for text being stored/indexed. Splits into batches under the API's
