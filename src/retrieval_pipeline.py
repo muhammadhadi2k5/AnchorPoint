@@ -20,7 +20,7 @@ while True:
 
     # chance of dropped connection
     try:
-        results = retriever.retrieve(query, top_k=5, threshold=0.3)
+        results = retriever.retrieve(query, top_k=7, threshold=0.45)
 
         print(f"\nQuery: {query}")
         print("\n" + "=" * 80)

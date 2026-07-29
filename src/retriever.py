@@ -15,7 +15,7 @@ class Retriever:
 
     # brute force cosine similarity - fine at this scale (couple thousand
     # chunks), would need an actual index if this ever gets huge
-    def retrieve(self, query, top_k=5, threshold=0.3):
+    def retrieve(self, query, top_k=7, threshold=0.45):
         query_vector = self._embed_query(query)
         stored = self._get_all_stored()
 
