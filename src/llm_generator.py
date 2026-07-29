@@ -15,6 +15,18 @@ SYSTEM_INSTRUCTION = (
     "Mention which source file each part of your answer comes from."
 )
 
+# swapped out for retriever._detect_target_sources, keeping in case we
+# ever want the LLM version back
+#
+# ROUTER_SYSTEM_INSTRUCTION = (
+#     "You are a query router for a document search system. Given a user question and a "
+#     "list of known document filenames, decide which filename(s), if any, the question is "
+#     "specifically about. Return a JSON array of filenames, copied exactly as given, from "
+#     "the list that apply. If the question compares multiple documents, include all of "
+#     "them. If the question is generic and doesn't target any specific document, return an "
+#     "empty array. Only return filenames from the provided list, nothing else."
+# )
+
 
 class Generator:
 
@@ -65,8 +77,37 @@ class Generator:
                 if chunk.text:
                     yield chunk.text
         except errors.APIError as e:
-            if e.code == 429: 
+            if e.code == 429:
                 raise QuotaExceededError(
                     f"[{self.guard.name}] Google's API reports the quota is exceeded: {e.message}"
                 ) from e
             raise
+
+    # def classify_target_sources(self, query, known_sources):
+    #     if not known_sources:
+    #         return []
+    #
+    #     prompt = "Known documents:\n" + "\n".join(f"- {s}" for s in known_sources)
+    #     prompt += f"\n\nQuestion: {query}"
+    #
+    #     try:
+    #         response = self.guard.call(
+    #             self.client.models.generate_content,
+    #             model=MODEL_NAME,
+    #             contents=prompt,
+    #             config=types.GenerateContentConfig(
+    #                 system_instruction=ROUTER_SYSTEM_INSTRUCTION,
+    #                 response_mime_type="application/json",
+    #             ),
+    #         )
+    #     except QuotaExceededError:
+    #         raise
+    #
+    #     try:
+    #         matches = json.loads(response.text)
+    #     except (json.JSONDecodeError, AttributeError):
+    #         return []
+    #
+    #     # only trust filenames that are actually in our known list, in case
+    #     # the model returns something that isn't verbatim from the list
+    #     return [m for m in matches if m in known_sources]
