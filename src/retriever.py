@@ -37,23 +37,16 @@ class Retriever:
 
         return matches
 
+    # narrows stored down to just the given source files
+    def _filter_by_source(self, stored, sources):
+        keep = [i for i, m in enumerate(stored["metadatas"]) if m.get("source_file") in sources]
+        return {key: [values[i] for i in keep] for key, values in stored.items()}
+
     # brute force cosine similarity - fine at this scale (couple thousand
     # chunks), would need an actual index if this ever gets huge
-    def retrieve(self, query, top_k=7, threshold=0.45):
-        query_vector = self._embed_query(query)
-        stored = self._get_all_stored()
-
+    def _search(self, query_vector, stored, top_k, threshold):
         if not stored["ids"]:
-            print("VectorDB is empty, nothing to search.")
             return []
-
-        # narrow to the detected drug's file(s), empty match = search all
-        known_sources = sorted(set(m.get("source_file", "") for m in stored["metadatas"]))
-        target_sources = self._detect_target_sources(query, known_sources)
-
-        if target_sources:
-            keep = [i for i, m in enumerate(stored["metadatas"]) if m.get("source_file") in target_sources]
-            stored = {key: [values[i] for i in keep] for key, values in stored.items()}
 
         # cosine_similarity wants 2D arrays even for a single query vector
         similarities = cosine_similarity([query_vector], stored["embeddings"])[0]
@@ -70,6 +63,34 @@ class Retriever:
         results.sort(key=lambda r: r["score"], reverse=True)  # best match first
 
         return results[:top_k]
+
+    def retrieve(self, query, top_k=7, threshold=0.45):
+        query_vector = self._embed_query(query)
+        stored = self._get_all_stored()
+
+        if not stored["ids"]:
+            print("VectorDB is empty, nothing to search.")
+            return []
+
+        # empty match = generic/unnamed query, search everything as usual
+        known_sources = sorted(set(m.get("source_file", "") for m in stored["metadatas"]))
+        target_sources = self._detect_target_sources(query, known_sources)
+
+        if len(target_sources) > 1:
+            # comparison query - search each named doc separately so the
+            # higher-scoring one can't crowd the other out of a pooled top_k.
+            # each doc gets its own full top_k budget
+            results = []
+            for source in target_sources:
+                subset = self._filter_by_source(stored, [source])
+                results.extend(self._search(query_vector, subset, top_k, threshold))
+            results.sort(key=lambda r: r["score"], reverse=True)
+            return results
+
+        if target_sources:
+            stored = self._filter_by_source(stored, target_sources)
+
+        return self._search(query_vector, stored, top_k, threshold)
 
     # just for printing to terminal, not used by the actual answer generation
     def print_results(self, results):
