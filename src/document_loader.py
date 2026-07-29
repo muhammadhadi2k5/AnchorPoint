@@ -35,7 +35,7 @@ def load_pdf(file_path, min_chars_per_page=20):
 
     if avg_chars < min_chars_per_page:
         print(f" Low text yield ({avg_chars:.0f} chars/page) — retrying with OCR")
-        documents = UnstructuredPDFLoader(file_path, strategy="ocr_only", languages=["eng"]).load()
+        documents = UnstructuredPDFLoader(file_path, strategy="hi_res", languages=["eng"]).load()
 
     return documents
 

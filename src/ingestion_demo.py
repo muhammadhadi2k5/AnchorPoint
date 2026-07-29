@@ -17,13 +17,13 @@ chunks = chunking(all_documents)
 vectorDB = VectorDB()
 
 print("\n" + "=" * 80)
-print("SAMPLE CHUNKS")
+print(f"ALL CHUNKS ({len(chunks)} total)")
 print("=" * 80)
-for i, chunk in enumerate(chunks[:3]):
-    preview = chunk.page_content[:300].strip()
-    print(f"\n--- Chunk {i + 1} ---")
+for i, chunk in enumerate(chunks):
+    print(f"\n--- Chunk {i + 1}/{len(chunks)} ---")
     print(f"Metadata: {chunk.metadata.get('source_file')} | Page: {chunk.metadata.get('page', 'N/A')}\n")
-    print(f"Content ({len(chunk.page_content)} chars): {preview}{'...' if len(chunk.page_content) > 300 else ''}")
+    print(f"Content ({len(chunk.page_content)} chars):")
+    print(chunk.page_content.strip())
 
 print("\n" + "=" * 80)
 print("SAMPLE EMBEDDINGS")
