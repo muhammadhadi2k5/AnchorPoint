@@ -12,15 +12,13 @@ embedding_manager = EmbeddingManager()
 retriever = Retriever(vectorDB, embedding_manager)
 generator = Generator()
 
-#model is already loaded above, so queries in this loop don't pay that cost again
+
 while True:
     query = input("\nEnter your query (or 'q' to quit): ")
     if query.strip().lower() == "q":
         break
 
-    #both retrieval (query embedding) and generation now call out to Gemini,
-    #so a dropped connection can happen at either step - catch it once
-    #around both instead of duplicating the same handling twice
+    # chance of dropped connection
     try:
         results = retriever.retrieve(query, top_k=5, threshold=0.3)
 
@@ -28,8 +26,7 @@ while True:
         print("\n" + "=" * 80)
         print("ANSWER")
         print("=" * 80)
-        #each piece prints as soon as it arrives, instead of waiting for the
-        #whole answer to finish generating
+        # prints as it streams in instead of waiting for the full answer
         for piece in generator.generate_answer(query, results):
             print(piece, end="", flush=True)
         print()

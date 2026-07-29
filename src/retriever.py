@@ -7,16 +7,14 @@ class Retriever:
         self.vectorDB = vectorDB
         self.embedding_manager = embedding_manager
 
-    #turns the user's query text into a single embedding vector
     def _embed_query(self, query):
         return self.embedding_manager.embed_query(query)
 
-    #pulls every stored chunk's embedding, text, and metadata out of the vectorDB
     def _get_all_stored(self):
         return self.vectorDB.get_all()
 
-    #embeds the query, compares it against every stored chunk, and returns
-    #the top matches above the similarity threshold
+    # brute force cosine similarity - fine at this scale (couple thousand
+    # chunks), would need an actual index if this ever gets huge
     def retrieve(self, query, top_k=5, threshold=0.3):
         query_vector = self._embed_query(query)
         stored = self._get_all_stored()
@@ -25,24 +23,23 @@ class Retriever:
             print("VectorDB is empty, nothing to search.")
             return []
 
-        #cosine_similarity expects 2D arrays: one row = one vector
+        # cosine_similarity wants 2D arrays even for a single query vector
         similarities = cosine_similarity([query_vector], stored["embeddings"])[0]
 
         results = []
         for i, score in enumerate(similarities):
-            if score >= threshold:
+            if score >= threshold:  # drop anything not even loosely related
                 results.append({
                     "score": score,
                     "text": stored["documents"][i],
                     "metadata": stored["metadatas"][i],
                 })
 
-        #highest similarity first
-        results.sort(key=lambda r: r["score"], reverse=True)
+        results.sort(key=lambda r: r["score"], reverse=True)  # best match first
 
         return results[:top_k]
 
-    #prints results in a clean, readable format
+    # just for printing to terminal, not used by the actual answer generation
     def print_results(self, results):
         if not results:
             print("\nNo matching chunks found.")

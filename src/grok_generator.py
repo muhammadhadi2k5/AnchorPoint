@@ -23,8 +23,6 @@ class GrokGenerator:
 
         self.client = OpenAI(api_key=api_key, base_url="https://api.x.ai/v1")
 
-    #turns retrieved chunks into one labeled text block, so the model can
-    #see where each piece of context came from and cite it
     def _format_context(self, results):
         parts = []
         for i, result in enumerate(results, start=1):
@@ -32,8 +30,6 @@ class GrokGenerator:
             parts.append(f"[Source {i}: {source}]\n{result['text']}")
         return "\n\n".join(parts)
 
-    #generates an answer to the query, grounded only in the retrieved chunks.
-    #yields text pieces as they're generated
     def generate_answer(self, query, results):
         if not results:
             yield "I don't have any relevant information to answer that question."

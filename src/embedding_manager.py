@@ -10,51 +10,45 @@ from rate_limit_guard import RateLimitGuard
 load_dotenv()
 
 MODEL_NAME = "gemini-embedding-001"
-#must match EMBEDDING_DIM in vector_db.py, since that's what Qdrant is
-#configured to store
+# keep this in sync with EMBEDDING_DIM in vector_db.py or qdrant rejects the vectors
 EMBEDDING_DIM = 768
 
-
 MAX_CHARS_PER_BATCH = 16000
+
 
 TARGET_TEXTS_PER_MINUTE = 60
 
 
 class EmbeddingManager:
 
-    #free tier: 1000 requests/day for gemini-embedding-001, per your AI Studio dashboard
+    # 1000 req/day free tier limit for gemini-embedding-001
     def __init__(self, daily_limit=1000):
         api_key = os.environ.get("GEMINI_API_KEY")
         if not api_key:
             raise ValueError("GEMINI_API_KEY is not set. Add it to your .env file.")
 
-        #60s timeout - generous enough for the free tier's normal ~20s
-        #queueing delay, but finite so a genuinely stalled connection
-        #raises an error instead of hanging forever
+        # 60s timeout - long enough to survive the usual ~20s free tier
+        # queueing delay, but won't hang forever if the connection dies
         self.client = genai.Client(
             api_key=api_key,
             http_options=types.HttpOptions(timeout=60000),
         )
         self.guard = RateLimitGuard(name="embedding", daily_limit=daily_limit)
 
-    #for text being stored/indexed. Splits into batches under the API's
-    #per-request token limit, and paces requests to stay under the
-    #requests-per-minute limit too - callers don't need to think about either.
+    # embeds chunks going INTO the vectorDB. handles batching + pacing
     def embed_documents(self, texts: List[str]) -> np.ndarray:
         batches = self._make_batches(texts)
         all_embeddings = []
 
         for i, batch in enumerate(batches):
             if i > 0:
-                #pace so this batch's texts don't push us over the
-                #per-minute limit (e.g. a 20-text batch waits 20/60th of
-                #the per-minute budget before sending)
+                # sleep proportional to batch size so we don't blow the per-min limit
                 time.sleep(60 * len(batch) / TARGET_TEXTS_PER_MINUTE)
             all_embeddings.append(self._embed(batch, task_type="RETRIEVAL_DOCUMENT"))
 
         return np.vstack(all_embeddings)
 
-    #groups texts into batches that stay under MAX_CHARS_PER_BATCH each
+    # groups texts so each batch stays under the per-request char/token cap
     def _make_batches(self, texts: List[str]):
         batches = []
         current_batch = []
@@ -74,8 +68,9 @@ class EmbeddingManager:
 
         return batches
 
-    #for a search query - a different task_type than documents, since
-    #matching a short question against long stored chunks is asymmetric
+    # embeds the search query. different task_type than documents on purpose -
+    # a short question and a long stored chunk aren't symmetric, gemini
+    # handles them differently under the hood
     def embed_query(self, text: str) -> np.ndarray:
         return self._embed([text], task_type="RETRIEVAL_QUERY")[0]
 

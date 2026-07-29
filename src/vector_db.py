@@ -5,22 +5,22 @@ from typing import List, Any
 from qdrant_client import QdrantClient
 from qdrant_client.models import Distance, VectorParams, PointStruct
 
-#matches the output_dimensionality configured in embedding_manager.py
+# has to match output_dimensionality in embedding_manager.py or inserts fail
 EMBEDDING_DIM = 768
 
 
-# Same chunk (same source file, page, and text) always gets the same id.
-# Used to tell "already embedded" chunks apart from new ones.
+# same chunk (same source file + page + text) always hashes to the same id.
+# that's how I know a chunk is a duplicate on reruns
 def make_doc_id(doc):
     id_source = f"{doc.metadata.get('source_file', '')}_{doc.metadata.get('page', '')}_{doc.page_content}"
     md5_hash = hashlib.md5(id_source.encode('utf-8')).hexdigest()
-    #Qdrant only accepts unsigned integers or UUIDs as point ids, so we
-    #reshape the md5 hash (32 hex chars) into a UUID string, still deterministic
+    # Qdrant ids have to be either an int or a UUID, not a random string.
+    # md5 hash is 32 hex chars = same length as a UUID, so just repack it
     return str(uuid.UUID(hex=md5_hash))
 
 
-#turns a Qdrant point (id + payload + vector) into the same
-#{ids, documents, metadatas, embeddings} shape the rest of the app expects
+# qdrant points don't come back in the shape the rest of my code expects,
+# reshape into {ids, documents, metadatas, embeddings} everywhere
 def _points_to_result(points):
     return {
         "ids": [p.id for p in points],
@@ -55,7 +55,7 @@ class VectorDB:
     def count(self):
         return self.client.count(self.collection_name).count
 
-    #every point id currently stored, so we know what NOT to re-embed
+    # ids of everything already stored, so add_documents knows what to skip
     def get_existing_ids(self):
         existing_ids = set()
         next_offset = None
@@ -68,11 +68,12 @@ class VectorDB:
                 offset=next_offset,
             )
             existing_ids.update(point.id for point in points)
-            if next_offset is None:
+            if next_offset is None:  # qdrant sets this to None once we've paged through everything
                 break
         return existing_ids
 
-    #every stored chunk's text, metadata, and embedding vector
+    # full dump - text + metadata + vectors for every stored chunk. used by
+    # the retriever to do the cosine similarity search
     def get_all(self):
         all_points = []
         next_offset = None
@@ -89,7 +90,7 @@ class VectorDB:
                 break
         return _points_to_result(all_points)
 
-    #a small sample of stored chunks, without scanning the whole collection
+    # quick look at a few stored chunks without pulling the whole collection
     def peek(self, limit=3):
         points, _ = self.client.scroll(
             collection_name=self.collection_name,
@@ -99,7 +100,6 @@ class VectorDB:
         )
         return _points_to_result(points)
 
-    #fetch specific chunks by id
     def get_by_ids(self, ids):
         points = self.client.retrieve(collection_name=self.collection_name, ids=ids, with_vectors=True)
         return _points_to_result(points)
@@ -110,18 +110,16 @@ class VectorDB:
 
         print(f"Adding {len(documents)} documents to the vectorDB...")
 
-        #existing ids in the collection, so reruns don't add duplicates
         existing_ids = self.get_existing_ids()
 
         points = []
         for doc, embedding in zip(documents, embeddings):
             doc_id = make_doc_id(doc)
 
-            #skip chunks already stored in the vectorDB
-            if doc_id in existing_ids:
+            if doc_id in existing_ids:  
                 continue
 
-            #payload holds the chunk text plus all its metadata together
+            # payload = chunk text + all its metadata bundled together
             payload = dict(doc.metadata)
             payload['text'] = doc.page_content
             payload['content_length'] = len(doc.page_content)

@@ -13,20 +13,15 @@ chunks = chunking(all_documents)
 embedding_manager = EmbeddingManager()
 vectorDB = VectorDB()
 
-#skip chunks that are already embedded and stored, so reruns don't waste
-#time re-embedding chunks we already have
+# only embed what's actually new, re-embedding stuff already in qdrant is
+# just wasted API calls
 existing_ids = vectorDB.get_existing_ids()
 new_chunks = [chunk for chunk in chunks if make_doc_id(chunk) not in existing_ids]
 print(f"\n{len(new_chunks)} new chunk(s) out of {len(chunks)} need embedding")
 
 if new_chunks:
-    #convert the new chunks' text to embeddings
     texts = [doc.page_content for doc in new_chunks]
     embeddings = embedding_manager.embed_documents(texts)
-
-    #store embeddings in vectorDB
     vectorDB.add_documents(new_chunks, embeddings)
 else:
     print("Nothing new to embed, vectorDB is already up to date.")
-
-

@@ -8,11 +8,10 @@ class QuotaExceededError(Exception):
     pass
 
 
+# stops me from blowing past the free tier daily limit by mistake while
+# testing. tracks usage in a local json file, resets automatically at
+# midnight
 class RateLimitGuard:
-    #Google doesn't expose your exact free-tier limits through the API -
-    #check yours at https://aistudio.google.com/rate-limit and adjust
-    #daily_limit to match. This default is a conservative placeholder,
-    #not an official number.
     def __init__(self, name, daily_limit=500):
         self.name = name
         self.daily_limit = daily_limit
@@ -25,8 +24,7 @@ class RateLimitGuard:
         with open(self.state_file, "r", encoding="utf-8") as f:
             state = json.load(f)
 
-        #start a fresh count if it's a new day
-        if state.get("date") != str(date.today()):
+        if state.get("date") != str(date.today()):  
             return {"date": str(date.today()), "count": 0}
 
         return state
@@ -36,9 +34,9 @@ class RateLimitGuard:
         with open(self.state_file, "w", encoding="utf-8") as f:
             json.dump(state, f)
 
-    #call before making an API request - refuses if this request would push
-    #us over the cap. count = how many quota units this request uses (e.g.
-    #Google counts each text in a batch as its own unit, not each API call)
+    # call this before hitting the API. count = how many quota units this
+    # one request actually uses - not 1 per API call, since google counts
+    # each text in a batch separately
     def check_and_increment(self, count=1):
         state = self._load_state()
 
@@ -53,8 +51,8 @@ class RateLimitGuard:
         state["count"] += count
         self._save_state(state)
 
-    #wraps an API call: checks the local cap first, and turns Google's own
-    #429 quota error into the same clear exception type if we ever hit that
+    # does the local check first, then also catches google's own 429 if we
+    # somehow hit that anyway (local count being off, clock skew, whatever)
     def call(self, api_function, *args, count=1, **kwargs):
         self.check_and_increment(count=count)
 

@@ -1,7 +1,5 @@
-# ============================================================
-# DEMO ONLY — sample chunks, embeddings, and vectorDB storage
-# proof. Safe to delete once no longer needed.
-# ============================================================
+# scratch file for manually eyeballing chunks/embeddings/vectorDB state.
+# not part of the real pipeline, just for debugging OCR/chunking quality
 
 import sys
 sys.stdout.reconfigure(encoding="utf-8")
@@ -28,8 +26,8 @@ for i, chunk in enumerate(chunks):
 print("\n" + "=" * 80)
 print("SAMPLE EMBEDDINGS")
 print("=" * 80)
-#pulled straight from the vectorDB, so this works whether or not this run
-#embedded anything new
+# reading back from qdrant instead of using the local embeddings var, works
+# whether or not this run actually embedded anything new
 sample_ids = [make_doc_id(chunk) for chunk in chunks[:3]]
 sample_stored = vectorDB.get_by_ids(sample_ids)
 for i, vector in enumerate(sample_stored["embeddings"]):
@@ -49,12 +47,10 @@ for i, doc_id in enumerate(stored["ids"]):
     print(f"Embedding preview: {np.round(stored['embeddings'][i][:10], 4)}")
     print(f"Document preview: {stored['documents'][i][:150]}...")
 
+# proof the chunk_overlap setting is actually doing something - end of
+# chunk 1 should share text with the start of chunk 2
 print("\nCHUNK OVERLAP EXAMPLE")
 print("=" * 80)
 print(chunks[0].page_content[-200:])
 print("---")
 print(chunks[1].page_content[:200])
-
-# ============================================================
-# END DEMO
-# ============================================================
