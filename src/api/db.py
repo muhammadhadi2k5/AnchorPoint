@@ -12,6 +12,7 @@ SCHEMA = """
 CREATE TABLE IF NOT EXISTS datasets (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
+    visitor_id TEXT NOT NULL,
     created_at TEXT NOT NULL
 );
 
@@ -59,13 +60,16 @@ def dataset_dir_for(dataset_id):
     return DATASETS_DIR / dataset_id
 
 
-def create_dataset(name):
+# visitor_id is just an anonymous id dropped in the visitor's browser
+# (cookie/localStorage), not real auth - enough to keep strangers' dataset
+# lists from showing up in each other's sidebar on a shared deploy
+def create_dataset(name, visitor_id):
     dataset_id = uuid.uuid4().hex
     conn = get_connection()
     try:
         conn.execute(
-            "INSERT INTO datasets (id, name, created_at) VALUES (?, ?, ?)",
-            (dataset_id, name, _now()),
+            "INSERT INTO datasets (id, name, visitor_id, created_at) VALUES (?, ?, ?, ?)",
+            (dataset_id, name, visitor_id, _now()),
         )
         conn.commit()
     finally:
@@ -74,11 +78,12 @@ def create_dataset(name):
     return get_dataset(dataset_id)
 
 
-def list_datasets():
+def list_datasets(visitor_id):
     conn = get_connection()
     try:
         rows = conn.execute(
-            "SELECT * FROM datasets ORDER BY created_at DESC"
+            "SELECT * FROM datasets WHERE visitor_id = ? ORDER BY created_at DESC",
+            (visitor_id,),
         ).fetchall()
         return [dict(row) for row in rows]
     finally:
