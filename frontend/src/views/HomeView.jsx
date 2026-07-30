@@ -7,23 +7,62 @@ export default function HomeView({ onStart }) {
   const [name, setName] = useState('')
   const [files, setFiles] = useState([])
   const [isDragging, setIsDragging] = useState(false)
+  const [nameError, setNameError] = useState(null)
+  const [filesError, setFilesError] = useState(null)
   const fileInputRef = useRef(null)
+  const nameInputRef = useRef(null)
 
+  // incoming must already be a plain array, not a live FileList - callers
+  // that reset input.value right after selection would otherwise clear the
+  // very FileList this reads from before React gets to process it
   const addFiles = (incoming) => {
-    setFiles((current) => [...current, ...Array.from(incoming)])
+    const existingKeys = new Set(files.map((f) => `${f.name}-${f.size}`))
+    const newFiles = []
+    let hasDuplicate = false
+
+    for (const file of incoming) {
+      const key = `${file.name}-${file.size}`
+      if (existingKeys.has(key)) {
+        hasDuplicate = true
+      } else {
+        existingKeys.add(key)
+        newFiles.push(file)
+      }
+    }
+
+    if (newFiles.length > 0) {
+      setFiles((current) => [...current, ...newFiles])
+    }
+    setFilesError(hasDuplicate ? 'This file has already been added' : null)
   }
 
   const handleDrop = (event) => {
     event.preventDefault()
     setIsDragging(false)
-    addFiles(event.dataTransfer.files)
+    addFiles(Array.from(event.dataTransfer.files))
   }
 
   const removeFile = (index) => {
     setFiles((current) => current.filter((_, i) => i !== index))
   }
 
-  const canStart = name.trim().length > 0 && files.length > 0
+  const handleNameChange = (event) => {
+    setName(event.target.value)
+    if (nameError) setNameError(null)
+  }
+
+  const handleStartClick = () => {
+    if (name.trim().length === 0) {
+      setNameError('Please fill in this field to continue')
+      nameInputRef.current?.focus()
+      return
+    }
+    if (files.length === 0) {
+      setFilesError('Add at least one document to continue')
+      return
+    }
+    onStart(name.trim(), files)
+  }
 
   return (
     <div className="home-view">
@@ -35,15 +74,17 @@ export default function HomeView({ onStart }) {
         </label>
         <input
           id="dataset-name"
-          className="name-field"
+          ref={nameInputRef}
+          className={`name-field${nameError ? ' has-error' : ''}`}
           type="text"
           placeholder="e.g. Research Papers"
           value={name}
-          onChange={(e) => setName(e.target.value)}
+          onChange={handleNameChange}
         />
+        {nameError && <p className="field-error">{nameError}</p>}
 
         <div
-          className={`drop-zone${isDragging ? ' dragging' : ''}`}
+          className={`drop-zone${isDragging ? ' dragging' : ''}${filesError ? ' has-error' : ''}`}
           onDragOver={(e) => {
             e.preventDefault()
             setIsDragging(true)
@@ -57,7 +98,11 @@ export default function HomeView({ onStart }) {
             type="file"
             multiple
             hidden
-            onChange={(e) => addFiles(e.target.files)}
+            onChange={(e) => {
+              const picked = Array.from(e.target.files)
+              e.target.value = ''
+              addFiles(picked)
+            }}
           />
           <p className="drop-text">
             {isDragging
@@ -66,6 +111,7 @@ export default function HomeView({ onStart }) {
           </p>
           <p className="drop-hint">PDF, DOCX, XLSX, CSV, TXT, or images</p>
         </div>
+        {filesError && <p className="field-error">{filesError}</p>}
 
         {files.length > 0 && (
           <div className="file-chips">
@@ -85,11 +131,7 @@ export default function HomeView({ onStart }) {
           </div>
         )}
 
-        <button
-          className="cta-button"
-          disabled={!canStart}
-          onClick={() => onStart(name.trim(), files)}
-        >
+        <button className="cta-button" onClick={handleStartClick}>
           Start ingesting
         </button>
       </div>
