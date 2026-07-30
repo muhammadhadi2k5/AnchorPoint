@@ -1,15 +1,17 @@
 import { useEffect, useRef, useState } from 'react'
 import { listMessages, sendMessageStream } from '../api.js'
 import CitationDrawer from '../components/CitationDrawer.jsx'
+import DocumentLibrary from '../components/DocumentLibrary.jsx'
 import './ChatView.css'
 
-export default function ChatView({ datasetId, onQuotaExceeded }) {
+export default function ChatView({ datasetId, onQuotaExceeded, onAddDocuments }) {
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
   const [streamingText, setStreamingText] = useState(null)
   const [sending, setSending] = useState(false)
   const [connectionError, setConnectionError] = useState(null)
   const [activeCitation, setActiveCitation] = useState(null)
+  const [showLibrary, setShowLibrary] = useState(false)
   const bottomRef = useRef(null)
 
   useEffect(() => {
@@ -61,6 +63,12 @@ export default function ChatView({ datasetId, onQuotaExceeded }) {
 
   return (
     <div className="chat-view">
+      <div className="chat-header">
+        <button type="button" className="chat-library-toggle" onClick={() => setShowLibrary(true)}>
+          Documents
+        </button>
+      </div>
+
       <div className="chat-messages">
         {messages.map((message, index) => (
           <div key={message.id ?? index} className={`bubble ${message.role}`}>
@@ -109,6 +117,17 @@ export default function ChatView({ datasetId, onQuotaExceeded }) {
       <p className="chat-footer">Your anchor point for accurate, sourced answers.</p>
 
       <CitationDrawer citation={activeCitation} onClose={() => setActiveCitation(null)} />
+
+      {showLibrary && (
+        <DocumentLibrary
+          datasetId={datasetId}
+          onClose={() => setShowLibrary(false)}
+          onAddDocuments={(files) => {
+            setShowLibrary(false)
+            onAddDocuments(files)
+          }}
+        />
+      )}
     </div>
   )
 }

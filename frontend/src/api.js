@@ -42,6 +42,11 @@ export async function getDataset(datasetId) {
   return response.json()
 }
 
+export async function listFiles(datasetId) {
+  const response = await request(`/datasets/${datasetId}/files`)
+  return response.json()
+}
+
 export async function addDocuments(datasetId, files) {
   const form = new FormData()
   for (const file of files) form.append('files', file)

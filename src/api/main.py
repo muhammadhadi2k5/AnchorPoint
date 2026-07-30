@@ -80,6 +80,13 @@ def get_dataset(dataset_id: str):
     return _require_dataset(dataset_id)
 
 
+@app.get("/datasets/{dataset_id}/files")
+def list_files(dataset_id: str):
+    _require_dataset(dataset_id)
+    files_dir = db.dataset_dir_for(dataset_id)
+    return sorted(f.name for f in files_dir.iterdir() if f.is_file())
+
+
 # adds more files to an existing dataset and re-runs ingestion, scoped to
 # that dataset's own folder/collection. dedup in ingestion_pipeline's logic
 # means already-embedded chunks won't be redone
