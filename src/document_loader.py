@@ -28,12 +28,14 @@ LOADER_REGISTRY = {
 
 # try normal text extraction first, way faster than OCR.
 # if barely anything came out it's probably a scanned pdf, fall back to OCR
-def load_pdf(file_path, min_chars_per_page=20):
+def load_pdf(file_path, min_chars_per_page=20, on_progress=None):
     documents = PyPDFLoader(file_path).load()
     avg_chars = sum(len(d.page_content) for d in documents) / max(len(documents), 1)
 
     if avg_chars < min_chars_per_page:
         print(f" Low text yield ({avg_chars:.0f} chars/page) — retrying with OCR")
+        if on_progress:
+            on_progress("ocr_fallback", filename=Path(file_path).name)
         # hi_res = does layout detection before OCR, so it reads column by
         # column instead of jumbling left/right text together on 2-col pages
         documents = UnstructuredPDFLoader(file_path, strategy="hi_res", languages=["eng"]).load()
@@ -62,9 +64,12 @@ def save_to_cache(file_hash, documents):
         json.dump(serializable, f)
 
 # walks data/, loads whatever it can, skips the rest
-def process_all_documents(data_directory):
+def process_all_documents(data_directory, on_progress=None):
     all_documents = []
     data_dir = Path(data_directory)
+
+    if on_progress:
+        on_progress("reading")
 
     # only grab files we actually have a loader for
     supported_files = [
@@ -85,7 +90,7 @@ def process_all_documents(data_directory):
                 print(f" Loaded {len(documents)} document(s) from cache")
             else:
                 if file.suffix.lower() == ".pdf":
-                    documents = load_pdf(str(file))
+                    documents = load_pdf(str(file), on_progress=on_progress)
                 else:
                     loader_cls, loader_kwargs = LOADER_REGISTRY[file.suffix.lower()]
                     loader = loader_cls(str(file), **loader_kwargs)
