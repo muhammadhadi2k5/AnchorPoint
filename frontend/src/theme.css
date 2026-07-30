@@ -1,0 +1,54 @@
+@font-face {
+  font-family: 'ENTRA';
+  src: url('../elements/ENTRA-Free/ENTRA-Caps.woff') format('woff');
+  font-display: block;
+}
+
+@font-face {
+  font-family: 'Horizonia';
+  src: url('../elements/horizonia.regular.otf') format('opentype');
+  font-display: swap;
+}
+
+:root {
+  --cream: #f7efe1;
+  --cream-2: #f1e6d2;
+  --ink: #2b2318;
+  --ink-soft: #6b5f4d;
+  --coral: #e15a3c;
+  --coral-deep: #b8432a;
+  --purple: #4b2e82;
+  --sand: #e7d8c2;
+  --sand-line: #d8c4a5;
+  --success: #6e8f72;
+  --error: #a63a2e;
+  --white: #fffaf2;
+  --radius: 14px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--cream);
+  color: var(--ink);
+  font-family: 'Horizonia', ui-sans-serif, system-ui, sans-serif;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+button, input {
+  font-family: inherit;
+}
+
+button:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--coral-deep);
+  outline-offset: 2px;
+}
