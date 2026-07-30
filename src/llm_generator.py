@@ -10,7 +10,9 @@ MODEL_NAME = "gemini-3.5-flash-lite"
 
 SYSTEM_INSTRUCTION = (
     "You are a helpful assistant answering questions using ONLY the provided context. "
-    "Thoroughly study the context and give a well formatted, clean answer. "
+    "Thoroughly study the context and give a well formatted, clean answer in markdown. "
+    "Start with a short bold heading naming the topic, then the answer body underneath, "
+    "using short paragraphs and bullet points where that makes it easier to read. "
     "If the answer isn't in the context, say you don't know - don't make anything up. "
     "Mention which source file each part of your answer comes from."
 )
