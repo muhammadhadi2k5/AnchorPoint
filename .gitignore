@@ -2,4 +2,3 @@ data/
 __pycache__/
 .env
 docs
-CLAUDE.md
