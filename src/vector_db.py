@@ -19,6 +19,17 @@ def make_doc_id(doc):
     return str(uuid.UUID(hex=md5_hash))
 
 
+# standalone helper (not a VectorDB method) since VectorDB's constructor
+# always creates the collection if missing, which would defeat deleting it
+def delete_collection(collection_name, host="localhost", port=6333):
+    try:
+        client = QdrantClient(host=host, port=port)
+        if client.collection_exists(collection_name):
+            client.delete_collection(collection_name)
+    except Exception:
+        pass
+
+
 # qdrant points don't come back in the shape the rest of my code expects,
 # reshape into {ids, documents, metadatas, embeddings} everywhere
 def _points_to_result(points):

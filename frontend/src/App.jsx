@@ -4,7 +4,14 @@ import IngestionLoadingView from './views/IngestionLoadingView.jsx'
 import ChatView from './views/ChatView.jsx'
 import Sidebar from './components/Sidebar.jsx'
 import QuotaModal from './components/QuotaModal.jsx'
-import { addDocuments, createDataset, listDatasets } from './api.js'
+import {
+  addDocuments,
+  createDataset,
+  deleteDataset,
+  getIngestStatus,
+  listDatasets,
+  updateDataset,
+} from './api.js'
 import './App.css'
 
 export default function App() {
@@ -30,14 +37,40 @@ export default function App() {
     setView('chat')
   }
 
-  const handleSelectDataset = (id) => {
+  // ingestion runs in the background, so a dataset that's still ingesting
+  // needs to land back on the loading screen instead of jumping to chat
+  const handleSelectDataset = async (id) => {
     setDatasetId(id)
-    setView('chat')
+    try {
+      const status = await getIngestStatus(id)
+      setView(status.done ? 'chat' : 'loading')
+    } catch {
+      setView('chat')
+    }
   }
 
   const handleNewDataset = () => {
     setDatasetId(null)
     setView('home')
+  }
+
+  const handleRenameDataset = async (id, name) => {
+    await updateDataset(id, { name })
+    refreshDatasets()
+  }
+
+  const handlePinDataset = async (id, pinned) => {
+    await updateDataset(id, { pinned })
+    refreshDatasets()
+  }
+
+  const handleDeleteDataset = async (id) => {
+    await deleteDataset(id)
+    if (id === datasetId) {
+      setDatasetId(null)
+      setView('home')
+    }
+    refreshDatasets()
   }
 
   // reuses the same full ingestion loading screen as the initial upload,
@@ -54,6 +87,9 @@ export default function App() {
         activeDatasetId={datasetId}
         onSelectDataset={handleSelectDataset}
         onNewDataset={handleNewDataset}
+        onRenameDataset={handleRenameDataset}
+        onPinDataset={handlePinDataset}
+        onDeleteDataset={handleDeleteDataset}
       />
 
       <main className="app-main">

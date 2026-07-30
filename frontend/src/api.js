@@ -54,6 +54,20 @@ export async function addDocuments(datasetId, files) {
   return response.json()
 }
 
+export async function updateDataset(datasetId, updates) {
+  const response = await request(`/datasets/${datasetId}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(updates),
+  })
+  return response.json()
+}
+
+export async function deleteDataset(datasetId) {
+  const response = await request(`/datasets/${datasetId}`, { method: 'DELETE' })
+  return response.json()
+}
+
 export async function getIngestStatus(datasetId) {
   const response = await request(`/datasets/${datasetId}/ingest-status`)
   return response.json()

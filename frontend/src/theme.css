@@ -52,3 +52,26 @@ input:focus-visible {
   outline: 2px solid var(--coral-deep);
   outline-offset: 2px;
 }
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--sand-line) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--sand-line);
+  border-radius: 999px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--coral);
+}

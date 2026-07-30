@@ -3,6 +3,7 @@ import threading
 from document_loader import process_all_documents
 from chunker import chunking
 from embedding_manager import EmbeddingManager
+from rate_limit_guard import QuotaExceededError
 from vector_db import VectorDB, make_doc_id
 
 from api import db
@@ -51,6 +52,13 @@ def _run(dataset_id):
             vector_db.add_documents(new_chunks, embeddings)
 
         set_progress(dataset_id, "All set, opening your chat", done=True)
+    except QuotaExceededError:
+        set_progress(
+            dataset_id,
+            "Something went wrong during ingestion.",
+            done=True,
+            error="Shit! You blew through your free embeddings quota, try again later.",
+        )
     except Exception as e:
         set_progress(dataset_id, "Something went wrong during ingestion.", done=True, error=str(e))
 

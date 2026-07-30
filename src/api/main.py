@@ -7,8 +7,9 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
 from api import chat, db, ingest
-from api.progress import get_progress
+from api.progress import clear_progress, get_progress
 from rate_limit_guard import QuotaExceededError
+from vector_db import delete_collection
 
 db.init_db()
 
@@ -55,6 +56,11 @@ class MessageIn(BaseModel):
     content: str
 
 
+class DatasetUpdate(BaseModel):
+    name: str | None = None
+    pinned: bool | None = None
+
+
 @app.post("/datasets")
 def create_dataset(
     request: Request,
@@ -78,6 +84,27 @@ def list_datasets(request: Request, response: Response):
 @app.get("/datasets/{dataset_id}")
 def get_dataset(dataset_id: str):
     return _require_dataset(dataset_id)
+
+
+@app.patch("/datasets/{dataset_id}")
+def update_dataset(dataset_id: str, body: DatasetUpdate):
+    _require_dataset(dataset_id)
+    if body.name is not None:
+        name = body.name.strip()
+        if name:
+            db.rename_dataset(dataset_id, name)
+    if body.pinned is not None:
+        db.set_pinned(dataset_id, body.pinned)
+    return db.get_dataset(dataset_id)
+
+
+@app.delete("/datasets/{dataset_id}")
+def delete_dataset(dataset_id: str):
+    _require_dataset(dataset_id)
+    delete_collection(db.collection_name_for(dataset_id))
+    db.delete_dataset(dataset_id)
+    clear_progress(dataset_id)
+    return {"status": "deleted"}
 
 
 @app.get("/datasets/{dataset_id}/files")

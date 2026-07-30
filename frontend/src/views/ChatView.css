@@ -61,6 +61,33 @@
   border-bottom-left-radius: 4px;
 }
 
+.loading-bubble {
+  display: flex;
+  align-items: center;
+  padding: 14px 16px;
+}
+
+.thinking-spinner {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2.5px solid var(--sand-line);
+  border-top-color: var(--coral);
+  animation: thinking-spin 0.7s linear infinite;
+}
+
+@keyframes thinking-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .thinking-spinner {
+    animation: none;
+  }
+}
+
 .citation-row {
   margin-top: 10px;
   display: flex;

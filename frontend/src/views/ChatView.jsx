@@ -69,35 +69,53 @@ export default function ChatView({ datasetId, onQuotaExceeded, onAddDocuments })
         </button>
       </div>
 
-      <div className="chat-messages">
-        {messages.map((message, index) => (
-          <div key={message.id ?? index} className={`bubble ${message.role}`}>
-            {message.content}
-            {message.citations && message.citations.length > 0 && (
-              <div className="citation-row">
-                <span className="citation-label">Sources</span>
-                {message.citations.map((citation, i) => (
-                  <button
-                    type="button"
-                    key={i}
-                    className="citation-tag"
-                    onClick={() => setActiveCitation(citation)}
-                  >
-                    {i + 1}
-                  </button>
-                ))}
+      <div className="chat-scroll-area">
+        <div className="chat-messages">
+          {messages.map((message, index) => (
+            <div key={message.id ?? index} className={`bubble ${message.role}`}>
+              {message.role === 'assistant' ? (
+                <div className="markdown-body">
+                  <ReactMarkdown>{message.content}</ReactMarkdown>
+                </div>
+              ) : (
+                message.content
+              )}
+              {message.citations && message.citations.length > 0 && (
+                <div className="citation-row">
+                  <span className="citation-label">Sources</span>
+                  {message.citations.map((citation, i) => (
+                    <button
+                      type="button"
+                      key={i}
+                      className="citation-tag"
+                      onClick={() => setActiveCitation(citation)}
+                    >
+                      {i + 1}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+
+          {streamingText !== null && (
+            streamingText === '' ? (
+              <div className="bubble assistant loading-bubble">
+                <span className="thinking-spinner" aria-label="Thinking" />
               </div>
-            )}
-          </div>
-        ))}
+            ) : (
+              <div className="bubble assistant">
+                <div className="markdown-body">
+                  <ReactMarkdown>{streamingText}</ReactMarkdown>
+                </div>
+              </div>
+            )
+          )}
 
-        {streamingText !== null && (
-          <div className="bubble assistant">{streamingText}</div>
-        )}
+          {connectionError && <div className="inline-error">{connectionError}</div>}
 
-        {connectionError && <div className="inline-error">{connectionError}</div>}
-
-        <div ref={bottomRef} />
+          <div ref={bottomRef} />
+        </div>
       </div>
 
       <div className="chat-input-row">

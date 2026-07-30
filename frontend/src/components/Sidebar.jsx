@@ -1,6 +1,55 @@
+import { useEffect, useRef, useState } from 'react'
 import './Sidebar.css'
 
-export default function Sidebar({ datasets, activeDatasetId, onSelectDataset, onNewDataset }) {
+export default function Sidebar({
+  datasets,
+  activeDatasetId,
+  onSelectDataset,
+  onNewDataset,
+  onRenameDataset,
+  onPinDataset,
+  onDeleteDataset,
+}) {
+  const [menu, setMenu] = useState(null) // { id, x, y, confirmDelete }
+  const [renamingId, setRenamingId] = useState(null)
+  const [renameValue, setRenameValue] = useState('')
+  const renameInputRef = useRef(null)
+
+  useEffect(() => {
+    if (!menu) return undefined
+    const close = () => setMenu(null)
+    window.addEventListener('click', close)
+    window.addEventListener('contextmenu', close)
+    return () => {
+      window.removeEventListener('click', close)
+      window.removeEventListener('contextmenu', close)
+    }
+  }, [menu])
+
+  useEffect(() => {
+    if (renamingId) renameInputRef.current?.focus()
+  }, [renamingId])
+
+  const openMenu = (event, dataset) => {
+    event.preventDefault()
+    event.stopPropagation()
+    setMenu({ id: dataset.id, x: event.clientX, y: event.clientY, confirmDelete: false })
+  }
+
+  const menuDataset = menu ? datasets.find((d) => d.id === menu.id) : null
+
+  const startRename = (dataset) => {
+    setRenamingId(dataset.id)
+    setRenameValue(dataset.name)
+    setMenu(null)
+  }
+
+  const commitRename = (id) => {
+    const trimmed = renameValue.trim()
+    setRenamingId(null)
+    if (trimmed) onRenameDataset(id, trimmed)
+  }
+
   return (
     <aside className="sidebar">
       <button type="button" className="sidebar-new" onClick={onNewDataset}>
@@ -12,17 +61,60 @@ export default function Sidebar({ datasets, activeDatasetId, onSelectDataset, on
       ) : (
         <ul className="sidebar-list">
           {datasets.map((dataset) => (
-            <li key={dataset.id}>
-              <button
-                type="button"
-                className={`sidebar-item${dataset.id === activeDatasetId ? ' active' : ''}`}
-                onClick={() => onSelectDataset(dataset.id)}
-              >
-                {dataset.name}
-              </button>
+            <li key={dataset.id} onContextMenu={(e) => openMenu(e, dataset)}>
+              {renamingId === dataset.id ? (
+                <input
+                  ref={renameInputRef}
+                  className="sidebar-rename-input"
+                  value={renameValue}
+                  onChange={(e) => setRenameValue(e.target.value)}
+                  onBlur={() => commitRename(dataset.id)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') commitRename(dataset.id)
+                    if (e.key === 'Escape') setRenamingId(null)
+                  }}
+                />
+              ) : (
+                <button
+                  type="button"
+                  className={`sidebar-item${dataset.id === activeDatasetId ? ' active' : ''}`}
+                  onClick={() => onSelectDataset(dataset.id)}
+                >
+                  {dataset.pinned ? <span className="pin-dot" aria-hidden="true" /> : null}
+                  <span className="sidebar-item-name">{dataset.name}</span>
+                </button>
+              )}
             </li>
           ))}
         </ul>
+      )}
+
+      {menu && menuDataset && (
+        <div className="context-menu" style={{ top: menu.y, left: menu.x }} onClick={(e) => e.stopPropagation()}>
+          {menu.confirmDelete ? (
+            <>
+              <p className="context-menu-confirm-text">Delete this dataset? This can't be undone.</p>
+              <button type="button" className="context-menu-danger" onClick={() => { onDeleteDataset(menu.id); setMenu(null) }}>
+                Delete
+              </button>
+              <button type="button" onClick={() => setMenu(null)}>Cancel</button>
+            </>
+          ) : (
+            <>
+              <button type="button" onClick={() => { onPinDataset(menu.id, !menuDataset.pinned); setMenu(null) }}>
+                {menuDataset.pinned ? 'Unpin' : 'Pin to top'}
+              </button>
+              <button type="button" onClick={() => startRename(menuDataset)}>Rename</button>
+              <button
+                type="button"
+                className="context-menu-danger"
+                onClick={() => setMenu((current) => ({ ...current, confirmDelete: true }))}
+              >
+                Delete
+              </button>
+            </>
+          )}
+        </div>
       )}
     </aside>
   )

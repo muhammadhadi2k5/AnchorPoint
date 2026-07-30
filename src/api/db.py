@@ -1,4 +1,5 @@
 import json
+import shutil
 import sqlite3
 import uuid
 from datetime import datetime, timezone
@@ -16,7 +17,8 @@ CREATE TABLE IF NOT EXISTS datasets (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
     visitor_id TEXT NOT NULL,
-    created_at TEXT NOT NULL
+    created_at TEXT NOT NULL,
+    pinned INTEGER NOT NULL DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS messages (
@@ -46,9 +48,18 @@ def init_db():
     conn = get_connection()
     try:
         conn.executescript(SCHEMA)
+        _ensure_column(conn, "datasets", "pinned", "INTEGER NOT NULL DEFAULT 0")
         conn.commit()
     finally:
         conn.close()
+
+
+# lets older databases (created before a column existed) pick it up without
+# needing a real migration system for a single-user project
+def _ensure_column(conn, table, column, definition):
+    existing = {row[1] for row in conn.execute(f"PRAGMA table_info({table})")}
+    if column not in existing:
+        conn.execute(f"ALTER TABLE {table} ADD COLUMN {column} {definition}")
 
 
 # collection name is derived from the id rather than stored, one less
@@ -85,12 +96,46 @@ def list_datasets(visitor_id):
     conn = get_connection()
     try:
         rows = conn.execute(
-            "SELECT * FROM datasets WHERE visitor_id = ? ORDER BY created_at DESC",
+            "SELECT * FROM datasets WHERE visitor_id = ? ORDER BY pinned DESC, created_at DESC",
             (visitor_id,),
         ).fetchall()
         return [dict(row) for row in rows]
     finally:
         conn.close()
+
+
+def rename_dataset(dataset_id, name):
+    conn = get_connection()
+    try:
+        conn.execute("UPDATE datasets SET name = ? WHERE id = ?", (name, dataset_id))
+        conn.commit()
+    finally:
+        conn.close()
+    return get_dataset(dataset_id)
+
+
+def set_pinned(dataset_id, pinned):
+    conn = get_connection()
+    try:
+        conn.execute("UPDATE datasets SET pinned = ? WHERE id = ?", (1 if pinned else 0, dataset_id))
+        conn.commit()
+    finally:
+        conn.close()
+    return get_dataset(dataset_id)
+
+
+# removes the dataset's row, its messages, and its on-disk files. the
+# caller is responsible for dropping the matching qdrant collection, since
+# that lives outside sqlite
+def delete_dataset(dataset_id):
+    conn = get_connection()
+    try:
+        conn.execute("DELETE FROM messages WHERE dataset_id = ?", (dataset_id,))
+        conn.execute("DELETE FROM datasets WHERE id = ?", (dataset_id,))
+        conn.commit()
+    finally:
+        conn.close()
+    shutil.rmtree(dataset_dir_for(dataset_id), ignore_errors=True)
 
 
 def get_dataset(dataset_id):

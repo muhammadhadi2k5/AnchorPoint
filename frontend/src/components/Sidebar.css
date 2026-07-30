@@ -43,6 +43,9 @@
 
 .sidebar-item {
   width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 7px;
   text-align: left;
   font-size: 13.5px;
   color: var(--ink);
@@ -51,9 +54,6 @@
   border-radius: 8px;
   padding: 9px 10px;
   cursor: pointer;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .sidebar-item:hover {
@@ -63,4 +63,68 @@
 .sidebar-item.active {
   background: var(--sand);
   font-weight: 600;
+}
+
+.sidebar-item-name {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.pin-dot {
+  flex-shrink: 0;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--coral);
+}
+
+.sidebar-rename-input {
+  width: 100%;
+  font-size: 13.5px;
+  color: var(--ink);
+  background: var(--white);
+  border: 1px solid var(--coral);
+  border-radius: 8px;
+  padding: 8px 9px;
+}
+
+.context-menu {
+  position: fixed;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  min-width: 150px;
+  background: var(--white);
+  border: 1px solid var(--sand-line);
+  border-radius: 10px;
+  padding: 6px;
+  box-shadow: 0 8px 24px rgba(43, 35, 24, 0.14);
+  gap: 2px;
+}
+
+.context-menu button {
+  text-align: left;
+  font-size: 13px;
+  color: var(--ink);
+  background: none;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 10px;
+  cursor: pointer;
+}
+
+.context-menu button:hover {
+  background: var(--cream-2);
+}
+
+.context-menu-danger {
+  color: var(--error);
+}
+
+.context-menu-confirm-text {
+  margin: 4px 6px 6px;
+  font-size: 12px;
+  color: var(--ink-soft);
+  max-width: 170px;
 }
