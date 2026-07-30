@@ -4,9 +4,12 @@ import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 
-# lives next to the doc cache and rate limit files, already gitignored via data/
-DB_PATH = Path("data/anchorpoint.db")
-DATASETS_DIR = Path("data/datasets")
+# anchored to the project root via this file's own location rather than a
+# relative path, so it lands in the same data/ the CLI scripts use regardless
+# of whatever directory the API server happens to be launched from
+_PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+DB_PATH = _PROJECT_ROOT / "data" / "anchorpoint.db"
+DATASETS_DIR = _PROJECT_ROOT / "data" / "datasets"
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS datasets (

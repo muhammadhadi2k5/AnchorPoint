@@ -42,8 +42,10 @@ def load_pdf(file_path, min_chars_per_page=20, on_progress=None):
 
     return documents
 
-# cache so it doesnt re-OCR the same pdf every single run
-CACHE_DIR = Path("data/.doc_cache")
+# cache so it doesnt re-OCR the same pdf every single run. anchored to the
+# project root via this file's location rather than a bare relative path, so
+# it lands in the same place regardless of the caller's working directory
+CACHE_DIR = Path(__file__).resolve().parent.parent / "data" / ".doc_cache"
 
 def get_file_hash(file_path):
     return hashlib.md5(Path(file_path).read_bytes()).hexdigest()

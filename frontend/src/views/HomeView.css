@@ -1,0 +1,127 @@
+.home-view {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 32px;
+  padding: 48px 24px;
+  text-align: center;
+}
+
+.greeting {
+  font-family: 'ENTRA', sans-serif;
+  font-weight: 700;
+  font-size: clamp(28px, 5vw, 44px);
+  letter-spacing: 0.01em;
+  color: var(--ink);
+  margin: 0;
+  text-wrap: balance;
+}
+
+.home-form {
+  width: 100%;
+  max-width: 440px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
+}
+
+.name-label {
+  font-size: 12.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  text-align: left;
+}
+
+.name-field {
+  font-size: 15px;
+  padding: 12px 18px;
+  border-radius: 999px;
+  border: 1px solid var(--sand-line);
+  background: var(--white);
+  color: var(--ink);
+}
+
+.name-field::placeholder {
+  color: var(--ink-soft);
+}
+
+.drop-zone {
+  margin-top: 8px;
+  padding: 28px 20px;
+  border: 1.5px dashed var(--sand-line);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.drop-zone.dragging {
+  border-color: var(--coral);
+  background: var(--cream-2);
+}
+
+.drop-text {
+  margin: 0 0 4px;
+  font-size: 14.5px;
+  color: var(--ink);
+}
+
+.drop-hint {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--ink-soft);
+}
+
+.file-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+
+.file-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  color: var(--ink);
+  background: var(--sand);
+  border-radius: 999px;
+  padding: 6px 8px 6px 14px;
+}
+
+.file-chip-remove {
+  border: none;
+  background: none;
+  color: var(--ink-soft);
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 2px 4px;
+}
+
+.cta-button {
+  margin-top: 8px;
+  font-weight: 600;
+  font-size: 15px;
+  border: none;
+  border-radius: 999px;
+  padding: 13px 24px;
+  color: var(--white);
+  background: var(--coral);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.cta-button:hover:not(:disabled) {
+  background: var(--coral-deep);
+}
+
+.cta-button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}

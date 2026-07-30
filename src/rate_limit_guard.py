@@ -15,7 +15,10 @@ class RateLimitGuard:
     def __init__(self, name, daily_limit=500):
         self.name = name
         self.daily_limit = daily_limit
-        self.state_file = Path(f"data/.rate_limit_{name}.json")
+        # anchored to the project root so CLI and API share the same quota
+        # state file regardless of the caller's working directory
+        project_root = Path(__file__).resolve().parent.parent
+        self.state_file = project_root / "data" / f".rate_limit_{name}.json"
 
     def _load_state(self):
         if not self.state_file.exists():
