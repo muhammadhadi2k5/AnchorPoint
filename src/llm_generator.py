@@ -52,11 +52,23 @@ class Generator:
             parts.append(f"[Source {i}: {source}]\n{result['text']}")
         return "\n\n".join(parts)
 
+    # turns [{"role": "user"/"assistant", "content": "..."}] into Gemini's
+    # native multi-turn Content list, "assistant" -> "model" is Gemini's own naming.
+    # history=None (or []) collapses back to exactly one turn, same as before
+    # this existed - safe to rip out or disable upstream without this breaking
+    def _build_contents(self, history, prompt):
+        contents = []
+        for turn in history or []:
+            role = "user" if turn["role"] == "user" else "model"
+            contents.append(types.Content(role=role, parts=[types.Part(text=turn["content"])]))
+        contents.append(types.Content(role="user", parts=[types.Part(text=prompt)]))
+        return contents
+
     # yields text as it streams in instead of returning the whole answer at
     # once - makes long answers feel way less laggy
-    def generate_answer(self, query, results):
+    def generate_answer(self, query, results, history=None):
         if not results:
-            yield "I don't have any relevant information to answer that question."
+            yield "I couldn't find anything about that in these documents."
             return
 
         context = self._format_context(results)
@@ -68,7 +80,7 @@ class Generator:
         try:
             stream = self.client.models.generate_content_stream(
                 model=MODEL_NAME,
-                contents=prompt,
+                contents=self._build_contents(history, prompt),
                 config=types.GenerateContentConfig(
                     system_instruction=SYSTEM_INSTRUCTION,
                 ),
