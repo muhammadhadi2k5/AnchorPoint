@@ -12,6 +12,8 @@ export default function Sidebar({
   onDeleteDataset,
   collapsed,
   onToggleCollapsed,
+  userEmail,
+  onLogout,
 }) {
   const [menu, setMenu] = useState(null) // { id, x, y, confirmDelete }
   const [renamingId, setRenamingId] = useState(null)
@@ -105,6 +107,13 @@ export default function Sidebar({
           ))}
         </ul>
       )}
+
+      <div className="sidebar-footer">
+        <span className="sidebar-user-email">{userEmail}</span>
+        <button type="button" className="sidebar-logout" onClick={onLogout} title="Log out">
+          Log out
+        </button>
+      </div>
 
       {menu && menuDataset && (
         <div className="context-menu" style={{ top: menu.y, left: menu.x }} onClick={(e) => e.stopPropagation()}>

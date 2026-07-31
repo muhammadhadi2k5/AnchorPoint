@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
-from api import auth, chat, db, ingest
+from api import auth, chat, db, email, ingest
 from api.progress import clear_progress, get_progress
 from rate_limit_guard import QuotaExceededError
 from vector_db import delete_collection

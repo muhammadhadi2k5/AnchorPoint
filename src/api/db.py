@@ -1,4 +1,5 @@
 import json
+import secrets
 import shutil
 import sqlite3
 import uuid
@@ -34,7 +35,8 @@ CREATE TABLE IF NOT EXISTS users (
     id TEXT PRIMARY KEY,
     email TEXT NOT NULL UNIQUE COLLATE NOCASE,
     password_hash TEXT NOT NULL,
-    created_at TEXT NOT NULL
+    created_at TEXT NOT NULL,
+    email_verified INTEGER NOT NULL DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS sessions (
@@ -42,6 +44,18 @@ CREATE TABLE IF NOT EXISTS sessions (
     user_id TEXT NOT NULL REFERENCES users(id),
     created_at TEXT NOT NULL,
     expires_at TEXT NOT NULL
+);
+
+-- shared by email verification and password reset - one 6-digit code per
+-- purpose, short-lived, single-use
+CREATE TABLE IF NOT EXISTS verification_codes (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL REFERENCES users(id),
+    purpose TEXT NOT NULL CHECK (purpose IN ('verify_email', 'reset_password')),
+    code TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    expires_at TEXT NOT NULL,
+    used INTEGER NOT NULL DEFAULT 0
 );
 """
 
@@ -63,6 +77,7 @@ def init_db():
     try:
         conn.executescript(SCHEMA)
         _ensure_column(conn, "datasets", "pinned", "INTEGER NOT NULL DEFAULT 0")
+        _ensure_column(conn, "users", "email_verified", "INTEGER NOT NULL DEFAULT 0")
         conn.commit()
     finally:
         conn.close()
@@ -311,5 +326,67 @@ def claim_datasets(old_visitor_id, user_id):
             (user_id, old_visitor_id),
         )
         conn.commit()
+    finally:
+        conn.close()
+
+
+def mark_email_verified(user_id):
+    conn = get_connection()
+    try:
+        conn.execute("UPDATE users SET email_verified = 1 WHERE id = ?", (user_id,))
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def update_password(user_id, password_hash):
+    conn = get_connection()
+    try:
+        conn.execute("UPDATE users SET password_hash = ? WHERE id = ?", (password_hash, user_id))
+        conn.commit()
+    finally:
+        conn.close()
+
+
+# invalidates any still-unused codes for the same user+purpose first, so a
+# resend can't leave multiple valid codes floating around at once
+def create_verification_code(user_id, purpose, ttl_minutes=15):
+    code = f"{secrets.randbelow(1_000_000):06d}"
+    expires_at = (datetime.now(timezone.utc) + timedelta(minutes=ttl_minutes)).isoformat()
+    conn = get_connection()
+    try:
+        conn.execute(
+            "UPDATE verification_codes SET used = 1 WHERE user_id = ? AND purpose = ? AND used = 0",
+            (user_id, purpose),
+        )
+        conn.execute(
+            """INSERT INTO verification_codes (id, user_id, purpose, code, created_at, expires_at)
+               VALUES (?, ?, ?, ?, ?, ?)""",
+            (uuid.uuid4().hex, user_id, purpose, code, _now(), expires_at),
+        )
+        conn.commit()
+    finally:
+        conn.close()
+    return code
+
+
+# checks the code and, if valid, consumes it in the same call - a code can
+# only ever be used once
+def consume_verification_code(user_id, purpose, code):
+    conn = get_connection()
+    try:
+        row = conn.execute(
+            """SELECT id, expires_at FROM verification_codes
+               WHERE user_id = ? AND purpose = ? AND code = ? AND used = 0
+               ORDER BY created_at DESC LIMIT 1""",
+            (user_id, purpose, code),
+        ).fetchone()
+        if not row:
+            return False
+        if datetime.fromisoformat(row["expires_at"]) < datetime.now(timezone.utc):
+            return False
+        conn.execute("UPDATE verification_codes SET used = 1 WHERE id = ?", (row["id"],))
+        conn.commit()
+        return True
     finally:
         conn.close()
