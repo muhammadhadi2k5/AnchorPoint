@@ -64,6 +64,8 @@ export default function ChatView({ datasetId, onQuotaExceeded, onAddDocuments })
 
   return (
     <div className="chat-view">
+      <div className="chat-ambient-wash" aria-hidden="true" />
+
       <div className="chat-header">
         <button type="button" className="chat-library-toggle" onClick={() => setShowLibrary(true)}>
           Documents

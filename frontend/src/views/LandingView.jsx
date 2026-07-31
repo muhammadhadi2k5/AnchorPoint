@@ -52,14 +52,32 @@ function RevealStep({ step, index }) {
 
 export default function LandingView({ onSignIn }) {
   const howItWorksRef = useRef(null)
+  const [howActive, setHowActive] = useState(false)
 
   const scrollToHowItWorks = () => {
     howItWorksRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
 
+  // the how-it-works section switches to full coral once it's substantially
+  // in view, so the horizon wave at the bottom of the hero reads as the
+  // start of that same coral field rather than a one-off decoration - and
+  // it flips back on scroll-up so the transition works in both directions
+  useEffect(() => {
+    const el = howItWorksRef.current
+    if (!el) return undefined
+    const observer = new IntersectionObserver(
+      ([entry]) => setHowActive(entry.isIntersecting),
+      { threshold: 0.2 }
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
+
   return (
     <div className="landing-view">
       <section className="landing-hero">
+        <div className="landing-wave" aria-hidden="true" />
+
         <div className="landing-hero-content">
           <img src={logoIcon} className="landing-logo" alt="" />
           <h1 className="landing-word">
@@ -78,7 +96,7 @@ export default function LandingView({ onSignIn }) {
         </button>
       </section>
 
-      <section className="landing-how" ref={howItWorksRef}>
+      <section className={`landing-how${howActive ? ' how-active' : ''}`} ref={howItWorksRef}>
         <p className="landing-how-eyebrow">The journey</p>
         <h2 className="landing-how-title">From documents to answers</h2>
 

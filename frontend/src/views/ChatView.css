@@ -1,9 +1,21 @@
 .chat-view {
+  position: relative;
   height: 100%;
   display: flex;
   flex-direction: column;
   padding: 24px 0;
   gap: 12px;
+}
+
+/* ambient wash - strongest at the top, fading to nothing by mid-scroll.
+   negative z-index so it sits behind the header/messages/input without
+   needing to reposition every sibling in this fairly dense layout */
+.chat-ambient-wash {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(225, 90, 60, 0.24) 0%, rgba(225, 90, 60, 0.05) 32%, rgba(225, 90, 60, 0) 55%);
+  z-index: -1;
+  pointer-events: none;
 }
 
 .chat-header {
@@ -53,9 +65,12 @@
   max-width: 80%;
 }
 
+/* peach instead of sand - sand reads too washed-out against the ambient
+   wash's strongest point near the top of the pane */
 .bubble.user {
   align-self: flex-end;
-  background: var(--sand);
+  background: var(--peach);
+  border: 1px solid rgba(225, 90, 60, 0.2);
   color: var(--ink);
   border-bottom-right-radius: 4px;
   white-space: pre-wrap;

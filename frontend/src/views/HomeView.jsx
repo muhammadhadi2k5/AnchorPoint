@@ -90,6 +90,8 @@ export default function HomeView({ onStart, showBrandWord, userEmail }) {
 
   return (
     <div className="home-view">
+      <div className="home-hero-band" aria-hidden="true" />
+
       <div className="home-brand">
         <span className={`home-brand-word${showBrandWord ? '' : ' hidden'}`}>
           ANCHOR<span className="accent">POINT</span>

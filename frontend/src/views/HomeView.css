@@ -6,8 +6,22 @@
   align-items: center;
   justify-content: center;
   gap: 32px;
-  padding: 48px 24px;
+  padding: 96px 24px 48px;
   text-align: center;
+}
+
+/* dual-tone hero band - coral wedge across the top of the home canvas.
+   lives behind everything else via a negative z-index rather than
+   reordering/repositioning every sibling, since a negative z-index
+   descendant paints behind an ancestor's own in-flow content regardless
+   of DOM order */
+.home-hero-band {
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 40%;
+  background: var(--coral);
+  clip-path: polygon(0 0, 100% 0, 100% 74%, 0 100%);
+  z-index: -1;
 }
 
 .home-brand {
@@ -25,7 +39,7 @@
   font-weight: 700;
   font-size: 20px;
   letter-spacing: 0.02em;
-  color: var(--ink);
+  color: var(--white);
   opacity: 1;
   max-height: 28px;
   overflow: hidden;
@@ -40,7 +54,7 @@
 }
 
 .home-brand-word .accent {
-  color: var(--coral);
+  color: var(--ink);
 }
 
 .greeting {
