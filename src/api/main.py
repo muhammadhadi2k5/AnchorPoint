@@ -71,24 +71,42 @@ class LoginIn(BaseModel):
     password: str
 
 
+class VerifyEmailIn(BaseModel):
+    code: str
+
+
+class ForgotPasswordIn(BaseModel):
+    email: str
+
+
+class ResetPasswordIn(BaseModel):
+    email: str
+    code: str
+    new_password: str
+
+
 def _user_out(user):
-    return {"id": user["id"], "email": user["email"]}
+    return {"id": user["id"], "email": user["email"], "email_verified": bool(user["email_verified"])}
 
 
-# not wired into the dataset routes yet - additive only for now, so the
-# currently-working anonymous flow keeps working until the frontend actually
-# has somewhere to send someone to log in
+def _require_user(request: Request):
+    user_id = auth.get_current_user_id(request)
+    if not user_id:
+        raise HTTPException(status_code=401, detail="not_authenticated")
+    return user_id
+
+
 @app.post("/auth/signup")
 def signup(request: Request, response: Response, body: SignupIn):
-    email = body.email.strip().lower()
-    if "@" not in email or "." not in email.split("@")[-1]:
+    email_address = body.email.strip().lower()
+    if "@" not in email_address or "." not in email_address.split("@")[-1]:
         raise HTTPException(status_code=400, detail="invalid_email")
     if len(body.password) < 8:
         raise HTTPException(status_code=400, detail="password_too_short")
-    if db.get_user_by_email(email):
+    if db.get_user_by_email(email_address):
         raise HTTPException(status_code=409, detail="email_taken")
 
-    user = db.create_user(email, auth.hash_password(body.password))
+    user = db.create_user(email_address, auth.hash_password(body.password))
     session_id = db.create_session(user["id"])
     auth.set_session_cookie(response, session_id)
 
@@ -96,13 +114,16 @@ def signup(request: Request, response: Response, body: SignupIn):
     # over to the new account instead of getting stranded
     db.claim_datasets(request.cookies.get(VISITOR_COOKIE), user["id"])
 
+    code = db.create_verification_code(user["id"], "verify_email")
+    email.send_verification_email(email_address, code)
+
     return _user_out(user)
 
 
 @app.post("/auth/login")
 def login(request: Request, response: Response, body: LoginIn):
-    email = body.email.strip().lower()
-    user = db.get_user_by_email(email)
+    email_address = body.email.strip().lower()
+    user = db.get_user_by_email(email_address)
     if not user or not auth.verify_password(body.password, user["password_hash"]):
         raise HTTPException(status_code=401, detail="invalid_credentials")
 
@@ -128,6 +149,51 @@ def me(request: Request):
     if not user_id:
         raise HTTPException(status_code=401, detail="not_authenticated")
     return _user_out(db.get_user(user_id))
+
+
+@app.post("/auth/verify-email")
+def verify_email(request: Request, body: VerifyEmailIn):
+    user_id = _require_user(request)
+    if not db.consume_verification_code(user_id, "verify_email", body.code.strip()):
+        raise HTTPException(status_code=400, detail="invalid_code")
+    db.mark_email_verified(user_id)
+    return _user_out(db.get_user(user_id))
+
+
+@app.post("/auth/resend-verification")
+def resend_verification(request: Request):
+    user_id = _require_user(request)
+    user = db.get_user(user_id)
+    if user["email_verified"]:
+        return {"status": "already_verified"}
+    code = db.create_verification_code(user_id, "verify_email")
+    email.send_verification_email(user["email"], code)
+    return {"status": "sent"}
+
+
+# always returns the same generic response whether or not the email exists,
+# so this can't be used to probe which emails have accounts
+@app.post("/auth/forgot-password")
+def forgot_password(body: ForgotPasswordIn):
+    user = db.get_user_by_email(body.email.strip().lower())
+    if user:
+        code = db.create_verification_code(user["id"], "reset_password")
+        email.send_password_reset_email(user["email"], code)
+    return {"status": "sent"}
+
+
+@app.post("/auth/reset-password")
+def reset_password(response: Response, body: ResetPasswordIn):
+    user = db.get_user_by_email(body.email.strip().lower())
+    if not user or not db.consume_verification_code(user["id"], "reset_password", body.code.strip()):
+        raise HTTPException(status_code=400, detail="invalid_code")
+    if len(body.new_password) < 8:
+        raise HTTPException(status_code=400, detail="password_too_short")
+
+    db.update_password(user["id"], auth.hash_password(body.new_password))
+    session_id = db.create_session(user["id"])
+    auth.set_session_cookie(response, session_id)
+    return _user_out(db.get_user(user["id"]))
 
 
 @app.post("/datasets")

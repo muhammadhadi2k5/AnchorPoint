@@ -1,20 +1,52 @@
 import { useState } from 'react'
-import { login, signup } from '../api.js'
+import { forgotPassword, login, resetPassword, signup } from '../api.js'
 import './AuthView.css'
 
+function PasswordField({ id, value, onChange, placeholder, autoComplete }) {
+  const [visible, setVisible] = useState(false)
+
+  return (
+    <div className="auth-password-row">
+      <input
+        id={id}
+        type={visible ? 'text' : 'password'}
+        className="auth-field"
+        placeholder={placeholder}
+        autoComplete={autoComplete}
+        value={value}
+        onChange={onChange}
+      />
+      <button
+        type="button"
+        className="auth-password-toggle"
+        onClick={() => setVisible((current) => !current)}
+        aria-label={visible ? 'Hide password' : 'Show password'}
+        title={visible ? 'Hide password' : 'Show password'}
+      >
+        {visible ? 'Hide' : 'Show'}
+      </button>
+    </div>
+  )
+}
+
 export default function AuthView({ onAuthenticated }) {
+  // 'signin' | 'signup' | 'forgot' (ask for email) | 'reset' (code + new password)
   const [mode, setMode] = useState('signin')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [code, setCode] = useState('')
+  const [newPassword, setNewPassword] = useState('')
   const [error, setError] = useState(null)
+  const [info, setInfo] = useState(null)
   const [submitting, setSubmitting] = useState(false)
 
-  const switchMode = () => {
-    setMode((current) => (current === 'signup' ? 'signin' : 'signup'))
+  const switchMode = (next) => {
+    setMode(next)
     setError(null)
+    setInfo(null)
   }
 
-  const handleSubmit = async (event) => {
+  const handleSignInUp = async (event) => {
     event.preventDefault()
 
     if (!email.trim() || !password) {
@@ -42,12 +74,135 @@ export default function AuthView({ onAuthenticated }) {
     }
   }
 
+  const handleForgotSubmit = async (event) => {
+    event.preventDefault()
+    if (!email.trim()) {
+      setError('Enter your email to continue')
+      return
+    }
+
+    setError(null)
+    setSubmitting(true)
+    try {
+      await forgotPassword(email.trim())
+      setInfo(`If an account exists for ${email.trim()}, a code is on its way.`)
+      setMode('reset')
+    } catch {
+      setError('Something went wrong, try again')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const handleResetSubmit = async (event) => {
+    event.preventDefault()
+    if (!code.trim() || !newPassword) {
+      setError('Fill in both fields to continue')
+      return
+    }
+    if (newPassword.length < 8) {
+      setError('Password needs to be at least 8 characters')
+      return
+    }
+
+    setError(null)
+    setSubmitting(true)
+    try {
+      const user = await resetPassword(email.trim(), code.trim(), newPassword)
+      onAuthenticated(user)
+    } catch (err) {
+      if (err.type === 'invalid_code') setError('That code is wrong or has expired')
+      else if (err.type === 'password_too_short') setError('Password needs to be at least 8 characters')
+      else setError('Something went wrong, try again')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  if (mode === 'forgot') {
+    return (
+      <div className="auth-view">
+        <div className="auth-card">
+          <h1 className="auth-title">Reset your password</h1>
+          <p className="auth-subtitle">Enter your email and we'll send you a code.</p>
+
+          <form className="auth-form" onSubmit={handleForgotSubmit}>
+            <label className="auth-label" htmlFor="auth-email">Email</label>
+            <input
+              id="auth-email"
+              type="email"
+              className="auth-field"
+              placeholder="you@example.com"
+              autoComplete="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+
+            {error && <p className="auth-error">{error}</p>}
+
+            <button type="submit" className="auth-submit" disabled={submitting}>
+              {submitting ? 'One moment...' : 'Send code'}
+            </button>
+          </form>
+
+          <button type="button" className="auth-switch" onClick={() => switchMode('signin')}>
+            Back to sign in
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  if (mode === 'reset') {
+    return (
+      <div className="auth-view">
+        <div className="auth-card">
+          <h1 className="auth-title">Check your email</h1>
+          {info && <p className="auth-subtitle">{info}</p>}
+
+          <form className="auth-form" onSubmit={handleResetSubmit}>
+            <label className="auth-label" htmlFor="reset-code">Code</label>
+            <input
+              id="reset-code"
+              type="text"
+              inputMode="numeric"
+              maxLength={6}
+              className="auth-field"
+              placeholder="6-digit code"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+            />
+
+            <label className="auth-label" htmlFor="reset-password">New password</label>
+            <PasswordField
+              id="reset-password"
+              placeholder="At least 8 characters"
+              autoComplete="new-password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+            />
+
+            {error && <p className="auth-error">{error}</p>}
+
+            <button type="submit" className="auth-submit" disabled={submitting}>
+              {submitting ? 'One moment...' : 'Reset password'}
+            </button>
+          </form>
+
+          <button type="button" className="auth-switch" onClick={() => switchMode('signin')}>
+            Back to sign in
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="auth-view">
       <div className="auth-card">
         <h1 className="auth-title">{mode === 'signup' ? 'Create your account' : 'Welcome back'}</h1>
 
-        <form className="auth-form" onSubmit={handleSubmit}>
+        <form className="auth-form" onSubmit={handleSignInUp}>
           <label className="auth-label" htmlFor="auth-email">Email</label>
           <input
             id="auth-email"
@@ -60,15 +215,19 @@ export default function AuthView({ onAuthenticated }) {
           />
 
           <label className="auth-label" htmlFor="auth-password">Password</label>
-          <input
+          <PasswordField
             id="auth-password"
-            type="password"
-            className="auth-field"
             placeholder={mode === 'signup' ? 'At least 8 characters' : 'Your password'}
             autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
+
+          {mode === 'signin' && (
+            <button type="button" className="auth-forgot-link" onClick={() => switchMode('forgot')}>
+              Forgot password?
+            </button>
+          )}
 
           {error && <p className="auth-error">{error}</p>}
 
@@ -77,7 +236,7 @@ export default function AuthView({ onAuthenticated }) {
           </button>
         </form>
 
-        <button type="button" className="auth-switch" onClick={switchMode}>
+        <button type="button" className="auth-switch" onClick={() => switchMode(mode === 'signup' ? 'signin' : 'signup')}>
           {mode === 'signup' ? 'Already have an account? Sign in' : "Don't have an account? Create one"}
         </button>
       </div>

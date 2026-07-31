@@ -65,6 +65,38 @@ export async function getCurrentUser() {
   }
 }
 
+export async function verifyEmail(code) {
+  const response = await request('/auth/verify-email', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ code }),
+  })
+  return response.json()
+}
+
+export async function resendVerification() {
+  const response = await request('/auth/resend-verification', { method: 'POST' })
+  return response.json()
+}
+
+export async function forgotPassword(email) {
+  const response = await request('/auth/forgot-password', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email }),
+  })
+  return response.json()
+}
+
+export async function resetPassword(email, code, newPassword) {
+  const response = await request('/auth/reset-password', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, code, new_password: newPassword }),
+  })
+  return response.json()
+}
+
 export async function createDataset(name, files) {
   const form = new FormData()
   form.append('name', name)

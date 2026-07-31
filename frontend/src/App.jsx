@@ -4,6 +4,7 @@ import IngestionLoadingView from './views/IngestionLoadingView.jsx'
 import ChatView from './views/ChatView.jsx'
 import LandingView from './views/LandingView.jsx'
 import AuthView from './views/AuthView.jsx'
+import VerifyEmailView from './views/VerifyEmailView.jsx'
 import Sidebar from './components/Sidebar.jsx'
 import QuotaModal from './components/QuotaModal.jsx'
 import {
@@ -38,12 +39,16 @@ export default function App() {
 
   useEffect(() => {
     getCurrentUser().then((existingUser) => {
-      if (existingUser) {
-        setUser(existingUser)
+      if (!existingUser) {
+        setStage('landing')
+        return
+      }
+      setUser(existingUser)
+      if (existingUser.email_verified) {
         setStage('app')
         refreshDatasets()
       } else {
-        setStage('landing')
+        setStage('verify-email')
       }
     })
     // refreshDatasets is stable for the life of the component (defined
@@ -51,8 +56,20 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  // signup/login land here - only fully into the app once the email is
+  // verified, otherwise off to the code-entry screen first
   const handleAuthenticated = (authedUser) => {
     setUser(authedUser)
+    if (authedUser.email_verified) {
+      setStage('app')
+      refreshDatasets()
+    } else {
+      setStage('verify-email')
+    }
+  }
+
+  const handleVerified = (verifiedUser) => {
+    setUser(verifiedUser)
     setStage('app')
     refreshDatasets()
   }
@@ -145,6 +162,10 @@ export default function App() {
 
   if (stage === 'auth') {
     return <AuthView onAuthenticated={handleAuthenticated} />
+  }
+
+  if (stage === 'verify-email') {
+    return <VerifyEmailView email={user?.email} onVerified={handleVerified} />
   }
 
   return (
