@@ -1,5 +1,3 @@
-import uuid
-
 import httpx
 from fastapi import FastAPI, File, Form, HTTPException, Request, Response, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
@@ -25,18 +23,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# only read now, never set - was the anonymous pre-login scoping cookie,
+# kept solely so signup/login can claim whatever it was pointing at (see
+# db.claim_datasets). every dataset route now requires a real session instead
 VISITOR_COOKIE = "visitor_id"
-
-
-# anonymous id dropped in the browser, not real auth - see db.create_dataset
-def get_visitor_id(request: Request, response: Response):
-    visitor_id = request.cookies.get(VISITOR_COOKIE)
-    if not visitor_id:
-        visitor_id = uuid.uuid4().hex
-        response.set_cookie(
-            VISITOR_COOKIE, visitor_id, max_age=60 * 60 * 24 * 365, httponly=True, samesite="lax"
-        )
-    return visitor_id
 
 
 def _require_dataset(dataset_id):
@@ -199,21 +189,20 @@ def reset_password(response: Response, body: ResetPasswordIn):
 @app.post("/datasets")
 def create_dataset(
     request: Request,
-    response: Response,
     name: str = Form(...),
     files: list[UploadFile] = File(...),
 ):
-    visitor_id = get_visitor_id(request, response)
-    dataset = db.create_dataset(name, visitor_id)
+    user_id = _require_user(request)
+    dataset = db.create_dataset(name, user_id)
     _save_files(dataset["id"], files)
     ingest.start_ingestion(dataset["id"])
     return dataset
 
 
 @app.get("/datasets")
-def list_datasets(request: Request, response: Response):
-    visitor_id = get_visitor_id(request, response)
-    return db.list_datasets(visitor_id)
+def list_datasets(request: Request):
+    user_id = _require_user(request)
+    return db.list_datasets(user_id)
 
 
 @app.get("/datasets/{dataset_id}")
