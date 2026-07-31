@@ -66,7 +66,7 @@ export default function Sidebar({
       >
         <img src={logoIcon} className="sidebar-brand-icon" alt="" />
         <span className="sidebar-brand-word">
-          ANCHOR<span className="accent">POINT.</span>
+          ANCHOR<span className="accent">POINT</span>
         </span>
       </button>
 

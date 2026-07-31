@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 import './HomeView.css'
 
-const GREETINGS = [
+const BASE_GREETINGS = [
   'What are we looking into today?',
   'Ask your documents anything',
   "What's on your mind?",
@@ -10,8 +10,24 @@ const GREETINGS = [
   'Ready when you are',
 ]
 
-export default function HomeView({ onStart, showBrandWord }) {
-  const [greeting] = useState(() => GREETINGS[Math.floor(Math.random() * GREETINGS.length)])
+// best-effort only - there's no separate display name field, just a guess
+// from the email's local part (e.g. "muhammadhadi.2k5" -> "Muhammadhadi")
+function nameFromEmail(email) {
+  if (!email) return null
+  const local = email.split('@')[0]
+  const firstSegment = local.split(/[._-]/)[0].replace(/[0-9]+$/, '')
+  if (!firstSegment) return null
+  return firstSegment.charAt(0).toUpperCase() + firstSegment.slice(1)
+}
+
+export default function HomeView({ onStart, showBrandWord, userEmail }) {
+  const [greeting] = useState(() => {
+    const name = nameFromEmail(userEmail)
+    const options = name
+      ? [...BASE_GREETINGS, `Welcome back, ${name}`, `Good to see you, ${name}`]
+      : BASE_GREETINGS
+    return options[Math.floor(Math.random() * options.length)]
+  })
   const [name, setName] = useState('')
   const [files, setFiles] = useState([])
   const [isDragging, setIsDragging] = useState(false)
@@ -76,7 +92,7 @@ export default function HomeView({ onStart, showBrandWord }) {
     <div className="home-view">
       <div className="home-brand">
         <span className={`home-brand-word${showBrandWord ? '' : ' hidden'}`}>
-          ANCHOR<span className="accent">POINT.</span>
+          ANCHOR<span className="accent">POINT</span>
         </span>
       </div>
 

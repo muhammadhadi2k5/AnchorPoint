@@ -4,14 +4,21 @@
 }
 
 .landing-hero {
+  position: relative;
   min-height: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 14px;
-  padding: 48px 24px;
+  padding: 48px 24px 96px;
   text-align: center;
+}
+
+.landing-hero-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
 }
 
 .landing-logo {
@@ -57,7 +64,10 @@
 }
 
 .landing-scroll-hint {
-  margin-top: 48px;
+  position: absolute;
+  left: 50%;
+  bottom: 32px;
+  transform: translateX(-50%);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -90,32 +100,32 @@
 }
 
 .landing-how {
-  max-width: 720px;
+  max-width: 860px;
   margin: 0 auto;
-  padding: 80px 24px 120px;
+  padding: 100px 24px 140px;
   text-align: center;
 }
 
 .landing-how-eyebrow {
-  font-size: 11.5px;
-  letter-spacing: 0.1em;
+  font-size: 13px;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--coral-deep);
-  margin: 0 0 8px;
+  margin: 0 0 12px;
 }
 
 .landing-how-title {
   font-family: 'ENTRA', sans-serif;
   font-weight: 700;
-  font-size: clamp(26px, 4vw, 36px);
+  font-size: clamp(32px, 5vw, 46px);
   color: var(--ink);
-  margin: 0 0 56px;
+  margin: 0 0 80px;
 }
 
 .landing-steps {
   display: flex;
   flex-direction: column;
-  gap: 48px;
+  gap: 64px;
   text-align: left;
 }
 
@@ -132,31 +142,32 @@
 
 .step-number {
   font-family: 'ENTRA', sans-serif;
-  font-size: 13px;
+  font-size: 16px;
   color: var(--coral);
   letter-spacing: 0.05em;
 }
 
 .step-title {
-  font-size: 20px;
+  font-size: 26px;
   color: var(--ink);
-  margin: 4px 0 8px;
+  margin: 8px 0 12px;
 }
 
 .step-body {
-  font-size: 14.5px;
-  line-height: 1.6;
+  font-size: 17px;
+  line-height: 1.65;
   color: var(--ink-soft);
   margin: 0;
+  max-width: 620px;
 }
 
 .landing-cta {
-  margin-top: 64px;
+  margin-top: 80px;
   font-weight: 600;
-  font-size: 15px;
+  font-size: 16px;
   border: none;
   border-radius: 999px;
-  padding: 14px 32px;
+  padding: 16px 36px;
   color: var(--white);
   background: var(--coral);
   cursor: pointer;

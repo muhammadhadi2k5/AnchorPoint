@@ -195,7 +195,9 @@ export default function App() {
             onAddDocuments={handleAddDocuments}
           />
         )}
-        {view === 'home' && <HomeView onStart={handleStart} showBrandWord={sidebarCollapsed} />}
+        {view === 'home' && (
+          <HomeView onStart={handleStart} showBrandWord={sidebarCollapsed} userEmail={user?.email} />
+        )}
       </main>
 
       {quotaExceeded && <QuotaModal onClose={() => setQuotaExceeded(false)} />}

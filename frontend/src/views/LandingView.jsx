@@ -17,7 +17,7 @@ const STEPS = [
   },
   {
     title: 'Stay in control',
-    body: 'Rename, pin, or delete a dataset anytime. Nothing leaves your documents except what you ask about.',
+    body: 'Rename, pin, delete a dataset, or add documents to existing datasets anytime. Nothing changes in your datasets except what you ask for.',
   },
 ]
 
@@ -60,15 +60,17 @@ export default function LandingView({ onSignIn }) {
   return (
     <div className="landing-view">
       <section className="landing-hero">
-        <img src={logoIcon} className="landing-logo" alt="" />
-        <h1 className="landing-word">
-          ANCHOR<span className="accent">POINT</span>
-        </h1>
-        <p className="landing-tagline">Ask your documents anything</p>
+        <div className="landing-hero-content">
+          <img src={logoIcon} className="landing-logo" alt="" />
+          <h1 className="landing-word">
+             ANCHOR<span className="accent">POINT</span>
+          </h1>
+          <p className="landing-tagline">Ask your documents anything</p>
 
-        <button type="button" className="landing-signin" onClick={onSignIn}>
-          Sign in
-        </button>
+          <button type="button" className="landing-signin" onClick={onSignIn}>
+            Sign in
+          </button>
+        </div>
 
         <button type="button" className="landing-scroll-hint" onClick={scrollToHowItWorks}>
           <span>How it works</span>
