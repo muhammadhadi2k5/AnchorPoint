@@ -113,46 +113,34 @@
   }
 }
 
+/* full-bleed coral field below the horizon wave - the wave's fill and this
+   section's background are the same solid coral, so the line between them
+   is just the wave's shape, not a color change to notice */
 .landing-how {
+  background: var(--coral);
+  text-align: center;
+}
+
+.landing-how-inner {
   max-width: 860px;
   margin: 0 auto;
   padding: 140px 24px 140px;
-  text-align: center;
-  background: var(--cream);
-  transition: background-color 0.6s ease;
-}
-
-/* the section the horizon wave "extends" into on scroll - text flips to
-   the same white-on-coral pairing already used on our buttons, rather than
-   inventing a new contrast pair */
-.landing-how.how-active {
-  background: var(--coral);
 }
 
 .landing-how-eyebrow {
   font-size: 13px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--coral-deep);
-  margin: 0 0 12px;
-  transition: color 0.6s ease;
-}
-
-.landing-how.how-active .landing-how-eyebrow {
   color: var(--cream);
+  margin: 0 0 12px;
 }
 
 .landing-how-title {
   font-family: 'ENTRA', sans-serif;
   font-weight: 700;
   font-size: clamp(32px, 5vw, 46px);
-  color: var(--ink);
-  margin: 0 0 80px;
-  transition: color 0.6s ease;
-}
-
-.landing-how.how-active .landing-how-title {
   color: var(--white);
+  margin: 0 0 80px;
 }
 
 .landing-steps {
@@ -176,39 +164,26 @@
 .step-number {
   font-family: 'ENTRA', sans-serif;
   font-size: 16px;
-  color: var(--coral);
-  letter-spacing: 0.05em;
-  transition: color 0.6s ease;
-}
-
-.how-active .step-number {
   color: var(--ink);
+  letter-spacing: 0.05em;
 }
 
 .step-title {
   font-size: 26px;
   color: var(--ink);
   margin: 8px 0 12px;
-  transition: color 0.6s ease;
-}
-
-.how-active .step-title {
-  color: var(--white);
 }
 
 .step-body {
   font-size: 17px;
   line-height: 1.65;
-  color: var(--ink-soft);
+  color: rgba(255, 250, 242, 0.82);
   margin: 0;
   max-width: 620px;
-  transition: color 0.6s ease;
 }
 
-.how-active .step-body {
-  color: rgba(255, 250, 242, 0.82);
-}
-
+/* on the coral field, a coral button would vanish - white surface, same
+   pairing used for buttons that sit on coral elsewhere */
 .landing-cta {
   margin-top: 80px;
   font-weight: 600;
@@ -216,25 +191,13 @@
   border: none;
   border-radius: 999px;
   padding: 16px 36px;
-  color: var(--white);
-  background: var(--coral);
+  color: var(--coral-deep);
+  background: var(--white);
   cursor: pointer;
-  transition: background 0.2s ease, color 0.2s ease;
+  transition: background 0.15s ease;
 }
 
 .landing-cta:hover {
-  background: var(--coral-deep);
-}
-
-/* on the coral field, a coral button would vanish - invert to match the
-   same white-surface treatment already used for buttons sitting on coral
-   elsewhere in the dual-tone exploration */
-.how-active .landing-cta {
-  background: var(--white);
-  color: var(--coral-deep);
-}
-
-.how-active .landing-cta:hover {
   background: var(--cream);
 }
 
@@ -246,16 +209,6 @@
   .step {
     opacity: 1;
     transform: none;
-    transition: none;
-  }
-
-  .landing-how,
-  .landing-how-eyebrow,
-  .landing-how-title,
-  .step-number,
-  .step-title,
-  .step-body,
-  .landing-cta {
     transition: none;
   }
 }

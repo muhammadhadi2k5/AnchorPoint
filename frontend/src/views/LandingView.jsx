@@ -52,26 +52,10 @@ function RevealStep({ step, index }) {
 
 export default function LandingView({ onSignIn }) {
   const howItWorksRef = useRef(null)
-  const [howActive, setHowActive] = useState(false)
 
   const scrollToHowItWorks = () => {
     howItWorksRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
-
-  // the how-it-works section switches to full coral once it's substantially
-  // in view, so the horizon wave at the bottom of the hero reads as the
-  // start of that same coral field rather than a one-off decoration - and
-  // it flips back on scroll-up so the transition works in both directions
-  useEffect(() => {
-    const el = howItWorksRef.current
-    if (!el) return undefined
-    const observer = new IntersectionObserver(
-      ([entry]) => setHowActive(entry.isIntersecting),
-      { threshold: 0.2 }
-    )
-    observer.observe(el)
-    return () => observer.disconnect()
-  }, [])
 
   return (
     <div className="landing-view">
@@ -96,19 +80,21 @@ export default function LandingView({ onSignIn }) {
         </button>
       </section>
 
-      <section className={`landing-how${howActive ? ' how-active' : ''}`} ref={howItWorksRef}>
-        <p className="landing-how-eyebrow">The journey</p>
-        <h2 className="landing-how-title">From documents to answers</h2>
+      <section className="landing-how" ref={howItWorksRef}>
+        <div className="landing-how-inner">
+          <p className="landing-how-eyebrow">The journey</p>
+          <h2 className="landing-how-title">From documents to answers</h2>
 
-        <div className="landing-steps">
-          {STEPS.map((step, index) => (
-            <RevealStep key={step.title} step={step} index={index} />
-          ))}
+          <div className="landing-steps">
+            {STEPS.map((step, index) => (
+              <RevealStep key={step.title} step={step} index={index} />
+            ))}
+          </div>
+
+          <button type="button" className="landing-cta" onClick={onSignIn}>
+            Get started
+          </button>
         </div>
-
-        <button type="button" className="landing-cta" onClick={onSignIn}>
-          Get started
-        </button>
       </section>
     </div>
   )
