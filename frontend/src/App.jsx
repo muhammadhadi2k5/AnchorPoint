@@ -135,6 +135,18 @@ export default function App() {
     setView('loading')
   }
 
+  if (stage === 'checking') {
+    return <div className="app-shell app-shell-blank" />
+  }
+
+  if (stage === 'landing') {
+    return <LandingView onSignIn={() => setStage('auth')} />
+  }
+
+  if (stage === 'auth') {
+    return <AuthView onAuthenticated={handleAuthenticated} />
+  }
+
   return (
     <div className="app-shell">
       <Sidebar
@@ -147,6 +159,8 @@ export default function App() {
         onDeleteDataset={handleDeleteDataset}
         collapsed={sidebarCollapsed}
         onToggleCollapsed={toggleSidebarCollapsed}
+        userEmail={user?.email}
+        onLogout={handleLogout}
       />
 
       <main className="app-main">
