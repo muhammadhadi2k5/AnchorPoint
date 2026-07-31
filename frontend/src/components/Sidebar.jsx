@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import logoIcon from '../../elements/anchorpoint-icon.png'
 import './Sidebar.css'
 
 export default function Sidebar({
@@ -9,6 +10,8 @@ export default function Sidebar({
   onRenameDataset,
   onPinDataset,
   onDeleteDataset,
+  collapsed,
+  onToggleCollapsed,
 }) {
   const [menu, setMenu] = useState(null) // { id, x, y, confirmDelete }
   const [renamingId, setRenamingId] = useState(null)
@@ -51,9 +54,23 @@ export default function Sidebar({
   }
 
   return (
-    <aside className="sidebar">
-      <button type="button" className="sidebar-new" onClick={onNewDataset}>
-        + New dataset
+    <aside className={`sidebar${collapsed ? ' collapsed' : ''}`}>
+      <button
+        type="button"
+        className="sidebar-brand"
+        onClick={onToggleCollapsed}
+        title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+      >
+        <img src={logoIcon} className="sidebar-brand-icon" alt="" />
+        <span className="sidebar-brand-word">
+          ANCHOR<span className="accent">POINT.</span>
+        </span>
+      </button>
+
+      <button type="button" className="sidebar-new" onClick={onNewDataset} title="New dataset">
+        <span className="sidebar-new-icon">+</span>
+        <span className="sidebar-new-label">New dataset</span>
       </button>
 
       {datasets.length === 0 ? (

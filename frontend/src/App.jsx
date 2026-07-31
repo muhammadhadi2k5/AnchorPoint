@@ -14,11 +14,33 @@ import {
 } from './api.js'
 import './App.css'
 
+const SIDEBAR_COLLAPSE_KEY = 'anchorpoint-sidebar-collapsed'
+
 export default function App() {
   const [view, setView] = useState('home')
   const [datasetId, setDatasetId] = useState(null)
   const [datasets, setDatasets] = useState([])
   const [quotaExceeded, setQuotaExceeded] = useState(false)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+    try {
+      return localStorage.getItem(SIDEBAR_COLLAPSE_KEY) === '1'
+    } catch {
+      return false
+    }
+  })
+
+  const toggleSidebarCollapsed = () => {
+    setSidebarCollapsed((current) => {
+      const next = !current
+      try {
+        localStorage.setItem(SIDEBAR_COLLAPSE_KEY, next ? '1' : '0')
+      } catch {
+        // localStorage can be unavailable (private browsing, etc.) - collapse
+        // still works for the session, it just won't be remembered
+      }
+      return next
+    })
+  }
 
   const refreshDatasets = () => listDatasets().then(setDatasets)
 
@@ -90,6 +112,8 @@ export default function App() {
         onRenameDataset={handleRenameDataset}
         onPinDataset={handlePinDataset}
         onDeleteDataset={handleDeleteDataset}
+        collapsed={sidebarCollapsed}
+        onToggleCollapsed={toggleSidebarCollapsed}
       />
 
       <main className="app-main">
@@ -103,7 +127,7 @@ export default function App() {
             onAddDocuments={handleAddDocuments}
           />
         )}
-        {view === 'home' && <HomeView onStart={handleStart} />}
+        {view === 'home' && <HomeView onStart={handleStart} showBrandWord={sidebarCollapsed} />}
       </main>
 
       {quotaExceeded && <QuotaModal onClose={() => setQuotaExceeded(false)} />}

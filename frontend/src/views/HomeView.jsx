@@ -1,9 +1,17 @@
 import { useRef, useState } from 'react'
 import './HomeView.css'
 
-const GREETING = 'What are we looking into today?'
+const GREETINGS = [
+  'What are we looking into today?',
+  'Ask your documents anything',
+  "What's on your mind?",
+  "Let's dig into your documents",
+  'What do you need to know?',
+  'Ready when you are',
+]
 
-export default function HomeView({ onStart }) {
+export default function HomeView({ onStart, showBrandWord }) {
+  const [greeting] = useState(() => GREETINGS[Math.floor(Math.random() * GREETINGS.length)])
   const [name, setName] = useState('')
   const [files, setFiles] = useState([])
   const [isDragging, setIsDragging] = useState(false)
@@ -66,7 +74,13 @@ export default function HomeView({ onStart }) {
 
   return (
     <div className="home-view">
-      <h1 className="greeting">{GREETING}</h1>
+      <div className="home-brand">
+        <span className={`home-brand-word${showBrandWord ? '' : ' hidden'}`}>
+          ANCHOR<span className="accent">POINT.</span>
+        </span>
+      </div>
+
+      <h1 className="greeting">{greeting}</h1>
 
       <div className="home-form">
         <label className="name-label" htmlFor="dataset-name">

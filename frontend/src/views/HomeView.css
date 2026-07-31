@@ -1,4 +1,5 @@
 .home-view {
+  position: relative;
   min-height: 100%;
   display: flex;
   flex-direction: column;
@@ -7,6 +8,39 @@
   gap: 32px;
   padding: 48px 24px;
   text-align: center;
+}
+
+.home-brand {
+  position: absolute;
+  top: 28px;
+  left: 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+}
+
+.home-brand-word {
+  font-family: 'ENTRA', sans-serif;
+  font-weight: 700;
+  font-size: 20px;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+  opacity: 1;
+  max-height: 28px;
+  overflow: hidden;
+  transition: opacity 0.16s ease, max-height 0.16s ease;
+}
+
+/* hidden while the sidebar's own big wordmark is showing, so the app name
+   only ever appears in one place at a time */
+.home-brand-word.hidden {
+  opacity: 0;
+  max-height: 0;
+}
+
+.home-brand-word .accent {
+  color: var(--coral);
 }
 
 .greeting {
