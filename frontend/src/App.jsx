@@ -161,7 +161,7 @@ export default function App() {
   }
 
   if (stage === 'auth') {
-    return <AuthView onAuthenticated={handleAuthenticated} />
+    return <AuthView onAuthenticated={handleAuthenticated} onBack={() => setStage('landing')} />
   }
 
   if (stage === 'verify-email') {

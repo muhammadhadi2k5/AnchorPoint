@@ -1,4 +1,8 @@
-const BASE_URL = import.meta.env.VITE_API_BASE || 'http://localhost:8000'
+// falls back to whatever host the page itself was loaded from (same
+// hostname, backend's port) instead of a hardcoded 'localhost' - that way
+// it also works when the page is opened from another device on the LAN via
+// this machine's IP, where 'localhost' would otherwise mean the phone itself
+const BASE_URL = import.meta.env.VITE_API_BASE || `http://${window.location.hostname}:8000`
 
 export class ApiError extends Error {
   constructor(type, message) {

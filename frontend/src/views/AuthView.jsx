@@ -29,7 +29,7 @@ function PasswordField({ id, value, onChange, placeholder, autoComplete }) {
   )
 }
 
-export default function AuthView({ onAuthenticated }) {
+export default function AuthView({ onAuthenticated, onBack }) {
   // 'signin' | 'signup' | 'forgot' (ask for email) | 'reset' (code + new password)
   const [mode, setMode] = useState('signin')
   const [email, setEmail] = useState('')
@@ -122,6 +122,7 @@ export default function AuthView({ onAuthenticated }) {
   if (mode === 'forgot') {
     return (
       <div className="auth-view">
+        <button type="button" className="auth-back" onClick={onBack}>&lsaquo; Back</button>
         <div className="auth-card">
           <h1 className="auth-title">Reset your password</h1>
           <p className="auth-subtitle">Enter your email and we'll send you a code.</p>
@@ -156,6 +157,7 @@ export default function AuthView({ onAuthenticated }) {
   if (mode === 'reset') {
     return (
       <div className="auth-view">
+        <button type="button" className="auth-back" onClick={onBack}>&lsaquo; Back</button>
         <div className="auth-card">
           <h1 className="auth-title">Check your email</h1>
           {info && <p className="auth-subtitle">{info}</p>}
@@ -199,6 +201,7 @@ export default function AuthView({ onAuthenticated }) {
 
   return (
     <div className="auth-view">
+      <button type="button" className="auth-back" onClick={onBack}>&lsaquo; Back</button>
       <div className="auth-card">
         <h1 className="auth-title">{mode === 'signup' ? 'Create your account' : 'Welcome back'}</h1>
 
