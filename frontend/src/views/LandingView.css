@@ -115,10 +115,13 @@
 
 /* full-bleed coral field below the horizon wave - the wave's fill and this
    section's background are the same solid coral, so the line between them
-   is just the wave's shape, not a color change to notice */
+   is just the wave's shape, not a color change to notice. the negative
+   margin closes a hairline gap that subpixel rounding on the hero's
+   percentage-based min-height can otherwise leave between the two sections */
 .landing-how {
   background: var(--coral);
   text-align: center;
+  margin-top: -2px;
 }
 
 .landing-how-inner {

@@ -22,6 +22,21 @@
   background: var(--coral);
   clip-path: polygon(0 0, 100% 0, 100% 74%, 0 100%);
   z-index: -1;
+  transform: translateY(-100%);
+  animation: hero-band-drop 0.65s cubic-bezier(0.22, 1, 0.36, 1) 0.05s forwards;
+}
+
+@keyframes hero-band-drop {
+  to {
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-hero-band {
+    animation: none;
+    transform: none;
+  }
 }
 
 .home-brand {

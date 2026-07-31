@@ -3,8 +3,6 @@
   height: 100%;
   display: flex;
   flex-direction: column;
-  padding: 24px 0;
-  gap: 12px;
 }
 
 /* ambient wash - strongest at the top, fading to nothing by mid-scroll.
@@ -18,15 +16,25 @@
   pointer-events: none;
 }
 
+/* no header bar at all - just the Documents button floating in place. it
+   takes no row of its own, so the message list underneath can scroll all
+   the way up to the true top edge of the window with nothing blocking it */
 .chat-header {
-  display: flex;
-  justify-content: flex-end;
-  padding: 0 24px;
+  position: absolute;
+  top: 20px;
+  right: 24px;
+  z-index: 2;
+  pointer-events: none;
 }
 
-/* the actual scrolling element spans the full pane so its scrollbar sits
-   at the true right edge, while the bubbles inside stay centered and
-   width-capped for readability */
+.chat-header > * {
+  pointer-events: auto;
+}
+
+/* the actual scrolling element spans the full pane (right under the
+   floating header) so its scrollbar sits at the true right edge and its
+   content can scroll flush to the true top edge, while the bubbles inside
+   stay centered and width-capped for readability */
 .chat-scroll-area {
   flex: 1;
   min-height: 0;
@@ -37,7 +45,9 @@
   font-size: 12.5px;
   font-weight: 600;
   color: var(--ink-soft);
-  background: none;
+  background: rgba(247, 239, 225, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   border: 1px solid var(--sand-line);
   border-radius: 999px;
   padding: 6px 14px;
@@ -54,7 +64,7 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding: 0 24px 8px;
+  padding: 84px 24px 150px;
 }
 
 .bubble {
@@ -212,6 +222,20 @@
   padding: 8px 14px;
 }
 
+/* floats over the scroll area rather than taking its own row, so messages
+   dissolve into it via the gradient instead of hard-cutting at its edge -
+   inset from the true right edge by the scrollbar's own width so that
+   overlay never paints over (and visually breaks up) the scrollbar itself */
+.chat-bottom {
+  position: absolute;
+  left: 0;
+  right: 10px;
+  bottom: 0;
+  z-index: 2;
+  padding: 56px 0 22px;
+  background: linear-gradient(180deg, rgba(247, 239, 225, 0) 0%, var(--cream) 46px, var(--cream) 100%);
+}
+
 .chat-input-row {
   max-width: 720px;
   margin: 0 auto;
@@ -254,7 +278,7 @@
 
 .chat-footer {
   max-width: 720px;
-  margin: 4px auto 0;
+  margin: 8px auto 0;
   padding: 0 24px;
   text-align: center;
   font-size: 11px;

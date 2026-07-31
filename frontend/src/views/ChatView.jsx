@@ -121,21 +121,23 @@ export default function ChatView({ datasetId, onQuotaExceeded, onAddDocuments })
         </div>
       </div>
 
-      <div className="chat-input-row">
-        <input
-          className="chat-input"
-          placeholder="Ask anything about these documents..."
-          value={input}
-          disabled={sending}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={handleKeyDown}
-        />
-        <button className="chat-send" onClick={handleSend} disabled={sending || !input.trim()}>
-          Send
-        </button>
-      </div>
+      <div className="chat-bottom">
+        <div className="chat-input-row">
+          <input
+            className="chat-input"
+            placeholder="Ask anything about these documents..."
+            value={input}
+            disabled={sending}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+          />
+          <button className="chat-send" onClick={handleSend} disabled={sending || !input.trim()}>
+            Send
+          </button>
+        </div>
 
-      <p className="chat-footer">Your anchor point for accurate, sourced answers.</p>
+        <p className="chat-footer">Your anchor point for accurate, sourced answers.</p>
+      </div>
 
       <CitationDrawer citation={activeCitation} onClose={() => setActiveCitation(null)} />
 
