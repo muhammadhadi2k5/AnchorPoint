@@ -225,7 +225,10 @@
 /* floats over the scroll area rather than taking its own row, so messages
    dissolve into it via the gradient instead of hard-cutting at its edge -
    inset from the true right edge by the scrollbar's own width so that
-   overlay never paints over (and visually breaks up) the scrollbar itself */
+   overlay never paints over (and visually breaks up) the scrollbar itself.
+   always anchored at bottom:0 - the empty state doesn't reposition it, it
+   just transforms it upward, so the same element slides smoothly back down
+   to this exact spot the moment the first message is sent */
 .chat-bottom {
   position: absolute;
   left: 0;
@@ -234,6 +237,48 @@
   z-index: 2;
   padding: 56px 0 22px;
   background: linear-gradient(180deg, rgba(247, 239, 225, 0) 0%, var(--cream) 46px, var(--cream) 100%);
+  transform: translateY(0);
+  transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* no scrolled content behind it yet, so the dissolve gradient would just
+   read as an odd translucent panel floating mid-screen - go fully solid
+   instead, matching the "clean start" feel */
+.chat-bottom-centered {
+  padding-top: 0;
+  background: none;
+  transform: translateY(calc(-50vh + 55px));
+}
+
+.chat-greeting {
+  font-family: 'ENTRA', sans-serif;
+  font-weight: 700;
+  font-size: clamp(22px, 3.2vw, 32px);
+  color: var(--ink);
+  text-align: center;
+  margin: 0 0 22px;
+  animation: chat-greeting-in 0.5s ease both;
+}
+
+@keyframes chat-greeting-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chat-bottom {
+    transition: none;
+  }
+
+  .chat-greeting {
+    animation: none;
+  }
 }
 
 .chat-input-row {

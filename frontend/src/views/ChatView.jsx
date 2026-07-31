@@ -5,8 +5,17 @@ import CitationDrawer from '../components/CitationDrawer.jsx'
 import DocumentLibrary from '../components/DocumentLibrary.jsx'
 import './ChatView.css'
 
+const GREETINGS = [
+  'What are we looking into today?',
+  'Ask anything about these documents',
+  "What's on your mind?",
+  'Ready when you are',
+]
+
 export default function ChatView({ datasetId, onQuotaExceeded, onAddDocuments }) {
   const [messages, setMessages] = useState([])
+  const [messagesLoaded, setMessagesLoaded] = useState(false)
+  const [greeting, setGreeting] = useState('')
   const [input, setInput] = useState('')
   const [streamingText, setStreamingText] = useState(null)
   const [sending, setSending] = useState(false)
@@ -16,8 +25,18 @@ export default function ChatView({ datasetId, onQuotaExceeded, onAddDocuments })
   const bottomRef = useRef(null)
 
   useEffect(() => {
-    listMessages(datasetId).then(setMessages)
+    setMessagesLoaded(false)
+    setGreeting(GREETINGS[Math.floor(Math.random() * GREETINGS.length)])
+    listMessages(datasetId).then((msgs) => {
+      setMessages(msgs)
+      setMessagesLoaded(true)
+    })
   }, [datasetId])
+
+  // known-empty (not just "hasn't loaded yet") is what puts the input bar in
+  // its centered starting position, so a dataset that already has history
+  // doesn't flash centered before snapping to the bottom once it loads
+  const isEmpty = messagesLoaded && messages.length === 0 && streamingText === null
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ block: 'end' })
@@ -121,7 +140,9 @@ export default function ChatView({ datasetId, onQuotaExceeded, onAddDocuments })
         </div>
       </div>
 
-      <div className="chat-bottom">
+      <div className={`chat-bottom${isEmpty ? ' chat-bottom-centered' : ''}`}>
+        {isEmpty && <p className="chat-greeting">{greeting}</p>}
+
         <div className="chat-input-row">
           <input
             className="chat-input"

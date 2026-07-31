@@ -5,7 +5,9 @@
 
 .landing-hero {
   position: relative;
+  z-index: 0;
   min-height: 100%;
+  background: var(--cream);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -115,41 +117,49 @@
 
 /* full-bleed coral field below the horizon wave - the wave's fill and this
    section's background are the same solid coral, so the line between them
-   is just the wave's shape, not a color change to notice. the negative
-   margin closes a hairline gap that subpixel rounding on the hero's
-   percentage-based min-height can otherwise leave between the two sections */
+   is just the wave's shape, not a color change to notice. a generous
+   negative margin pulls this section up underneath the tail end of the
+   wave - since both are the same solid coral the overlap is invisible, and
+   being generous (rather than a 1-2px nudge) means it isn't a near-miss
+   that reopens at a different zoom level or screen DPI */
 .landing-how {
   background: var(--coral);
   text-align: center;
-  margin-top: -2px;
+  margin-top: -20px;
 }
 
 .landing-how-inner {
-  max-width: 860px;
+  max-width: 1080px;
   margin: 0 auto;
-  padding: 140px 24px 140px;
+  padding: 150px 40px 150px;
 }
 
 .landing-how-eyebrow {
-  font-size: 13px;
+  font-size: 14px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--cream);
-  margin: 0 0 12px;
+  margin: 0 0 14px;
 }
 
 .landing-how-title {
   font-family: 'ENTRA', sans-serif;
   font-weight: 700;
-  font-size: clamp(32px, 5vw, 46px);
+  font-size: clamp(36px, 6vw, 56px);
   color: var(--white);
-  margin: 0 0 80px;
+  margin: 0 0 88px;
 }
 
+/* its own centered column, narrower than landing-how-inner - otherwise the
+   left-aligned step text (correctly ragged-right for readability) ends up
+   hugging the left edge while the centered title floats above it, reading
+   as lopsided on wide screens instead of anchored to the same axis */
 .landing-steps {
+  max-width: 680px;
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 64px;
+  gap: 72px;
   text-align: left;
 }
 
@@ -166,23 +176,23 @@
 
 .step-number {
   font-family: 'ENTRA', sans-serif;
-  font-size: 16px;
+  font-size: 17px;
   color: var(--ink);
   letter-spacing: 0.05em;
 }
 
 .step-title {
-  font-size: 26px;
+  font-size: 29px;
   color: var(--ink);
-  margin: 8px 0 12px;
+  margin: 8px 0 14px;
 }
 
 .step-body {
-  font-size: 17px;
+  font-size: 18px;
   line-height: 1.65;
   color: rgba(255, 250, 242, 0.82);
   margin: 0;
-  max-width: 620px;
+  max-width: 720px;
 }
 
 /* on the coral field, a coral button would vanish - white surface, same
