@@ -81,10 +81,6 @@ export default function App() {
 
   const refreshDatasets = () => listDatasets().then(setDatasets)
 
-  useEffect(() => {
-    refreshDatasets()
-  }, [])
-
   const handleStart = async (name, files) => {
     const dataset = await createDataset(name, files)
     setDatasetId(dataset.id)
