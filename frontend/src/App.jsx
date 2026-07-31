@@ -2,14 +2,18 @@ import { useEffect, useState } from 'react'
 import HomeView from './views/HomeView.jsx'
 import IngestionLoadingView from './views/IngestionLoadingView.jsx'
 import ChatView from './views/ChatView.jsx'
+import LandingView from './views/LandingView.jsx'
+import AuthView from './views/AuthView.jsx'
 import Sidebar from './components/Sidebar.jsx'
 import QuotaModal from './components/QuotaModal.jsx'
 import {
   addDocuments,
   createDataset,
   deleteDataset,
+  getCurrentUser,
   getIngestStatus,
   listDatasets,
+  logout,
   updateDataset,
 } from './api.js'
 import './App.css'
@@ -17,6 +21,9 @@ import './App.css'
 const SIDEBAR_COLLAPSE_KEY = 'anchorpoint-sidebar-collapsed'
 
 export default function App() {
+  // 'checking' (session lookup in flight) -> 'landing' | 'auth' -> 'app'
+  const [stage, setStage] = useState('checking')
+  const [user, setUser] = useState(null)
   const [view, setView] = useState('home')
   const [datasetId, setDatasetId] = useState(null)
   const [datasets, setDatasets] = useState([])
@@ -28,6 +35,36 @@ export default function App() {
       return false
     }
   })
+
+  useEffect(() => {
+    getCurrentUser().then((existingUser) => {
+      if (existingUser) {
+        setUser(existingUser)
+        setStage('app')
+        refreshDatasets()
+      } else {
+        setStage('landing')
+      }
+    })
+    // refreshDatasets is stable for the life of the component (defined
+    // once, no dependencies of its own) - fine to omit from deps here
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const handleAuthenticated = (authedUser) => {
+    setUser(authedUser)
+    setStage('app')
+    refreshDatasets()
+  }
+
+  const handleLogout = async () => {
+    await logout()
+    setUser(null)
+    setDatasets([])
+    setDatasetId(null)
+    setView('home')
+    setStage('landing')
+  }
 
   const toggleSidebarCollapsed = () => {
     setSidebarCollapsed((current) => {

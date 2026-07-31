@@ -15,13 +15,54 @@ async function handleErrors(response) {
     throw new ApiError('connection_error', 'Connection dropped')
   }
   if (!response.ok) {
-    throw new ApiError('unknown', `Request failed with status ${response.status}`)
+    let detail = 'unknown'
+    try {
+      detail = (await response.json()).detail || detail
+    } catch {
+      // body wasn't JSON, fall back to the generic type below
+    }
+    throw new ApiError(detail, `Request failed with status ${response.status}`)
   }
   return response
 }
 
 function request(path, options = {}) {
   return fetch(`${BASE_URL}${path}`, { credentials: 'include', ...options }).then(handleErrors)
+}
+
+export async function signup(email, password) {
+  const response = await request('/auth/signup', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password }),
+  })
+  return response.json()
+}
+
+export async function login(email, password) {
+  const response = await request('/auth/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password }),
+  })
+  return response.json()
+}
+
+export async function logout() {
+  const response = await request('/auth/logout', { method: 'POST' })
+  return response.json()
+}
+
+// returns null instead of throwing on a 401, since "no one is logged in
+// yet" is an expected state on first load, not an error
+export async function getCurrentUser() {
+  try {
+    const response = await request('/auth/me')
+    return response.json()
+  } catch (err) {
+    if (err instanceof ApiError && err.type === 'not_authenticated') return null
+    throw err
+  }
 }
 
 export async function createDataset(name, files) {
