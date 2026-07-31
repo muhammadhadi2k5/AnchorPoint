@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
-from api import chat, db, ingest
+from api import auth, chat, db, ingest
 from api.progress import clear_progress, get_progress
 from rate_limit_guard import QuotaExceededError
 from vector_db import delete_collection
@@ -59,6 +59,75 @@ class MessageIn(BaseModel):
 class DatasetUpdate(BaseModel):
     name: str | None = None
     pinned: bool | None = None
+
+
+class SignupIn(BaseModel):
+    email: str
+    password: str
+
+
+class LoginIn(BaseModel):
+    email: str
+    password: str
+
+
+def _user_out(user):
+    return {"id": user["id"], "email": user["email"]}
+
+
+# not wired into the dataset routes yet - additive only for now, so the
+# currently-working anonymous flow keeps working until the frontend actually
+# has somewhere to send someone to log in
+@app.post("/auth/signup")
+def signup(request: Request, response: Response, body: SignupIn):
+    email = body.email.strip().lower()
+    if "@" not in email or "." not in email.split("@")[-1]:
+        raise HTTPException(status_code=400, detail="invalid_email")
+    if len(body.password) < 8:
+        raise HTTPException(status_code=400, detail="password_too_short")
+    if db.get_user_by_email(email):
+        raise HTTPException(status_code=409, detail="email_taken")
+
+    user = db.create_user(email, auth.hash_password(body.password))
+    session_id = db.create_session(user["id"])
+    auth.set_session_cookie(response, session_id)
+
+    # anything created anonymously in this browser before signing up moves
+    # over to the new account instead of getting stranded
+    db.claim_datasets(request.cookies.get(VISITOR_COOKIE), user["id"])
+
+    return _user_out(user)
+
+
+@app.post("/auth/login")
+def login(request: Request, response: Response, body: LoginIn):
+    email = body.email.strip().lower()
+    user = db.get_user_by_email(email)
+    if not user or not auth.verify_password(body.password, user["password_hash"]):
+        raise HTTPException(status_code=401, detail="invalid_credentials")
+
+    session_id = db.create_session(user["id"])
+    auth.set_session_cookie(response, session_id)
+    db.claim_datasets(request.cookies.get(VISITOR_COOKIE), user["id"])
+
+    return _user_out(user)
+
+
+@app.post("/auth/logout")
+def logout(request: Request, response: Response):
+    session_id = request.cookies.get(auth.SESSION_COOKIE)
+    if session_id:
+        db.delete_session(session_id)
+    auth.clear_session_cookie(response)
+    return {"status": "logged_out"}
+
+
+@app.get("/auth/me")
+def me(request: Request):
+    user_id = auth.get_current_user_id(request)
+    if not user_id:
+        raise HTTPException(status_code=401, detail="not_authenticated")
+    return _user_out(db.get_user(user_id))
 
 
 @app.post("/datasets")

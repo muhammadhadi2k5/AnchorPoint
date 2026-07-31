@@ -2,7 +2,7 @@ import json
 import shutil
 import sqlite3
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 # anchored to the project root via this file's own location rather than a
@@ -28,6 +28,20 @@ CREATE TABLE IF NOT EXISTS messages (
     content TEXT NOT NULL,
     citations TEXT,
     created_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS users (
+    id TEXT PRIMARY KEY,
+    email TEXT NOT NULL UNIQUE COLLATE NOCASE,
+    password_hash TEXT NOT NULL,
+    created_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS sessions (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL REFERENCES users(id),
+    created_at TEXT NOT NULL,
+    expires_at TEXT NOT NULL
 );
 """
 
@@ -208,3 +222,94 @@ def _deserialize_message(row):
     message = dict(row)
     message["citations"] = json.loads(message["citations"]) if message["citations"] else None
     return message
+
+
+def create_user(email, password_hash):
+    user_id = uuid.uuid4().hex
+    conn = get_connection()
+    try:
+        conn.execute(
+            "INSERT INTO users (id, email, password_hash, created_at) VALUES (?, ?, ?, ?)",
+            (user_id, email, password_hash, _now()),
+        )
+        conn.commit()
+    finally:
+        conn.close()
+    return get_user(user_id)
+
+
+def get_user(user_id):
+    conn = get_connection()
+    try:
+        row = conn.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
+        return dict(row) if row else None
+    finally:
+        conn.close()
+
+
+def get_user_by_email(email):
+    conn = get_connection()
+    try:
+        row = conn.execute("SELECT * FROM users WHERE email = ?", (email,)).fetchone()
+        return dict(row) if row else None
+    finally:
+        conn.close()
+
+
+def create_session(user_id, ttl_days=30):
+    session_id = uuid.uuid4().hex
+    expires_at = (datetime.now(timezone.utc) + timedelta(days=ttl_days)).isoformat()
+    conn = get_connection()
+    try:
+        conn.execute(
+            "INSERT INTO sessions (id, user_id, created_at, expires_at) VALUES (?, ?, ?, ?)",
+            (session_id, user_id, _now(), expires_at),
+        )
+        conn.commit()
+    finally:
+        conn.close()
+    return session_id
+
+
+# returns None for a missing OR expired session, so callers don't need to
+# separately check expiry - an expired session just looks logged-out
+def get_session_user_id(session_id):
+    conn = get_connection()
+    try:
+        row = conn.execute(
+            "SELECT user_id, expires_at FROM sessions WHERE id = ?", (session_id,)
+        ).fetchone()
+    finally:
+        conn.close()
+    if not row:
+        return None
+    if datetime.fromisoformat(row["expires_at"]) < datetime.now(timezone.utc):
+        return None
+    return row["user_id"]
+
+
+def delete_session(session_id):
+    conn = get_connection()
+    try:
+        conn.execute("DELETE FROM sessions WHERE id = ?", (session_id,))
+        conn.commit()
+    finally:
+        conn.close()
+
+
+# datasets created before login are scoped under the anonymous visitor
+# cookie id - on signup/login, hand those over to the real account so they
+# don't get stranded under an id the browser will stop sending once a real
+# session cookie takes over
+def claim_datasets(old_visitor_id, user_id):
+    if not old_visitor_id or old_visitor_id == user_id:
+        return
+    conn = get_connection()
+    try:
+        conn.execute(
+            "UPDATE datasets SET visitor_id = ? WHERE visitor_id = ?",
+            (user_id, old_visitor_id),
+        )
+        conn.commit()
+    finally:
+        conn.close()
