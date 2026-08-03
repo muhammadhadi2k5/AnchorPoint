@@ -1,6 +1,5 @@
 import sys
 sys.stdout.reconfigure(encoding="utf-8")
-import numpy as np
 
 from document_loader import process_all_documents
 from chunker import chunking

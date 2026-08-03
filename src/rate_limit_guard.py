@@ -27,7 +27,7 @@ class RateLimitGuard:
         with open(self.state_file, "r", encoding="utf-8") as f:
             state = json.load(f)
 
-        if state.get("date") != str(date.today()):  
+        if state.get("date") != str(date.today()):
             return {"date": str(date.today()), "count": 0}
 
         return state

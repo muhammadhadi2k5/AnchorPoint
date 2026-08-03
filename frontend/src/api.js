@@ -1,5 +1,3 @@
-
-
 // falls back to whatever host the page itself was loaded from (same
 // hostname, backend's port) instead of a hardcoded 'localhost' - that way
 // it also works when the page is opened from another device on the LAN via
@@ -116,11 +114,6 @@ export async function listDatasets() {
   return response.json()
 }
 
-export async function getDataset(datasetId) {
-  const response = await request(`/datasets/${datasetId}`)
-  return response.json()
-}
-
 export async function listFiles(datasetId) {
   const response = await request(`/datasets/${datasetId}/files`)
   return response.json()
@@ -154,11 +147,6 @@ export async function getIngestStatus(datasetId) {
 
 export async function listMessages(datasetId) {
   const response = await request(`/datasets/${datasetId}/messages`)
-  return response.json()
-}
-
-export async function clearConversation(datasetId) {
-  const response = await request(`/datasets/${datasetId}/messages`, { method: 'DELETE' })
   return response.json()
 }
 

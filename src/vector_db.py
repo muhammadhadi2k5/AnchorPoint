@@ -127,7 +127,7 @@ class VectorDB:
         for doc, embedding in zip(documents, embeddings):
             doc_id = make_doc_id(doc)
 
-            if doc_id in existing_ids:  
+            if doc_id in existing_ids:
                 continue
 
             # payload = chunk text + all its metadata bundled together

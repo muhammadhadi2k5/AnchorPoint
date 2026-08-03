@@ -17,27 +17,17 @@ SYSTEM_INSTRUCTION = (
     "Mention which source file each part of your answer comes from."
 )
 
-# swapped out for retriever._detect_target_sources, keeping in case we
-# ever want the LLM version back
-#
-# ROUTER_SYSTEM_INSTRUCTION = (
-#     "You are a query router for a document search system. Given a user question and a "
-#     "list of known document filenames, decide which filename(s), if any, the question is "
-#     "specifically about. Return a JSON array of filenames, copied exactly as given, from "
-#     "the list that apply. If the question compares multiple documents, include all of "
-#     "them. If the question is generic and doesn't target any specific document, return an "
-#     "empty array. Only return filenames from the provided list, nothing else."
-# )
+# an earlier version routed "which document is this about" through an LLM
+# call (see git history) - dropped in favor of retriever._detect_target_sources'
+# plain word-overlap match, which is free and just as accurate for this use case
 
 
 class Generator:
 
-    
     def __init__(self, daily_limit=500):
         api_key = os.environ.get("GEMINI_API_KEY")
         if not api_key:
             raise ValueError("GEMINI_API_KEY is not set. Add it to your .env file.")
-
 
         self.client = genai.Client(
             api_key=api_key,
@@ -96,32 +86,3 @@ class Generator:
                     f"[{self.guard.name}] Google's API reports the quota is exceeded: {e.message}"
                 ) from e
             raise
-
-    # def classify_target_sources(self, query, known_sources):
-    #     if not known_sources:
-    #         return []
-    #
-    #     prompt = "Known documents:\n" + "\n".join(f"- {s}" for s in known_sources)
-    #     prompt += f"\n\nQuestion: {query}"
-    #
-    #     try:
-    #         response = self.guard.call(
-    #             self.client.models.generate_content,
-    #             model=MODEL_NAME,
-    #             contents=prompt,
-    #             config=types.GenerateContentConfig(
-    #                 system_instruction=ROUTER_SYSTEM_INSTRUCTION,
-    #                 response_mime_type="application/json",
-    #             ),
-    #         )
-    #     except QuotaExceededError:
-    #         raise
-    #
-    #     try:
-    #         matches = json.loads(response.text)
-    #     except (json.JSONDecodeError, AttributeError):
-    #         return []
-    #
-    #     # only trust filenames that are actually in our known list, in case
-    #     # the model returns something that isn't verbatim from the list
-    #     return [m for m in matches if m in known_sources]
