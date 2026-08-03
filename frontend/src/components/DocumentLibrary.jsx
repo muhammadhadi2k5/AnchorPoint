@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { listFiles } from '../api.js'
 import './DocumentLibrary.css'
 
-export default function DocumentLibrary({ datasetId, onClose, onAddDocuments }) {
+export default function DocumentLibrary({ datasetId, onClose, onAddDocuments, onReingest }) {
   const [files, setFiles] = useState([])
   const fileInputRef = useRef(null)
 
@@ -34,9 +34,17 @@ export default function DocumentLibrary({ datasetId, onClose, onAddDocuments }) 
         </ul>
 
         <input ref={fileInputRef} type="file" multiple hidden onChange={handlePicked} />
-        <button type="button" className="library-add" onClick={() => fileInputRef.current?.click()}>
-          Add documents
-        </button>
+        <div className="library-actions">
+          <button type="button" className="library-add" onClick={() => fileInputRef.current?.click()}>
+            Add documents
+          </button>
+          <button type="button" className="library-reingest" onClick={onReingest}>
+            Re-run ingestion
+          </button>
+        </div>
+        <p className="library-reingest-hint">
+          First ingestion only partly worked? Re-run it, already-processed documents won't be redone.
+        </p>
       </div>
     </>
   )

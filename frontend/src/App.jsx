@@ -15,6 +15,7 @@ import {
   getIngestStatus,
   listDatasets,
   logout,
+  reingestDataset,
   updateDataset,
 } from './api.js'
 import './App.css'
@@ -152,6 +153,13 @@ export default function App() {
     setView('loading')
   }
 
+  // same loading screen, just re-running ingestion on files already saved
+  // for this dataset instead of uploading new ones
+  const handleReingest = async () => {
+    await reingestDataset(datasetId)
+    setView('loading')
+  }
+
   if (stage === 'checking') {
     return <div className="app-shell app-shell-blank" />
   }
@@ -193,6 +201,7 @@ export default function App() {
             datasetId={datasetId}
             onQuotaExceeded={() => setQuotaExceeded(true)}
             onAddDocuments={handleAddDocuments}
+            onReingest={handleReingest}
           />
         )}
         {view === 'home' && (

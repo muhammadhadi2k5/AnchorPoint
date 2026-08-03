@@ -145,6 +145,12 @@ export async function getIngestStatus(datasetId) {
   return response.json()
 }
 
+// re-runs ingestion on the files already in the dataset, no new uploads
+export async function reingestDataset(datasetId) {
+  const response = await request(`/datasets/${datasetId}/reingest`, { method: 'POST' })
+  return response.json()
+}
+
 export async function listMessages(datasetId) {
   const response = await request(`/datasets/${datasetId}/messages`)
   return response.json()

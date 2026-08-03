@@ -249,6 +249,17 @@ def add_documents(dataset_id: str, files: list[UploadFile] = File(...)):
     return {"status": "ingesting"}
 
 
+# re-runs ingestion on the files already saved for this dataset, no new
+# uploads needed. same dedup as add_documents means already-embedded chunks
+# get skipped, so this just picks up whatever didn't make it in the first
+# time (e.g. a run that died partway through on a quota error)
+@app.post("/datasets/{dataset_id}/reingest")
+def reingest_dataset(dataset_id: str):
+    _require_dataset(dataset_id)
+    ingest.start_ingestion(dataset_id)
+    return {"status": "ingesting"}
+
+
 @app.get("/datasets/{dataset_id}/ingest-status")
 def ingest_status(dataset_id: str):
     _require_dataset(dataset_id)

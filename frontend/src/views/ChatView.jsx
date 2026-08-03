@@ -12,7 +12,7 @@ const GREETINGS = [
   'Ready when you are',
 ]
 
-export default function ChatView({ datasetId, onQuotaExceeded, onAddDocuments }) {
+export default function ChatView({ datasetId, onQuotaExceeded, onAddDocuments, onReingest }) {
   const [messages, setMessages] = useState([])
   const [messagesLoaded, setMessagesLoaded] = useState(false)
   const [greeting, setGreeting] = useState('')
@@ -169,6 +169,10 @@ export default function ChatView({ datasetId, onQuotaExceeded, onAddDocuments })
           onAddDocuments={(files) => {
             setShowLibrary(false)
             onAddDocuments(files)
+          }}
+          onReingest={() => {
+            setShowLibrary(false)
+            onReingest()
           }}
         />
       )}
