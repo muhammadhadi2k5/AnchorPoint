@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import { listMessages, sendMessageStream } from '../api.js'
-import CitationDrawer from '../components/CitationDrawer.jsx'
+import CitationPopover from '../components/CitationPopover.jsx'
 import DocumentLibrary from '../components/DocumentLibrary.jsx'
 import './ChatView.css'
 
@@ -21,8 +21,14 @@ export default function ChatView({ datasetId, onQuotaExceeded, onAddDocuments, o
   const [sending, setSending] = useState(false)
   const [connectionError, setConnectionError] = useState(null)
   const [activeCitation, setActiveCitation] = useState(null)
+  const [citationAnchor, setCitationAnchor] = useState(null)
   const [showLibrary, setShowLibrary] = useState(false)
   const bottomRef = useRef(null)
+
+  const closeCitation = () => {
+    setActiveCitation(null)
+    setCitationAnchor(null)
+  }
 
   useEffect(() => {
     setMessagesLoaded(false)
@@ -110,7 +116,10 @@ export default function ChatView({ datasetId, onQuotaExceeded, onAddDocuments, o
                       type="button"
                       key={i}
                       className="citation-tag"
-                      onClick={() => setActiveCitation(citation)}
+                      onClick={(e) => {
+                        setActiveCitation(citation)
+                        setCitationAnchor(e.currentTarget.getBoundingClientRect())
+                      }}
                     >
                       {i + 1}
                     </button>
@@ -160,7 +169,7 @@ export default function ChatView({ datasetId, onQuotaExceeded, onAddDocuments, o
         <p className="chat-footer">Your anchor point for accurate, sourced answers.</p>
       </div>
 
-      <CitationDrawer citation={activeCitation} onClose={() => setActiveCitation(null)} />
+      <CitationPopover citation={activeCitation} anchorRect={citationAnchor} onClose={closeCitation} />
 
       {showLibrary && (
         <DocumentLibrary
