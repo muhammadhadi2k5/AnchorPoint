@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import HomeView from './views/HomeView.jsx'
 import IngestionLoadingView from './views/IngestionLoadingView.jsx'
 import ChatView from './views/ChatView.jsx'
@@ -35,9 +35,32 @@ export default function App() {
 
   const refreshDatasets = () => listDatasets().then(setDatasets)
 
+  // pushes a history entry on the way in, so the browser's own back button
+  // (and the in-app back button, which just calls history.back()) both
+  // land here through the same popstate handler instead of two code paths
+  // that could drift out of sync
+  useEffect(() => {
+    const handlePopState = (event) => {
+      if (event.state?.stage === 'app') {
+        setStage('app')
+      } else {
+        setStage('landing')
+        setView('home')
+        setDatasetId(null)
+      }
+    }
+    window.addEventListener('popstate', handlePopState)
+    return () => window.removeEventListener('popstate', handlePopState)
+  }, [])
+
   const handleEnterApp = () => {
+    window.history.pushState({ stage: 'app' }, '')
     setStage('app')
     refreshDatasets()
+  }
+
+  const handleBackToLanding = () => {
+    window.history.back()
   }
 
   const toggleSidebarCollapsed = () => {
@@ -145,7 +168,7 @@ export default function App() {
           />
         )}
         {view === 'home' && (
-          <HomeView onStart={handleStart} showBrandWord={sidebarCollapsed} />
+          <HomeView onStart={handleStart} onBack={handleBackToLanding} showBrandWord={sidebarCollapsed} />
         )}
       </main>
 

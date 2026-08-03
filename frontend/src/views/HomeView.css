@@ -39,6 +39,23 @@
   }
 }
 
+.home-back {
+  position: absolute;
+  top: 28px;
+  right: 32px;
+  font-weight: 600;
+  font-size: 13.5px;
+  color: var(--white);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 2px;
+}
+
+.home-back:hover {
+  opacity: 0.8;
+}
+
 .home-brand {
   position: absolute;
   top: 28px;

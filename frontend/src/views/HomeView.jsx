@@ -10,7 +10,7 @@ const BASE_GREETINGS = [
   'Ready when you are',
 ]
 
-export default function HomeView({ onStart, showBrandWord }) {
+export default function HomeView({ onStart, onBack, showBrandWord }) {
   const [greeting] = useState(() => BASE_GREETINGS[Math.floor(Math.random() * BASE_GREETINGS.length)])
   const [name, setName] = useState('')
   const [files, setFiles] = useState([])
@@ -75,6 +75,8 @@ export default function HomeView({ onStart, showBrandWord }) {
   return (
     <div className="home-view">
       <div className="home-hero-band" aria-hidden="true" />
+
+      <button type="button" className="home-back" onClick={onBack}>&lsaquo; Back</button>
 
       <div className="home-brand">
         <span className={`home-brand-word${showBrandWord ? '' : ' hidden'}`}>
