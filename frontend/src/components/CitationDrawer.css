@@ -41,13 +41,27 @@
 }
 
 .citation-drawer-meta {
-  font-size: 14px;
-  color: var(--ink);
   display: flex;
   flex-direction: column;
   gap: 8px;
   padding-bottom: 14px;
   border-bottom: 1px solid var(--sand-line);
+}
+
+.citation-drawer-meta-label {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.citation-drawer-meta-body {
+  font-size: 14px;
+  color: var(--ink);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .citation-drawer-chunk {
@@ -71,6 +85,5 @@
   font-size: 13.5px;
   line-height: 1.6;
   color: var(--ink);
-  white-space: pre-wrap;
   overflow-y: auto;
 }
