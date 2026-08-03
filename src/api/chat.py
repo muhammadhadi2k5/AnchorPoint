@@ -21,12 +21,16 @@ def _build_history(dataset_id):
     ]
 
 
+# chunk text goes in here too, not just source/page/score - so clicking a
+# citation can show the actual passage the answer came from without a
+# separate lookup call
 def _build_citations(results):
     return [
         {
             "source_file": r["metadata"].get("source_file", "unknown"),
             "page": r["metadata"].get("page"),
             "score": round(float(r["score"]), 2),
+            "text": r["text"],
         }
         for r in results
     ]

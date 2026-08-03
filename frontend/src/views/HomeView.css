@@ -171,11 +171,17 @@
   color: var(--ink-soft);
 }
 
+/* capped + internally scrollable so a big batch of files grows this list
+   instead of the button - the button stays put instead of drifting off
+   the bottom of the screen as more files get added */
 .file-chips {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
   justify-content: center;
+  max-height: 150px;
+  overflow-y: auto;
+  padding: 2px 2px 4px;
 }
 
 .file-chip {
