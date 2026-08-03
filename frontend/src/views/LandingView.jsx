@@ -50,7 +50,7 @@ function RevealStep({ step, index }) {
   )
 }
 
-export default function LandingView({ onSignIn }) {
+export default function LandingView({ onStart }) {
   const howItWorksRef = useRef(null)
 
   const scrollToHowItWorks = () => {
@@ -69,8 +69,8 @@ export default function LandingView({ onSignIn }) {
           </h1>
           <p className="landing-tagline">Ask your documents anything</p>
 
-          <button type="button" className="landing-signin" onClick={onSignIn}>
-            Sign in
+          <button type="button" className="landing-start" onClick={onStart}>
+            Start
           </button>
         </div>
 
@@ -91,7 +91,7 @@ export default function LandingView({ onSignIn }) {
             ))}
           </div>
 
-          <button type="button" className="landing-cta" onClick={onSignIn}>
+          <button type="button" className="landing-cta" onClick={onStart}>
             Get started
           </button>
         </div>

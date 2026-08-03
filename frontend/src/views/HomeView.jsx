@@ -10,24 +10,8 @@ const BASE_GREETINGS = [
   'Ready when you are',
 ]
 
-// best-effort only - there's no separate display name field, just a guess
-// from the email's local part (e.g. "muhammadhadi.2k5" -> "Muhammadhadi")
-function nameFromEmail(email) {
-  if (!email) return null
-  const local = email.split('@')[0]
-  const firstSegment = local.split(/[._-]/)[0].replace(/[0-9]+$/, '')
-  if (!firstSegment) return null
-  return firstSegment.charAt(0).toUpperCase() + firstSegment.slice(1)
-}
-
-export default function HomeView({ onStart, showBrandWord, userEmail }) {
-  const [greeting] = useState(() => {
-    const name = nameFromEmail(userEmail)
-    const options = name
-      ? [...BASE_GREETINGS, `Welcome back, ${name}`, `Good to see you, ${name}`]
-      : BASE_GREETINGS
-    return options[Math.floor(Math.random() * options.length)]
-  })
+export default function HomeView({ onStart, showBrandWord }) {
+  const [greeting] = useState(() => BASE_GREETINGS[Math.floor(Math.random() * BASE_GREETINGS.length)])
   const [name, setName] = useState('')
   const [files, setFiles] = useState([])
   const [isDragging, setIsDragging] = useState(false)

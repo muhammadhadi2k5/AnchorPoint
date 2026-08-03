@@ -3,10 +3,6 @@
   display: flex;
 }
 
-.app-shell-blank {
-  background: var(--cream);
-}
-
 .app-main {
   flex: 1;
   overflow: hidden;

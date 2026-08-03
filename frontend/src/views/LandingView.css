@@ -63,7 +63,7 @@
   margin: 0 0 12px;
 }
 
-.landing-signin {
+.landing-start {
   font-weight: 600;
   font-size: 15px;
   border: none;
@@ -75,7 +75,7 @@
   transition: background 0.15s ease;
 }
 
-.landing-signin:hover {
+.landing-start:hover {
   background: var(--coral-deep);
 }
 

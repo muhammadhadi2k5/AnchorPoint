@@ -31,74 +31,7 @@ async function handleErrors(response) {
 }
 
 function request(path, options = {}) {
-  return fetch(`${BASE_URL}${path}`, { credentials: 'include', ...options }).then(handleErrors)
-}
-
-export async function signup(email, password) {
-  const response = await request('/auth/signup', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password }),
-  })
-  return response.json()
-}
-
-export async function login(email, password) {
-  const response = await request('/auth/login', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password }),
-  })
-  return response.json()
-}
-
-export async function logout() {
-  const response = await request('/auth/logout', { method: 'POST' })
-  return response.json()
-}
-
-// returns null instead of throwing on a 401, since "no one is logged in
-// yet" is an expected state on first load, not an error
-export async function getCurrentUser() {
-  try {
-    const response = await request('/auth/me')
-    return response.json()
-  } catch (err) {
-    if (err instanceof ApiError && err.type === 'not_authenticated') return null
-    throw err
-  }
-}
-
-export async function verifyEmail(code) {
-  const response = await request('/auth/verify-email', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ code }),
-  })
-  return response.json()
-}
-
-export async function resendVerification() {
-  const response = await request('/auth/resend-verification', { method: 'POST' })
-  return response.json()
-}
-
-export async function forgotPassword(email) {
-  const response = await request('/auth/forgot-password', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email }),
-  })
-  return response.json()
-}
-
-export async function resetPassword(email, code, newPassword) {
-  const response = await request('/auth/reset-password', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, code, new_password: newPassword }),
-  })
-  return response.json()
+  return fetch(`${BASE_URL}${path}`, options).then(handleErrors)
 }
 
 export async function createDataset(name, files) {

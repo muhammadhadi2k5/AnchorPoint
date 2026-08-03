@@ -1,20 +1,16 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import HomeView from './views/HomeView.jsx'
 import IngestionLoadingView from './views/IngestionLoadingView.jsx'
 import ChatView from './views/ChatView.jsx'
 import LandingView from './views/LandingView.jsx'
-import AuthView from './views/AuthView.jsx'
-import VerifyEmailView from './views/VerifyEmailView.jsx'
 import Sidebar from './components/Sidebar.jsx'
 import QuotaModal from './components/QuotaModal.jsx'
 import {
   addDocuments,
   createDataset,
   deleteDataset,
-  getCurrentUser,
   getIngestStatus,
   listDatasets,
-  logout,
   reingestDataset,
   updateDataset,
 } from './api.js'
@@ -23,9 +19,8 @@ import './App.css'
 const SIDEBAR_COLLAPSE_KEY = 'anchorpoint-sidebar-collapsed'
 
 export default function App() {
-  // 'checking' (session lookup in flight) -> 'landing' | 'auth' -> 'app'
-  const [stage, setStage] = useState('checking')
-  const [user, setUser] = useState(null)
+  // 'landing' -> 'app' - no login gate, everyone shares the same datasets
+  const [stage, setStage] = useState('landing')
   const [view, setView] = useState('home')
   const [datasetId, setDatasetId] = useState(null)
   const [datasets, setDatasets] = useState([])
@@ -38,50 +33,11 @@ export default function App() {
     }
   })
 
-  useEffect(() => {
-    getCurrentUser().then((existingUser) => {
-      if (!existingUser) {
-        setStage('landing')
-        return
-      }
-      setUser(existingUser)
-      if (existingUser.email_verified) {
-        setStage('app')
-        refreshDatasets()
-      } else {
-        setStage('verify-email')
-      }
-    })
-    // refreshDatasets is stable for the life of the component (defined
-    // once, no dependencies of its own) - fine to omit from deps here
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  const refreshDatasets = () => listDatasets().then(setDatasets)
 
-  // signup/login land here - only fully into the app once the email is
-  // verified, otherwise off to the code-entry screen first
-  const handleAuthenticated = (authedUser) => {
-    setUser(authedUser)
-    if (authedUser.email_verified) {
-      setStage('app')
-      refreshDatasets()
-    } else {
-      setStage('verify-email')
-    }
-  }
-
-  const handleVerified = (verifiedUser) => {
-    setUser(verifiedUser)
+  const handleEnterApp = () => {
     setStage('app')
     refreshDatasets()
-  }
-
-  const handleLogout = async () => {
-    await logout()
-    setUser(null)
-    setDatasets([])
-    setDatasetId(null)
-    setView('home')
-    setStage('landing')
   }
 
   const toggleSidebarCollapsed = () => {
@@ -96,8 +52,6 @@ export default function App() {
       return next
     })
   }
-
-  const refreshDatasets = () => listDatasets().then(setDatasets)
 
   const handleStart = async (name, files) => {
     const dataset = await createDataset(name, files)
@@ -160,20 +114,8 @@ export default function App() {
     setView('loading')
   }
 
-  if (stage === 'checking') {
-    return <div className="app-shell app-shell-blank" />
-  }
-
   if (stage === 'landing') {
-    return <LandingView onSignIn={() => setStage('auth')} />
-  }
-
-  if (stage === 'auth') {
-    return <AuthView onAuthenticated={handleAuthenticated} onBack={() => setStage('landing')} />
-  }
-
-  if (stage === 'verify-email') {
-    return <VerifyEmailView email={user?.email} onVerified={handleVerified} />
+    return <LandingView onStart={handleEnterApp} />
   }
 
   return (
@@ -188,8 +130,6 @@ export default function App() {
         onDeleteDataset={handleDeleteDataset}
         collapsed={sidebarCollapsed}
         onToggleCollapsed={toggleSidebarCollapsed}
-        userEmail={user?.email}
-        onLogout={handleLogout}
       />
 
       <main className="app-main">
@@ -205,7 +145,7 @@ export default function App() {
           />
         )}
         {view === 'home' && (
-          <HomeView onStart={handleStart} showBrandWord={sidebarCollapsed} userEmail={user?.email} />
+          <HomeView onStart={handleStart} showBrandWord={sidebarCollapsed} />
         )}
       </main>
 
