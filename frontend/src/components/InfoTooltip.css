@@ -1,0 +1,52 @@
+.info-tooltip {
+  position: relative;
+  display: inline-flex;
+  margin-left: 5px;
+  vertical-align: middle;
+}
+
+.info-tooltip-trigger {
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 1px solid var(--ink-soft);
+  background: none;
+  color: var(--ink-soft);
+  font-size: 9px;
+  font-family: Georgia, serif;
+  font-style: italic;
+  font-weight: 700;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: help;
+  padding: 0;
+}
+
+.info-tooltip-trigger:hover,
+.info-tooltip-trigger:focus-visible {
+  border-color: var(--coral);
+  color: var(--coral-deep);
+}
+
+.info-tooltip-bubble {
+  position: absolute;
+  top: calc(100% + 7px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: 210px;
+  background: var(--ink);
+  color: var(--white);
+  font-size: 11.5px;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: normal;
+  line-height: 1.45;
+  padding: 8px 10px;
+  border-radius: 8px;
+  z-index: 30;
+  pointer-events: none;
+}

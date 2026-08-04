@@ -63,6 +63,8 @@ export default function ChatView({ datasetId, onQuotaExceeded, onAddDocuments, o
     } catch (err) {
       if (err.type === 'quota_exceeded') {
         onQuotaExceeded()
+      } else if (err.type === 'ai_service_unavailable') {
+        setConnectionError("Gemini is overloaded on Google's end right now, not your connection. Try again in a bit.")
       } else {
         setConnectionError("Looks like the connection dropped. Try sending that again once you're back online.")
       }
