@@ -28,6 +28,75 @@ CREATE TABLE IF NOT EXISTS messages (
     citations TEXT,
     created_at TEXT NOT NULL
 );
+
+-- Live tab: one row per real assistant message, scored automatically in the
+-- background (see api/evaluate.py). question/answer/citations are
+-- denormalized straight onto the row so every dashboard read is a single
+-- table, no joins - same spirit as messages.citations already being a
+-- denormalized JSON blob
+CREATE TABLE IF NOT EXISTS evaluations (
+    id TEXT PRIMARY KEY,
+    dataset_id TEXT NOT NULL REFERENCES datasets(id),
+    message_id TEXT NOT NULL UNIQUE REFERENCES messages(id),
+    question TEXT NOT NULL,
+    answer TEXT NOT NULL,
+    citations TEXT,
+    status TEXT NOT NULL CHECK (status IN ('pending', 'complete', 'failed')) DEFAULT 'pending',
+    faithfulness_score INTEGER,
+    faithfulness_reasoning TEXT,
+    answer_relevance_score INTEGER,
+    answer_relevance_reasoning TEXT,
+    context_relevance_score INTEGER,
+    context_relevance_reasoning TEXT,
+    error TEXT,
+    created_at TEXT NOT NULL,
+    completed_at TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_evaluations_dataset_created
+    ON evaluations(dataset_id, created_at DESC);
+
+-- Test Set tab: a small set of known-answer questions per dataset, run
+-- on demand (see api/golden.py) rather than automatically
+CREATE TABLE IF NOT EXISTS golden_questions (
+    id TEXT PRIMARY KEY,
+    dataset_id TEXT NOT NULL REFERENCES datasets(id),
+    question TEXT NOT NULL,
+    expected_answer TEXT NOT NULL,
+    expected_sources TEXT,
+    created_at TEXT NOT NULL
+);
+
+-- one row per "Run test set" click - keeping runs separate (not just
+-- overwriting a single latest-result-per-question) is what makes "did
+-- tuning top_k actually help" answerable, same reasoning as messages
+-- being append-only
+CREATE TABLE IF NOT EXISTS golden_runs (
+    id TEXT PRIMARY KEY,
+    dataset_id TEXT NOT NULL REFERENCES datasets(id),
+    status TEXT NOT NULL CHECK (status IN ('running', 'complete')) DEFAULT 'running',
+    created_at TEXT NOT NULL,
+    completed_at TEXT
+);
+
+CREATE TABLE IF NOT EXISTS golden_results (
+    id TEXT PRIMARY KEY,
+    run_id TEXT NOT NULL REFERENCES golden_runs(id),
+    question_id TEXT NOT NULL REFERENCES golden_questions(id),
+    question TEXT NOT NULL,
+    expected_answer TEXT NOT NULL,
+    generated_answer TEXT,
+    retrieved_chunks TEXT,
+    answer_correctness_score INTEGER,
+    answer_correctness_reasoning TEXT,
+    context_recall_score INTEGER,
+    context_recall_reasoning TEXT,
+    status TEXT NOT NULL CHECK (status IN ('pending', 'complete', 'failed')) DEFAULT 'pending',
+    error TEXT,
+    created_at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_golden_results_run ON golden_results(run_id);
 """
 
 
@@ -217,3 +286,314 @@ def _deserialize_message(row):
     message = dict(row)
     message["citations"] = json.loads(message["citations"]) if message["citations"] else None
     return message
+
+
+# --- Live tab (automatic per-message evaluation) ---
+
+def create_evaluation(dataset_id, message_id, question, answer, citations=None):
+    evaluation_id = uuid.uuid4().hex
+    conn = get_connection()
+    try:
+        conn.execute(
+            """INSERT INTO evaluations
+               (id, dataset_id, message_id, question, answer, citations, status, created_at)
+               VALUES (?, ?, ?, ?, ?, ?, 'pending', ?)""",
+            (
+                evaluation_id,
+                dataset_id,
+                message_id,
+                question,
+                answer,
+                json.dumps(citations) if citations is not None else None,
+                _now(),
+            ),
+        )
+        conn.commit()
+    finally:
+        conn.close()
+    return get_evaluation(evaluation_id)
+
+
+def complete_evaluation(evaluation_id, faithfulness, answer_relevance, context_relevance):
+    conn = get_connection()
+    try:
+        conn.execute(
+            """UPDATE evaluations SET
+                 status = 'complete',
+                 faithfulness_score = ?, faithfulness_reasoning = ?,
+                 answer_relevance_score = ?, answer_relevance_reasoning = ?,
+                 context_relevance_score = ?, context_relevance_reasoning = ?,
+                 completed_at = ?
+               WHERE id = ?""",
+            (
+                faithfulness["score"] if faithfulness else None,
+                faithfulness["reasoning"] if faithfulness else None,
+                answer_relevance["score"],
+                answer_relevance["reasoning"],
+                context_relevance["score"] if context_relevance else None,
+                context_relevance["reasoning"] if context_relevance else None,
+                _now(),
+                evaluation_id,
+            ),
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def fail_evaluation(evaluation_id, error):
+    conn = get_connection()
+    try:
+        conn.execute(
+            "UPDATE evaluations SET status = 'failed', error = ?, completed_at = ? WHERE id = ?",
+            (str(error), _now(), evaluation_id),
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def get_evaluation(evaluation_id):
+    conn = get_connection()
+    try:
+        row = conn.execute("SELECT * FROM evaluations WHERE id = ?", (evaluation_id,)).fetchone()
+        return _deserialize_evaluation(row) if row else None
+    finally:
+        conn.close()
+
+
+def list_evaluations(dataset_id, limit=50, offset=0):
+    conn = get_connection()
+    try:
+        rows = conn.execute(
+            """SELECT * FROM evaluations WHERE dataset_id = ?
+               ORDER BY created_at DESC LIMIT ? OFFSET ?""",
+            (dataset_id, limit, offset),
+        ).fetchall()
+        return [_deserialize_evaluation(row) for row in rows]
+    finally:
+        conn.close()
+
+
+def get_evaluation_summary(dataset_id):
+    conn = get_connection()
+    try:
+        counts = {
+            row["status"]: row["n"]
+            for row in conn.execute(
+                "SELECT status, COUNT(*) as n FROM evaluations WHERE dataset_id = ? GROUP BY status",
+                (dataset_id,),
+            )
+        }
+        avg = conn.execute(
+            """SELECT AVG(faithfulness_score) AS faithfulness,
+                      AVG(answer_relevance_score) AS answer_relevance,
+                      AVG(context_relevance_score) AS context_relevance
+               FROM evaluations WHERE dataset_id = ? AND status = 'complete'""",
+            (dataset_id,),
+        ).fetchone()
+        return {
+            "total": sum(counts.values()),
+            "pending": counts.get("pending", 0),
+            "complete": counts.get("complete", 0),
+            "failed": counts.get("failed", 0),
+            "averages": {
+                key: (round(avg[key], 2) if avg[key] is not None else None)
+                for key in ("faithfulness", "answer_relevance", "context_relevance")
+            },
+        }
+    finally:
+        conn.close()
+
+
+def _deserialize_evaluation(row):
+    evaluation = dict(row)
+    evaluation["citations"] = json.loads(evaluation["citations"]) if evaluation["citations"] else None
+    return evaluation
+
+
+# --- Test Set tab (on-demand golden-answer evaluation) ---
+
+def create_golden_question(dataset_id, question, expected_answer, expected_sources=None):
+    question_id = uuid.uuid4().hex
+    conn = get_connection()
+    try:
+        conn.execute(
+            """INSERT INTO golden_questions
+               (id, dataset_id, question, expected_answer, expected_sources, created_at)
+               VALUES (?, ?, ?, ?, ?, ?)""",
+            (
+                question_id,
+                dataset_id,
+                question,
+                expected_answer,
+                json.dumps(expected_sources) if expected_sources else None,
+                _now(),
+            ),
+        )
+        conn.commit()
+    finally:
+        conn.close()
+    return get_golden_question(question_id)
+
+
+def get_golden_question(question_id):
+    conn = get_connection()
+    try:
+        row = conn.execute(
+            "SELECT * FROM golden_questions WHERE id = ?", (question_id,)
+        ).fetchone()
+        return _deserialize_golden_question(row) if row else None
+    finally:
+        conn.close()
+
+
+def list_golden_questions(dataset_id):
+    conn = get_connection()
+    try:
+        rows = conn.execute(
+            "SELECT * FROM golden_questions WHERE dataset_id = ? ORDER BY created_at ASC",
+            (dataset_id,),
+        ).fetchall()
+        return [_deserialize_golden_question(row) for row in rows]
+    finally:
+        conn.close()
+
+
+def delete_golden_question(question_id):
+    conn = get_connection()
+    try:
+        conn.execute("DELETE FROM golden_questions WHERE id = ?", (question_id,))
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def _deserialize_golden_question(row):
+    question = dict(row)
+    question["expected_sources"] = (
+        json.loads(question["expected_sources"]) if question["expected_sources"] else None
+    )
+    return question
+
+
+def create_golden_run(dataset_id):
+    run_id = uuid.uuid4().hex
+    conn = get_connection()
+    try:
+        conn.execute(
+            "INSERT INTO golden_runs (id, dataset_id, status, created_at) VALUES (?, ?, 'running', ?)",
+            (run_id, dataset_id, _now()),
+        )
+        conn.commit()
+    finally:
+        conn.close()
+    return get_golden_run(run_id)
+
+
+def complete_golden_run(run_id):
+    conn = get_connection()
+    try:
+        conn.execute(
+            "UPDATE golden_runs SET status = 'complete', completed_at = ? WHERE id = ?",
+            (_now(), run_id),
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def add_golden_result(
+    run_id,
+    question_id,
+    question,
+    expected_answer,
+    generated_answer=None,
+    retrieved_chunks=None,
+    answer_correctness=None,
+    context_recall=None,
+    status="complete",
+    error=None,
+):
+    result_id = uuid.uuid4().hex
+    conn = get_connection()
+    try:
+        conn.execute(
+            """INSERT INTO golden_results
+               (id, run_id, question_id, question, expected_answer, generated_answer,
+                retrieved_chunks, answer_correctness_score, answer_correctness_reasoning,
+                context_recall_score, context_recall_reasoning, status, error, created_at)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            (
+                result_id,
+                run_id,
+                question_id,
+                question,
+                expected_answer,
+                generated_answer,
+                json.dumps(retrieved_chunks) if retrieved_chunks is not None else None,
+                answer_correctness["score"] if answer_correctness else None,
+                answer_correctness["reasoning"] if answer_correctness else None,
+                context_recall["score"] if context_recall else None,
+                context_recall["reasoning"] if context_recall else None,
+                status,
+                error,
+                _now(),
+            ),
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+
+# runs ordered newest first, each with a computed pass-rate summary
+# (answer_correctness_score >= 4 counts as a pass, same tier convention the
+# Live tab's score badges use) so the dashboard's run history list doesn't
+# need a second round-trip per run just to show "4/5 passed"
+def list_golden_runs(dataset_id):
+    conn = get_connection()
+    try:
+        runs = [
+            dict(row)
+            for row in conn.execute(
+                "SELECT * FROM golden_runs WHERE dataset_id = ? ORDER BY created_at DESC",
+                (dataset_id,),
+            )
+        ]
+        for run in runs:
+            counts = conn.execute(
+                """SELECT COUNT(*) AS total,
+                          SUM(CASE WHEN answer_correctness_score >= 4 THEN 1 ELSE 0 END) AS passed
+                   FROM golden_results WHERE run_id = ?""",
+                (run["id"],),
+            ).fetchone()
+            run["total_questions"] = counts["total"] or 0
+            run["passed_questions"] = counts["passed"] or 0
+        return runs
+    finally:
+        conn.close()
+
+
+def get_golden_run(run_id):
+    conn = get_connection()
+    try:
+        row = conn.execute("SELECT * FROM golden_runs WHERE id = ?", (run_id,)).fetchone()
+        if not row:
+            return None
+        run = dict(row)
+        results = conn.execute(
+            "SELECT * FROM golden_results WHERE run_id = ? ORDER BY created_at ASC",
+            (run_id,),
+        ).fetchall()
+        run["results"] = [_deserialize_golden_result(r) for r in results]
+        return run
+    finally:
+        conn.close()
+
+
+def _deserialize_golden_result(row):
+    result = dict(row)
+    result["retrieved_chunks"] = (
+        json.loads(result["retrieved_chunks"]) if result["retrieved_chunks"] else None
+    )
+    return result

@@ -1,9 +1,8 @@
-from vector_db import VectorDB
+from api import db, evaluate
 from embedding_manager import EmbeddingManager
-from retriever import Retriever
 from llm_generator import Generator
-
-from api import db
+from retriever import Retriever
+from vector_db import VectorDB
 
 # flip to False to test latency without conversation memory. generate_answer
 # treats history=None the same as if this whole feature never existed, so
@@ -56,6 +55,10 @@ def ask(dataset_id, query):
         for piece in generator.generate_answer(query, results, history=history):
             pieces.append(piece)
             yield piece
-        db.add_message(dataset_id, "assistant", "".join(pieces), citations=citations)
+        answer = "".join(pieces)
+        assistant_message = db.add_message(dataset_id, "assistant", answer, citations=citations)
+        # runs in a background thread - the last token above has already
+        # been yielded, so this can't add latency to what the user sees
+        evaluate.start_evaluation(dataset_id, assistant_message["id"], query, results, answer, citations)
 
     return stream()

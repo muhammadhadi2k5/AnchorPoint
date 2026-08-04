@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
-from api import chat, db, ingest
+from api import chat, db, golden, ingest
 from api.progress import clear_progress, get_progress
 from rate_limit_guard import QuotaExceededError
 from vector_db import delete_collection
@@ -44,6 +44,12 @@ class MessageIn(BaseModel):
 class DatasetUpdate(BaseModel):
     name: str | None = None
     pinned: bool | None = None
+
+
+class GoldenQuestionIn(BaseModel):
+    question: str
+    expected_answer: str
+    expected_sources: list[str] | None = None
 
 
 @app.post("/datasets")
@@ -157,3 +163,74 @@ def clear_conversation(dataset_id: str):
     _require_dataset(dataset_id)
     db.clear_messages(dataset_id)
     return {"status": "cleared"}
+
+
+# --- Live tab (automatic per-message evaluation) ---
+
+@app.get("/datasets/{dataset_id}/evaluations")
+def list_evaluations(dataset_id: str, limit: int = 50, offset: int = 0):
+    _require_dataset(dataset_id)
+    return db.list_evaluations(dataset_id, limit=limit, offset=offset)
+
+
+# has to be declared before the /{evaluation_id} route below, or FastAPI
+# matches "summary" as an evaluation_id instead of this route
+@app.get("/datasets/{dataset_id}/evaluations/summary")
+def evaluations_summary(dataset_id: str):
+    _require_dataset(dataset_id)
+    return db.get_evaluation_summary(dataset_id)
+
+
+@app.get("/datasets/{dataset_id}/evaluations/{evaluation_id}")
+def get_evaluation(dataset_id: str, evaluation_id: str):
+    _require_dataset(dataset_id)
+    evaluation = db.get_evaluation(evaluation_id)
+    if not evaluation or evaluation["dataset_id"] != dataset_id:
+        raise HTTPException(status_code=404, detail="evaluation_not_found")
+    return evaluation
+
+
+# --- Test Set tab (on-demand golden-answer evaluation) ---
+
+@app.post("/datasets/{dataset_id}/golden-questions")
+def create_golden_question(dataset_id: str, body: GoldenQuestionIn):
+    _require_dataset(dataset_id)
+    return db.create_golden_question(
+        dataset_id, body.question, body.expected_answer, body.expected_sources
+    )
+
+
+@app.get("/datasets/{dataset_id}/golden-questions")
+def list_golden_questions(dataset_id: str):
+    _require_dataset(dataset_id)
+    return db.list_golden_questions(dataset_id)
+
+
+@app.delete("/datasets/{dataset_id}/golden-questions/{question_id}")
+def delete_golden_question(dataset_id: str, question_id: str):
+    _require_dataset(dataset_id)
+    db.delete_golden_question(question_id)
+    return {"status": "deleted"}
+
+
+@app.post("/datasets/{dataset_id}/golden-runs")
+def start_golden_run(dataset_id: str):
+    _require_dataset(dataset_id)
+    if not db.list_golden_questions(dataset_id):
+        raise HTTPException(status_code=400, detail="no_golden_questions")
+    return golden.start_run(dataset_id)
+
+
+@app.get("/datasets/{dataset_id}/golden-runs")
+def list_golden_runs(dataset_id: str):
+    _require_dataset(dataset_id)
+    return db.list_golden_runs(dataset_id)
+
+
+@app.get("/datasets/{dataset_id}/golden-runs/{run_id}")
+def get_golden_run(dataset_id: str, run_id: str):
+    _require_dataset(dataset_id)
+    run = db.get_golden_run(run_id)
+    if not run or run["dataset_id"] != dataset_id:
+        raise HTTPException(status_code=404, detail="run_not_found")
+    return run
