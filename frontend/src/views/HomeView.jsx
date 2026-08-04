@@ -8,6 +8,20 @@ const BASE_GREETINGS = [
   "Let's dig into your documents",
   'What do you need to know?',
   'Ready when you are',
+  'What can I find for you?',
+  'Where should we start?',
+  'What are you curious about?',
+  'Your documents, your questions',
+  "Let's find that answer",
+  'What would you like to know?',
+  'Anything you need from your docs?',
+  'Search away',
+  'What can I help you find today?',
+  "Let's get you an answer",
+  'What are we exploring today?',
+  'Your anchor point for answers',
+  'What can I look up for you?',
+  'Ready to search',
 ]
 
 export default function HomeView({ onStart, onBack, showBrandWord }) {
