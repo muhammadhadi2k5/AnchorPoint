@@ -275,7 +275,7 @@
 
 .copy-button.copied {
   color: var(--success);
-  opacity: 1;
+  border-color: var(--success);
 }
 
 .inline-error {
