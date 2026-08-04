@@ -199,6 +199,7 @@
 .citation-row {
   margin-top: 10px;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 6px;
 }
@@ -224,6 +225,33 @@
   color: var(--white);
   border: none;
   cursor: pointer;
+}
+
+.message-actions {
+  margin-top: 8px;
+  display: flex;
+}
+
+.copy-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  border: none;
+  background: none;
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+
+.copy-button:hover {
+  background: var(--cream-2);
+  color: var(--ink);
+}
+
+.copy-button.copied {
+  color: var(--success);
 }
 
 .inline-error {

@@ -12,6 +12,43 @@ const GREETINGS = [
   'Ready when you are',
 ]
 
+// copies the raw markdown source, same text the message is stored/rendered
+// from, not a plain-text-stripped version
+function CopyButton({ text }) {
+  const [copied, setCopied] = useState(false)
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(text)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 1500)
+    } catch {
+      // clipboard API can be unavailable (non-https context, permissions) - fail silently
+    }
+  }
+
+  return (
+    <button
+      type="button"
+      className={`copy-button${copied ? ' copied' : ''}`}
+      onClick={handleCopy}
+      aria-label={copied ? 'Copied' : 'Copy response'}
+      title={copied ? 'Copied' : 'Copy response'}
+    >
+      {copied ? (
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
+          <path d="M3 8.5L6.5 12L13 4" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      ) : (
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
+          <rect x="5.5" y="5.5" width="8" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.3" />
+          <path d="M3.5 10.5V3.5A1.5 1.5 0 0 1 5 2h6" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+        </svg>
+      )}
+    </button>
+  )
+}
+
 export default function ChatView({ datasetId, onQuotaExceeded, onAddDocuments, onReingest, onOpenEvaluations }) {
   const [messages, setMessages] = useState([])
   const [messagesLoaded, setMessagesLoaded] = useState(false)
@@ -120,6 +157,11 @@ export default function ChatView({ datasetId, onQuotaExceeded, onAddDocuments, o
                       {i + 1}
                     </button>
                   ))}
+                </div>
+              )}
+              {message.role === 'assistant' && (
+                <div className="message-actions">
+                  <CopyButton text={message.content} />
                 </div>
               )}
             </div>

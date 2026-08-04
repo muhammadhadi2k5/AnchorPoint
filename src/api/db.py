@@ -482,9 +482,14 @@ def list_golden_questions(dataset_id):
         conn.close()
 
 
+# golden_results references questions by id with no ON DELETE CASCADE, so a
+# question that's already been run at least once has to have its results
+# cleared first or this raises IntegrityError, same issue delete_dataset
+# and clear_messages hit for the same reason
 def delete_golden_question(question_id):
     conn = get_connection()
     try:
+        conn.execute("DELETE FROM golden_results WHERE question_id = ?", (question_id,))
         conn.execute("DELETE FROM golden_questions WHERE id = ?", (question_id,))
         conn.commit()
     finally:
