@@ -5,6 +5,7 @@ import ChatView from './views/ChatView.jsx'
 import LandingView from './views/LandingView.jsx'
 import Sidebar from './components/Sidebar.jsx'
 import QuotaModal from './components/QuotaModal.jsx'
+import EvaluationDashboard from './components/EvaluationDashboard.jsx'
 import {
   addDocuments,
   createDataset,
@@ -25,6 +26,7 @@ export default function App() {
   const [datasetId, setDatasetId] = useState(null)
   const [datasets, setDatasets] = useState([])
   const [quotaExceeded, setQuotaExceeded] = useState(false)
+  const [showEvaluations, setShowEvaluations] = useState(false)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
     try {
       return localStorage.getItem(SIDEBAR_COLLAPSE_KEY) === '1'
@@ -151,6 +153,7 @@ export default function App() {
         onRenameDataset={handleRenameDataset}
         onPinDataset={handlePinDataset}
         onDeleteDataset={handleDeleteDataset}
+        onOpenEvaluations={() => setShowEvaluations(true)}
         collapsed={sidebarCollapsed}
         onToggleCollapsed={toggleSidebarCollapsed}
       />
@@ -173,6 +176,9 @@ export default function App() {
       </main>
 
       {quotaExceeded && <QuotaModal onClose={() => setQuotaExceeded(false)} />}
+      {showEvaluations && datasetId && (
+        <EvaluationDashboard datasetId={datasetId} onClose={() => setShowEvaluations(false)} />
+      )}
     </div>
   )
 }

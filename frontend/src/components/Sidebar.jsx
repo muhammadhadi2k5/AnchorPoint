@@ -10,6 +10,7 @@ export default function Sidebar({
   onRenameDataset,
   onPinDataset,
   onDeleteDataset,
+  onOpenEvaluations,
   collapsed,
   onToggleCollapsed,
 }) {
@@ -71,6 +72,21 @@ export default function Sidebar({
       <button type="button" className="sidebar-new" onClick={onNewDataset} title="New dataset">
         <span className="sidebar-new-icon">+</span>
         <span className="sidebar-new-label">New dataset</span>
+      </button>
+
+      <button
+        type="button"
+        className="sidebar-eval"
+        onClick={onOpenEvaluations}
+        disabled={!activeDatasetId}
+        title={activeDatasetId ? 'Evaluations' : 'Open a dataset to see its evaluations'}
+      >
+        <span className="sidebar-eval-icon" aria-hidden="true">
+          <span />
+          <span />
+          <span />
+        </span>
+        <span className="sidebar-eval-label">Evaluations</span>
       </button>
 
       {datasets.length === 0 ? (

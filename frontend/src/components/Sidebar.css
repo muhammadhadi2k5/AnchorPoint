@@ -112,6 +112,77 @@
   background: var(--coral-deep);
 }
 
+.sidebar-eval {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  font-weight: 600;
+  font-size: 13.5px;
+  border: 1px solid var(--sand-line);
+  border-radius: 999px;
+  padding: 10px 16px;
+  color: var(--ink);
+  background: none;
+  cursor: pointer;
+  transition: padding 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar.collapsed .sidebar-eval {
+  padding: 10px;
+  justify-content: center;
+  gap: 0;
+}
+
+.sidebar-eval:hover:not(:disabled) {
+  background: var(--cream-2);
+}
+
+.sidebar-eval:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.sidebar-eval-icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  width: 14px;
+  height: 12px;
+}
+
+.sidebar-eval-icon span {
+  width: 3px;
+  border-radius: 1px;
+  background: var(--coral);
+}
+
+.sidebar-eval-icon span:nth-child(1) {
+  height: 5px;
+}
+
+.sidebar-eval-icon span:nth-child(2) {
+  height: 9px;
+}
+
+.sidebar-eval-icon span:nth-child(3) {
+  height: 12px;
+}
+
+.sidebar-eval-label {
+  white-space: nowrap;
+  overflow: hidden;
+  max-width: 140px;
+  opacity: 1;
+  transition: opacity 0.14s ease, max-width 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar.collapsed .sidebar-eval-label {
+  opacity: 0;
+  max-width: 0;
+}
+
 .sidebar-empty {
   font-size: 12.5px;
   color: var(--ink-soft);
