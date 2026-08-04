@@ -3,6 +3,7 @@ import ReactMarkdown from 'react-markdown'
 import { listMessages, sendMessageStream } from '../api.js'
 import CitationDrawer from '../components/CitationDrawer.jsx'
 import DocumentLibrary from '../components/DocumentLibrary.jsx'
+import copyIcon from '../../elements/copy-logo.png'
 import './ChatView.css'
 
 const GREETINGS = [
@@ -40,10 +41,7 @@ function CopyButton({ text }) {
           <path d="M3 8.5L6.5 12L13 4" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       ) : (
-        <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
-          <rect x="5.5" y="5.5" width="8" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.3" />
-          <path d="M3.5 10.5V3.5A1.5 1.5 0 0 1 5 2h6" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
-        </svg>
+        <img src={copyIcon} alt="" className="copy-icon" />
       )}
     </button>
   )
@@ -136,29 +134,31 @@ export default function ChatView({ datasetId, onQuotaExceeded, onAddDocuments, o
       <div className="chat-scroll-area">
         <div className="chat-messages">
           {messages.map((message, index) => (
-            <div key={message.id ?? index} className={`bubble ${message.role}`}>
-              {message.role === 'assistant' ? (
-                <div className="markdown-body">
-                  <ReactMarkdown>{message.content}</ReactMarkdown>
-                </div>
-              ) : (
-                message.content
-              )}
-              {message.citations && message.citations.length > 0 && (
-                <div className="citation-row">
-                  <span className="citation-label">Sources</span>
-                  {message.citations.map((citation, i) => (
-                    <button
-                      type="button"
-                      key={i}
-                      className="citation-tag"
-                      onClick={() => setActiveCitation(citation)}
-                    >
-                      {i + 1}
-                    </button>
-                  ))}
-                </div>
-              )}
+            <div key={message.id ?? index} className={`message-group ${message.role}`}>
+              <div className={`bubble ${message.role}`}>
+                {message.role === 'assistant' ? (
+                  <div className="markdown-body">
+                    <ReactMarkdown>{message.content}</ReactMarkdown>
+                  </div>
+                ) : (
+                  message.content
+                )}
+                {message.citations && message.citations.length > 0 && (
+                  <div className="citation-row">
+                    <span className="citation-label">Sources</span>
+                    {message.citations.map((citation, i) => (
+                      <button
+                        type="button"
+                        key={i}
+                        className="citation-tag"
+                        onClick={() => setActiveCitation(citation)}
+                      >
+                        {i + 1}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
               {message.role === 'assistant' && (
                 <div className="message-actions">
                   <CopyButton text={message.content} />
@@ -168,17 +168,19 @@ export default function ChatView({ datasetId, onQuotaExceeded, onAddDocuments, o
           ))}
 
           {streamingText !== null && (
-            streamingText === '' ? (
-              <div className="bubble assistant loading-bubble">
-                <span className="thinking-spinner" aria-label="Thinking" />
-              </div>
-            ) : (
-              <div className="bubble assistant">
-                <div className="markdown-body">
-                  <ReactMarkdown>{streamingText}</ReactMarkdown>
+            <div className="message-group assistant">
+              {streamingText === '' ? (
+                <div className="bubble assistant loading-bubble">
+                  <span className="thinking-spinner" aria-label="Thinking" />
                 </div>
-              </div>
-            )
+              ) : (
+                <div className="bubble assistant">
+                  <div className="markdown-body">
+                    <ReactMarkdown>{streamingText}</ReactMarkdown>
+                  </div>
+                </div>
+              )}
+            </div>
           )}
 
           {connectionError && <div className="inline-error">{connectionError}</div>}
