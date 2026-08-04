@@ -32,12 +32,8 @@
 }
 
 .info-tooltip-bubble {
-  position: absolute;
-  top: calc(100% + 7px);
-  left: 50%;
-  transform: translateX(-50%);
-  width: max-content;
-  max-width: 210px;
+  position: fixed;
+  width: 210px;
   background: var(--ink);
   color: var(--white);
   font-size: 11.5px;

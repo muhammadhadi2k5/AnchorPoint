@@ -124,6 +124,13 @@ def init_db():
         conn.execute("DROP TABLE IF EXISTS sessions")
         conn.execute("DROP TABLE IF EXISTS verification_codes")
         conn.execute("DROP TABLE IF EXISTS users")
+        # a golden run's background thread can't survive a server restart -
+        # any row still 'running' at startup means the process that owned it
+        # is gone, so without this it would show "running" forever
+        conn.execute(
+            "UPDATE golden_runs SET status = 'complete', completed_at = ? WHERE status = 'running'",
+            (_now(),),
+        )
         conn.commit()
     finally:
         conn.close()
