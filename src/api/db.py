@@ -211,10 +211,21 @@ def set_pinned(dataset_id, pinned):
 
 # removes the dataset's row, its messages, and its on-disk files. the
 # caller is responsible for dropping the matching qdrant collection, since
-# that lives outside sqlite
+# that lives outside sqlite. eval tables reference datasets/messages via
+# foreign keys with no ON DELETE CASCADE, so they have to be cleared first
+# in child-to-parent order or this raises IntegrityError and leaves the
+# dataset row behind, even though the caller's qdrant delete already ran
 def delete_dataset(dataset_id):
     conn = get_connection()
     try:
+        conn.execute(
+            "DELETE FROM golden_results WHERE run_id IN "
+            "(SELECT id FROM golden_runs WHERE dataset_id = ?)",
+            (dataset_id,),
+        )
+        conn.execute("DELETE FROM golden_runs WHERE dataset_id = ?", (dataset_id,))
+        conn.execute("DELETE FROM golden_questions WHERE dataset_id = ?", (dataset_id,))
+        conn.execute("DELETE FROM evaluations WHERE dataset_id = ?", (dataset_id,))
         conn.execute("DELETE FROM messages WHERE dataset_id = ?", (dataset_id,))
         conn.execute("DELETE FROM datasets WHERE id = ?", (dataset_id,))
         conn.commit()
@@ -279,10 +290,14 @@ def list_messages(dataset_id):
         conn.close()
 
 
-# clears the conversation without touching the dataset or its documents
+# clears the conversation without touching the dataset or its documents.
+# evaluations reference messages by id with no ON DELETE CASCADE, so they
+# have to go first or this raises the same IntegrityError delete_dataset
+# hit for the same reason
 def clear_messages(dataset_id):
     conn = get_connection()
     try:
+        conn.execute("DELETE FROM evaluations WHERE dataset_id = ?", (dataset_id,))
         conn.execute("DELETE FROM messages WHERE dataset_id = ?", (dataset_id,))
         conn.commit()
     finally:
