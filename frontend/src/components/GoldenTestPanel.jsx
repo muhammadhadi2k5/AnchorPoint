@@ -151,9 +151,6 @@ export default function GoldenTestPanel({ datasetId }) {
           >
             {starting ? 'Starting…' : 'Run test set'}
           </button>
-          <p className="golden-quota-note">
-            Uses your real retrieval + generation + eval quota — about 3 calls per question.
-          </p>
         </div>
       </div>
 
