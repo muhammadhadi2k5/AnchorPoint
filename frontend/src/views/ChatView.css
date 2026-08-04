@@ -24,6 +24,8 @@
   top: 20px;
   right: 24px;
   z-index: 2;
+  display: flex;
+  gap: 8px;
   pointer-events: none;
 }
 

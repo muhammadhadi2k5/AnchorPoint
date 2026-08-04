@@ -12,7 +12,7 @@ const GREETINGS = [
   'Ready when you are',
 ]
 
-export default function ChatView({ datasetId, onQuotaExceeded, onAddDocuments, onReingest }) {
+export default function ChatView({ datasetId, onQuotaExceeded, onAddDocuments, onReingest, onOpenEvaluations }) {
   const [messages, setMessages] = useState([])
   const [messagesLoaded, setMessagesLoaded] = useState(false)
   const [greeting, setGreeting] = useState('')
@@ -88,6 +88,9 @@ export default function ChatView({ datasetId, onQuotaExceeded, onAddDocuments, o
       <div className="chat-header">
         <button type="button" className="chat-library-toggle" onClick={() => setShowLibrary(true)}>
           Documents
+        </button>
+        <button type="button" className="chat-library-toggle" onClick={onOpenEvaluations}>
+          Evaluations
         </button>
       </div>
 

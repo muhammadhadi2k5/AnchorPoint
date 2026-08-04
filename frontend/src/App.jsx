@@ -153,7 +153,6 @@ export default function App() {
         onRenameDataset={handleRenameDataset}
         onPinDataset={handlePinDataset}
         onDeleteDataset={handleDeleteDataset}
-        onOpenEvaluations={() => setShowEvaluations(true)}
         collapsed={sidebarCollapsed}
         onToggleCollapsed={toggleSidebarCollapsed}
       />
@@ -168,6 +167,7 @@ export default function App() {
             onQuotaExceeded={() => setQuotaExceeded(true)}
             onAddDocuments={handleAddDocuments}
             onReingest={handleReingest}
+            onOpenEvaluations={() => setShowEvaluations(true)}
           />
         )}
         {view === 'home' && (
