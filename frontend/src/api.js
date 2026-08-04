@@ -107,3 +107,62 @@ export async function* sendMessageStream(datasetId, content) {
     yield decoder.decode(value, { stream: true })
   }
 }
+
+// --- Live tab (automatic per-message evaluation) ---
+
+export async function listEvaluations(datasetId, { limit = 50, offset = 0 } = {}) {
+  const response = await request(`/datasets/${datasetId}/evaluations?limit=${limit}&offset=${offset}`)
+  return response.json()
+}
+
+export async function getEvaluationsSummary(datasetId) {
+  const response = await request(`/datasets/${datasetId}/evaluations/summary`)
+  return response.json()
+}
+
+export async function getEvaluation(datasetId, evaluationId) {
+  const response = await request(`/datasets/${datasetId}/evaluations/${evaluationId}`)
+  return response.json()
+}
+
+// --- Test Set tab (on-demand golden-answer evaluation) ---
+
+export async function createGoldenQuestion(datasetId, { question, expectedAnswer, expectedSources }) {
+  const response = await request(`/datasets/${datasetId}/golden-questions`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      question,
+      expected_answer: expectedAnswer,
+      expected_sources: expectedSources,
+    }),
+  })
+  return response.json()
+}
+
+export async function listGoldenQuestions(datasetId) {
+  const response = await request(`/datasets/${datasetId}/golden-questions`)
+  return response.json()
+}
+
+export async function deleteGoldenQuestion(datasetId, questionId) {
+  const response = await request(`/datasets/${datasetId}/golden-questions/${questionId}`, {
+    method: 'DELETE',
+  })
+  return response.json()
+}
+
+export async function startGoldenRun(datasetId) {
+  const response = await request(`/datasets/${datasetId}/golden-runs`, { method: 'POST' })
+  return response.json()
+}
+
+export async function listGoldenRuns(datasetId) {
+  const response = await request(`/datasets/${datasetId}/golden-runs`)
+  return response.json()
+}
+
+export async function getGoldenRun(datasetId, runId) {
+  const response = await request(`/datasets/${datasetId}/golden-runs/${runId}`)
+  return response.json()
+}

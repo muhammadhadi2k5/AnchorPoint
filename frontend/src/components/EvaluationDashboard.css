@@ -1,0 +1,434 @@
+.eval-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(43, 35, 24, 0.25);
+  z-index: 20;
+}
+
+.eval-panel {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(720px, 92vw);
+  max-height: 82vh;
+  background: var(--white);
+  border-radius: var(--radius);
+  z-index: 21;
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+  gap: 18px;
+  overflow: hidden;
+}
+
+.eval-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  flex-shrink: 0;
+}
+
+.eval-close {
+  border: none;
+  background: none;
+  font-size: 20px;
+  line-height: 1;
+  color: var(--ink-soft);
+  cursor: pointer;
+  padding: 0 4px;
+}
+
+.eval-tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--sand-line);
+  flex-shrink: 0;
+}
+
+.eval-tab-btn {
+  border: none;
+  background: none;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ink-soft);
+  padding: 10px 4px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+
+.eval-tab-btn.active {
+  color: var(--coral-deep);
+  border-bottom-color: var(--coral);
+}
+
+.eval-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.eval-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.eval-stat-tile {
+  background: var(--cream-2);
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.eval-stat-label {
+  font-size: 11.5px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.eval-stat-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.eval-stat-max {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-soft);
+}
+
+.eval-status-pills {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.eval-status-pill {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 10px;
+  border-radius: 999px;
+  color: var(--ink);
+  background: var(--sand);
+}
+
+.eval-status-pill.complete {
+  background: var(--success);
+  color: var(--white);
+}
+
+.eval-status-pill.failed {
+  background: var(--error);
+  color: var(--white);
+}
+
+.eval-empty {
+  margin: 0;
+  font-size: 13px;
+  color: var(--ink-soft);
+  line-height: 1.5;
+}
+
+.eval-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.eval-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+  border: none;
+  background: var(--cream-2);
+  border-radius: 10px;
+  padding: 10px 12px;
+  cursor: pointer;
+}
+
+.eval-row:hover {
+  background: var(--sand);
+}
+
+.eval-row-status {
+  flex-shrink: 0;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 3px 7px;
+  border-radius: 999px;
+  color: var(--ink-soft);
+  background: var(--sand);
+}
+
+.eval-row-status.status-complete {
+  color: var(--success);
+}
+
+.eval-row-status.status-failed {
+  color: var(--error);
+}
+
+.eval-row-question {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 13px;
+  color: var(--ink);
+}
+
+.eval-row-scores {
+  flex-shrink: 0;
+  display: flex;
+  gap: 4px;
+}
+
+/* score badge background carries the meaning (success/sand/error tiers);
+   text always stays ink so a low score doesn't also fight for contrast */
+.eval-score-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 6px;
+  border-radius: 6px;
+  color: var(--ink);
+  background: var(--sand);
+  font-variant-numeric: tabular-nums;
+}
+
+.eval-score-badge.tier-good {
+  background: var(--success);
+}
+
+.eval-score-badge.tier-mid {
+  background: var(--sand);
+}
+
+.eval-score-badge.tier-bad {
+  background: var(--error);
+}
+
+.eval-score-badge.tier-muted {
+  background: var(--cream-2);
+  color: var(--ink-soft);
+}
+
+/* --- Test Set tab (rendered inside this same modal, shares the styles above) --- */
+
+.golden-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--sand-line);
+}
+
+.golden-section:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.golden-section-title {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.golden-question-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.golden-question-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: var(--cream-2);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.golden-question-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.golden-question-q {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.golden-question-a {
+  font-size: 12.5px;
+  color: var(--ink-soft);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.golden-question-delete {
+  flex-shrink: 0;
+  border: none;
+  background: none;
+  font-size: 17px;
+  line-height: 1;
+  color: var(--ink-soft);
+  cursor: pointer;
+  padding: 2px 4px;
+}
+
+.golden-question-delete:hover {
+  color: var(--error);
+}
+
+.golden-add-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.golden-input {
+  font-size: 13px;
+  color: var(--ink);
+  background: var(--white);
+  border: 1px solid var(--sand-line);
+  border-radius: 8px;
+  padding: 9px 11px;
+}
+
+.golden-add-button {
+  align-self: flex-start;
+  font-weight: 600;
+  font-size: 13px;
+  border: 1px solid var(--sand-line);
+  border-radius: 999px;
+  padding: 8px 16px;
+  color: var(--ink);
+  background: none;
+  cursor: pointer;
+}
+
+.golden-add-button:hover {
+  background: var(--cream-2);
+}
+
+.golden-run-control {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.golden-run-button {
+  font-weight: 600;
+  font-size: 13.5px;
+  border: none;
+  border-radius: 999px;
+  padding: 10px 18px;
+  color: var(--white);
+  background: var(--coral);
+  cursor: pointer;
+}
+
+.golden-run-button:hover:not(:disabled) {
+  background: var(--coral-deep);
+}
+
+.golden-run-button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.golden-quota-note {
+  margin: 0;
+  font-size: 12px;
+  color: var(--ink-soft);
+  flex: 1;
+  min-width: 200px;
+}
+
+.golden-run-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.golden-run-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+  border: none;
+  background: var(--cream-2);
+  border-radius: 10px;
+  padding: 10px 12px;
+  cursor: pointer;
+}
+
+.golden-run-row:hover {
+  background: var(--sand);
+}
+
+.golden-run-status {
+  flex-shrink: 0;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 3px 7px;
+  border-radius: 999px;
+  color: var(--ink-soft);
+  background: var(--sand);
+}
+
+.golden-run-status.status-complete {
+  color: var(--success);
+}
+
+.golden-run-pass-rate {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.golden-run-time {
+  flex-shrink: 0;
+  font-size: 12px;
+  color: var(--ink-soft);
+}

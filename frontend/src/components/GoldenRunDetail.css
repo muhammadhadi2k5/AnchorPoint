@@ -1,0 +1,134 @@
+.golden-detail-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(43, 35, 24, 0.15);
+  z-index: 22;
+}
+
+.golden-detail-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100%;
+  width: min(420px, 92vw);
+  background: var(--white);
+  border-left: 1px solid var(--sand-line);
+  z-index: 23;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  gap: 16px;
+  overflow-y: auto;
+}
+
+.golden-detail-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.golden-detail-close {
+  border: none;
+  background: none;
+  font-size: 20px;
+  line-height: 1;
+  color: var(--ink-soft);
+  cursor: pointer;
+  padding: 0 4px;
+}
+
+.golden-detail-loading {
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+
+.golden-detail-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.golden-detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--sand-line);
+}
+
+.golden-detail-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.golden-detail-question {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.golden-detail-error {
+  margin: 0;
+  font-size: 13px;
+  color: var(--error);
+}
+
+.golden-detail-scores {
+  display: flex;
+  gap: 8px;
+}
+
+.golden-detail-score {
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 999px;
+  color: var(--ink);
+  background: var(--sand);
+  font-variant-numeric: tabular-nums;
+}
+
+.golden-detail-score.tier-good {
+  background: var(--success);
+}
+
+.golden-detail-score.tier-mid {
+  background: var(--sand);
+}
+
+.golden-detail-score.tier-bad {
+  background: var(--error);
+}
+
+.golden-detail-score.tier-muted {
+  background: var(--cream-2);
+  color: var(--ink-soft);
+}
+
+.golden-detail-answers {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.golden-detail-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.golden-detail-text {
+  margin: 4px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ink);
+}

@@ -1,0 +1,127 @@
+.eval-detail-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(43, 35, 24, 0.15);
+  z-index: 22;
+}
+
+.eval-detail-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100%;
+  width: min(380px, 90vw);
+  background: var(--white);
+  border-left: 1px solid var(--sand-line);
+  z-index: 23;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  gap: 16px;
+  overflow-y: auto;
+}
+
+.eval-detail-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.eval-detail-close {
+  border: none;
+  background: none;
+  font-size: 20px;
+  line-height: 1;
+  color: var(--ink-soft);
+  cursor: pointer;
+  padding: 0 4px;
+}
+
+.eval-detail-exchange {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--sand-line);
+}
+
+.eval-detail-label {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.eval-detail-text {
+  margin: 0 0 8px;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--ink);
+}
+
+.eval-detail-error .eval-detail-text {
+  color: var(--error);
+}
+
+.eval-detail-metrics {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.eval-detail-metric {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.eval-detail-metric-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.eval-detail-metric-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.eval-detail-metric-score {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  color: var(--ink);
+  background: var(--sand);
+  font-variant-numeric: tabular-nums;
+}
+
+.eval-detail-metric-score.tier-good {
+  background: var(--success);
+}
+
+.eval-detail-metric-score.tier-mid {
+  background: var(--sand);
+}
+
+.eval-detail-metric-score.tier-bad {
+  background: var(--error);
+}
+
+.eval-detail-metric-score.tier-muted {
+  background: var(--cream-2);
+  color: var(--ink-soft);
+}
+
+.eval-detail-metric-reasoning {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
