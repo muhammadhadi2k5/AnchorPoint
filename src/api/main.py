@@ -2,6 +2,7 @@ import httpx
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
+from google.genai import errors as genai_errors
 from pydantic import BaseModel
 
 from api import chat, db, golden, ingest
@@ -149,6 +150,11 @@ def send_message(dataset_id: str, body: MessageIn):
         raise HTTPException(status_code=429, detail="quota_exceeded")
     except (httpx.ConnectError, httpx.TimeoutException):
         raise HTTPException(status_code=503, detail="connection_error")
+    # Gemini itself reporting overloaded/unavailable - distinct from us failing
+    # to reach it at all, so the frontend can tell the user the truth instead
+    # of blaming their own connection
+    except genai_errors.ServerError:
+        raise HTTPException(status_code=503, detail="ai_service_unavailable")
 
     def full_stream():
         yield first_chunk
