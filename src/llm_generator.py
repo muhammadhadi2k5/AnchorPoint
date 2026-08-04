@@ -24,7 +24,7 @@ SYSTEM_INSTRUCTION = (
 
 class Generator:
 
-    def __init__(self, daily_limit=500):
+    def __init__(self):
         api_key = os.environ.get("GEMINI_API_KEY")
         if not api_key:
             raise ValueError("GEMINI_API_KEY is not set. Add it to your .env file.")
@@ -33,7 +33,7 @@ class Generator:
             api_key=api_key,
             http_options=types.HttpOptions(timeout=60000),
         )
-        self.guard = RateLimitGuard(name="llm", daily_limit=daily_limit)
+        self.guard = RateLimitGuard(name="llm")
 
     # labels each chunk with its source file so the model can cite where it
     # got each part of the answer from
@@ -65,9 +65,6 @@ class Generator:
 
         context = self._format_context(results)
         prompt = f"Context:\n{context}\n\nQuestion: {query}"
-
-        # local quota check before even hitting the API
-        self.guard.check_and_increment()
 
         try:
             stream = self.client.models.generate_content_stream(

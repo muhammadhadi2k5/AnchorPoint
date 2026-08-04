@@ -85,7 +85,7 @@ CORRECTNESS_SYSTEM_INSTRUCTION = (
 
 class Evaluator:
 
-    def __init__(self, daily_limit=200):
+    def __init__(self):
         api_key = os.environ.get("GEMINI_API_KEY")
         if not api_key:
             raise ValueError("GEMINI_API_KEY is not set. Add it to your .env file.")
@@ -94,10 +94,10 @@ class Evaluator:
             api_key=api_key,
             http_options=types.HttpOptions(timeout=60000),
         )
-        # separate name/budget from the "llm" guard on purpose - a burst of
-        # background evals should never be able to eat into the quota real
-        # chat answers need. own state file: data/.rate_limit_eval.json
-        self.guard = RateLimitGuard(name="eval", daily_limit=daily_limit)
+        # separate name from the "llm" guard on purpose, just so a 429 from a
+        # background eval call reads differently in logs/errors than one from
+        # a real chat answer
+        self.guard = RateLimitGuard(name="eval")
 
     # same labeling scheme as Generator._format_context, so the judge sees
     # exactly what the answering model saw
@@ -109,7 +109,6 @@ class Evaluator:
         return "\n\n".join(parts)
 
     def _generate_json(self, prompt, system_instruction, schema):
-        self.guard.check_and_increment()
         try:
             response = self.client.models.generate_content(
                 model=MODEL_NAME,

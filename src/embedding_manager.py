@@ -21,8 +21,7 @@ TARGET_TEXTS_PER_MINUTE = 60
 
 class EmbeddingManager:
 
-    # 1000 req/day free tier limit for gemini-embedding-001
-    def __init__(self, daily_limit=1000):
+    def __init__(self):
         api_key = os.environ.get("GEMINI_API_KEY")
         if not api_key:
             raise ValueError("GEMINI_API_KEY is not set. Add it to your .env file.")
@@ -33,7 +32,7 @@ class EmbeddingManager:
             api_key=api_key,
             http_options=types.HttpOptions(timeout=60000),
         )
-        self.guard = RateLimitGuard(name="embedding", daily_limit=daily_limit)
+        self.guard = RateLimitGuard(name="embedding")
 
     # embeds chunks going INTO the vectorDB. handles batching + pacing
     def embed_documents(self, texts: List[str]) -> np.ndarray:
@@ -85,7 +84,6 @@ class EmbeddingManager:
                 task_type=task_type,
                 output_dimensionality=EMBEDDING_DIM,
             ),
-            count=len(texts),
         )
 
         embeddings = np.array([e.values for e in result.embeddings])
