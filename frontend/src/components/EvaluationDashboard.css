@@ -334,7 +334,8 @@
    never visually escape the pill shape the way the outline could */
 .golden-input:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px var(--coral-deep);
+  border-color: var(--coral-deep);
+  box-shadow: inset 0 0 0 1.5px var(--coral-deep);
 }
 
 .golden-add-button {
