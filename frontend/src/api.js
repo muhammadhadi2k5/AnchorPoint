@@ -15,15 +15,15 @@ async function handleErrors(response) {
   if (response.status === 429) {
     throw new ApiError('quota_exceeded', 'Daily quota exceeded')
   }
-  if (response.status === 503) {
-    throw new ApiError('connection_error', 'Connection dropped')
-  }
   if (!response.ok) {
-    let detail = 'unknown'
+    // 503s come from two different backend causes (couldn't reach Gemini at
+    // all vs. Gemini itself reporting overloaded) - the detail field is what
+    // tells them apart, so it has to be read here rather than assumed
+    let detail = response.status === 503 ? 'connection_error' : 'unknown'
     try {
       detail = (await response.json()).detail || detail
     } catch {
-      // body wasn't JSON, fall back to the generic type below
+      // body wasn't JSON, fall back to the status-based default above
     }
     throw new ApiError(detail, `Request failed with status ${response.status}`)
   }

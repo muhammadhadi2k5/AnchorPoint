@@ -1,3 +1,5 @@
+import { METRIC_INFO } from '../evalMetricInfo.js'
+import InfoTooltip from './InfoTooltip.jsx'
 import './EvaluationDetail.css'
 
 function scoreTier(score) {
@@ -7,11 +9,14 @@ function scoreTier(score) {
   return 'bad'
 }
 
-function MetricSection({ title, score, reasoning }) {
+function MetricSection({ title, info, score, reasoning }) {
   return (
     <div className="eval-detail-metric">
       <div className="eval-detail-metric-header">
-        <span className="eval-detail-metric-title">{title}</span>
+        <span className="eval-detail-metric-title">
+          {title}
+          <InfoTooltip text={info} />
+        </span>
         {score !== null && score !== undefined && (
           <span className={`eval-detail-metric-score tier-${scoreTier(score)}`}>{score}/5</span>
         )}
@@ -57,16 +62,19 @@ export default function EvaluationDetail({ evaluation, onClose }) {
           <div className="eval-detail-metrics">
             <MetricSection
               title="Faithfulness"
+              info={METRIC_INFO.faithfulness}
               score={evaluation.faithfulness_score}
               reasoning={evaluation.faithfulness_reasoning}
             />
             <MetricSection
               title="Answer relevance"
+              info={METRIC_INFO.answerRelevance}
               score={evaluation.answer_relevance_score}
               reasoning={evaluation.answer_relevance_reasoning}
             />
             <MetricSection
               title="Context relevance"
+              info={METRIC_INFO.contextRelevance}
               score={evaluation.context_relevance_score}
               reasoning={evaluation.context_relevance_reasoning}
             />

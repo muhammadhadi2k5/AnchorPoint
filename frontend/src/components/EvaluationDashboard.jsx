@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
 import { getEvaluationsSummary, listEvaluations } from '../api.js'
+import { METRIC_INFO } from '../evalMetricInfo.js'
 import EvaluationDetail from './EvaluationDetail.jsx'
 import GoldenTestPanel from './GoldenTestPanel.jsx'
+import InfoTooltip from './InfoTooltip.jsx'
 import './EvaluationDashboard.css'
 
 const POLL_MS = 3000
@@ -55,21 +57,30 @@ function LiveTab({ datasetId, onSelectEvaluation }) {
     <div className="eval-tab">
       <div className="eval-stats">
         <div className="eval-stat-tile">
-          <span className="eval-stat-label">Faithfulness</span>
+          <span className="eval-stat-label">
+            Faithfulness
+            <InfoTooltip text={METRIC_INFO.faithfulness} />
+          </span>
           <span className="eval-stat-value">
             {summary?.averages?.faithfulness ?? '—'}
             <span className="eval-stat-max">/5</span>
           </span>
         </div>
         <div className="eval-stat-tile">
-          <span className="eval-stat-label">Answer relevance</span>
+          <span className="eval-stat-label">
+            Answer relevance
+            <InfoTooltip text={METRIC_INFO.answerRelevance} />
+          </span>
           <span className="eval-stat-value">
             {summary?.averages?.answer_relevance ?? '—'}
             <span className="eval-stat-max">/5</span>
           </span>
         </div>
         <div className="eval-stat-tile">
-          <span className="eval-stat-label">Context relevance</span>
+          <span className="eval-stat-label">
+            Context relevance
+            <InfoTooltip text={METRIC_INFO.contextRelevance} />
+          </span>
           <span className="eval-stat-value">
             {summary?.averages?.context_relevance ?? '—'}
             <span className="eval-stat-max">/5</span>
