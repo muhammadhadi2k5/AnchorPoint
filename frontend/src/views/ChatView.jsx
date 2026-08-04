@@ -136,7 +136,7 @@ export default function ChatView({ datasetId, onQuotaExceeded, onAddDocuments, o
 
           {connectionError && <div className="inline-error">{connectionError}</div>}
 
-          <div ref={bottomRef} />
+          <div ref={bottomRef} className="chat-bottom-spacer" />
         </div>
       </div>
 

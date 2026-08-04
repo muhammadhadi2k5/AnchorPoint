@@ -64,7 +64,18 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding: 84px 24px 150px;
+  padding: 84px 24px 24px;
+}
+
+/* scrollIntoView({block:'end'}) aligns THIS element's own edges with the
+   viewport - a zero-height spacer gets satisfied the instant it touches the
+   viewport bottom, which leaves the real last bubble sitting right under
+   the floating .chat-bottom overlay's fade band. giving the spacer real
+   height means clearing the overlay's height is what satisfies the scroll,
+   so the last bubble ends up above it instead */
+.chat-bottom-spacer {
+  height: 170px;
+  flex-shrink: 0;
 }
 
 .bubble {

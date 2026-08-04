@@ -1,17 +1,18 @@
-import json
 import hashlib
+import json
 from pathlib import Path
-from langchain_core.documents import Document
+
+import fitz  # PyMuPDF
 from langchain_community.document_loaders import (
-    PyPDFLoader,
     CSVLoader,
+    PyPDFLoader,
+    TextLoader,
     UnstructuredExcelLoader,
-    UnstructuredWordDocumentLoader,
     UnstructuredImageLoader,
     UnstructuredPDFLoader,
-    TextLoader,
+    UnstructuredWordDocumentLoader,
 )
-
+from langchain_core.documents import Document
 
 # extension -> (loader class, kwargs). add new filetypes here
 LOADER_REGISTRY = {
@@ -26,6 +27,33 @@ LOADER_REGISTRY = {
     ".jpeg": (UnstructuredImageLoader, {}),
 }
 
+# pypdf reads some browser-rendered PDFs (Chromium print-to-PDF, e.g.
+# Coursera certificates) as a real space between every single glyph instead
+# of between words - looks fine by char-count (so the low-yield check below
+# never catches it) but reads as "C o u r s e s" instead of "Courses". this
+# catches that pattern: if most whitespace-split tokens are a single
+# character, something upstream mistook individual glyphs for whole words
+def _is_character_spaced(text, sample_len=2000):
+    tokens = text[:sample_len].split(' ')
+    if len(tokens) < 10:
+        return False
+    single_char = sum(1 for t in tokens if len(t) <= 1)
+    return single_char / len(tokens) > 0.6
+
+
+# PyMuPDF reads the same PDFs with normal word spacing - only reached for
+# the specific PDFs that need it, pypdf's plain extraction stays the default
+# since it's what's been working for every other PDF so far
+def _load_with_pymupdf(file_path):
+    pdf = fitz.open(file_path)
+    documents = [
+        Document(page_content=page.get_text(), metadata={"source": file_path, "page": i})
+        for i, page in enumerate(pdf)
+    ]
+    pdf.close()
+    return documents
+
+
 # try normal text extraction first, way faster than OCR.
 # if barely anything came out it's probably a scanned pdf, fall back to OCR
 def load_pdf(file_path, min_chars_per_page=20, on_progress=None):
@@ -39,6 +67,9 @@ def load_pdf(file_path, min_chars_per_page=20, on_progress=None):
         # hi_res = does layout detection before OCR, so it reads column by
         # column instead of jumbling left/right text together on 2-col pages
         documents = UnstructuredPDFLoader(file_path, strategy="hi_res", languages=["eng"]).load()
+    elif any(_is_character_spaced(d.page_content) for d in documents):
+        print(" Detected per-character spacing - retrying with PyMuPDF")
+        documents = _load_with_pymupdf(file_path)
 
     return documents
 
