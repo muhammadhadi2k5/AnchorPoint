@@ -352,17 +352,30 @@
   padding: 0 24px;
   display: flex;
   gap: 10px;
-  align-items: center;
+  align-items: flex-end;
 }
 
+/* height is driven from JS (scrollHeight, capped by max-height below) so it
+   grows with the query up to a point, then scrolls internally rather than
+   pushing the send button further and further down */
 .chat-input {
   flex: 1;
+  font-family: inherit;
   font-size: 14.5px;
+  line-height: 1.4;
   padding: 12px 18px;
-  border-radius: 999px;
+  border-radius: 22px;
   border: 1px solid var(--sand-line);
   background: var(--white);
   color: var(--ink);
+  resize: none;
+  overflow-y: auto;
+  max-height: 200px;
+  scrollbar-width: none;
+}
+
+.chat-input::-webkit-scrollbar {
+  display: none;
 }
 
 .chat-input:disabled {
@@ -370,6 +383,7 @@
 }
 
 .chat-send {
+  flex-shrink: 0;
   font-weight: 600;
   font-size: 14px;
   border: none;

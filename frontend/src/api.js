@@ -166,3 +166,13 @@ export async function getGoldenRun(datasetId, runId) {
   const response = await request(`/datasets/${datasetId}/golden-runs/${runId}`)
   return response.json()
 }
+
+export async function deleteGoldenRun(datasetId, runId) {
+  const response = await request(`/datasets/${datasetId}/golden-runs/${runId}`, { method: 'DELETE' })
+  return response.json()
+}
+
+export async function clearGoldenRuns(datasetId) {
+  const response = await request(`/datasets/${datasetId}/golden-runs/clear`, { method: 'DELETE' })
+  return response.json()
+}

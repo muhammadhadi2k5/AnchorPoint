@@ -618,6 +618,32 @@ def get_golden_run(run_id):
         conn.close()
 
 
+# golden_results references the run by id with no ON DELETE CASCADE, same
+# pattern as every other delete function in this file
+def delete_golden_run(run_id):
+    conn = get_connection()
+    try:
+        conn.execute("DELETE FROM golden_results WHERE run_id = ?", (run_id,))
+        conn.execute("DELETE FROM golden_runs WHERE id = ?", (run_id,))
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def clear_golden_runs(dataset_id):
+    conn = get_connection()
+    try:
+        conn.execute(
+            "DELETE FROM golden_results WHERE run_id IN "
+            "(SELECT id FROM golden_runs WHERE dataset_id = ?)",
+            (dataset_id,),
+        )
+        conn.execute("DELETE FROM golden_runs WHERE dataset_id = ?", (dataset_id,))
+        conn.commit()
+    finally:
+        conn.close()
+
+
 def _deserialize_golden_result(row):
     result = dict(row)
     result["retrieved_chunks"] = (

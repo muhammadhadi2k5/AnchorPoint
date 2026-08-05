@@ -58,6 +58,17 @@ export default function ChatView({ datasetId, onQuotaExceeded, onAddDocuments, o
   const [activeCitation, setActiveCitation] = useState(null)
   const [showLibrary, setShowLibrary] = useState(false)
   const bottomRef = useRef(null)
+  const inputRef = useRef(null)
+
+  // grows the textarea to fit the query up to a max height, then scrolls -
+  // recalculated on every keystroke since a paste or a deleted line both
+  // need the height reassessed, not just growth
+  useEffect(() => {
+    const el = inputRef.current
+    if (!el) return
+    el.style.height = 'auto'
+    el.style.height = `${el.scrollHeight}px`
+  }, [input])
 
   useEffect(() => {
     setMessagesLoaded(false)
@@ -193,10 +204,12 @@ export default function ChatView({ datasetId, onQuotaExceeded, onAddDocuments, o
         {isEmpty && <p className="chat-greeting">{greeting}</p>}
 
         <div className="chat-input-row">
-          <input
+          <textarea
+            ref={inputRef}
             className="chat-input"
             placeholder="Ask anything about these documents..."
             value={input}
+            rows={1}
             disabled={sending}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}

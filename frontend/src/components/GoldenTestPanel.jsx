@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
 import {
+  clearGoldenRuns,
   createGoldenQuestion,
   deleteGoldenQuestion,
+  deleteGoldenRun,
   listGoldenQuestions,
   listGoldenRuns,
   startGoldenRun,
@@ -90,6 +92,18 @@ export default function GoldenTestPanel({ datasetId }) {
     }
   }
 
+  const handleDeleteRun = async (runId) => {
+    await deleteGoldenRun(datasetId, runId)
+    setRuns((current) => current.filter((r) => r.id !== runId))
+    if (selectedRunId === runId) setSelectedRunId(null)
+  }
+
+  const handleClearRuns = async () => {
+    await clearGoldenRuns(datasetId)
+    setRuns([])
+    setSelectedRunId(null)
+  }
+
   return (
     <div className="eval-tab">
       <div className="golden-section">
@@ -155,19 +169,37 @@ export default function GoldenTestPanel({ datasetId }) {
       </div>
 
       <div className="golden-section">
-        <span className="golden-section-title">Run history</span>
+        <div className="golden-section-header">
+          <span className="golden-section-title">Run history</span>
+          {runs.length > 0 && (
+            <button type="button" className="golden-clear-button" onClick={handleClearRuns}>
+              Clear
+            </button>
+          )}
+        </div>
         {runs.length === 0 ? (
           <p className="eval-empty">No runs yet.</p>
         ) : (
           <ul className="golden-run-list">
             {runs.map((run) => (
-              <li key={run.id}>
-                <button type="button" className="golden-run-row" onClick={() => setSelectedRunId(run.id)}>
+              <li key={run.id} className="golden-run-row">
+                <button type="button" className="golden-run-row-main" onClick={() => setSelectedRunId(run.id)}>
                   <span className={`golden-run-status status-${run.status}`}>{run.status}</span>
                   <span className="golden-run-pass-rate">
                     {run.passed_questions}/{run.total_questions} passed
                   </span>
                   <span className="golden-run-time">{formatTimestamp(run.created_at)}</span>
+                </button>
+                <button
+                  type="button"
+                  className="golden-run-delete"
+                  onClick={(event) => {
+                    event.stopPropagation()
+                    handleDeleteRun(run.id)
+                  }}
+                  aria-label="Delete run"
+                >
+                  ×
                 </button>
               </li>
             ))}

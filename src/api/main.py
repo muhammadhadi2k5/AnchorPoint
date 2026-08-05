@@ -240,3 +240,22 @@ def get_golden_run(dataset_id: str, run_id: str):
     if not run or run["dataset_id"] != dataset_id:
         raise HTTPException(status_code=404, detail="run_not_found")
     return run
+
+
+# has to be declared before the /{run_id} route below, or FastAPI matches
+# "clear" as a run_id instead of this route
+@app.delete("/datasets/{dataset_id}/golden-runs/clear")
+def clear_golden_runs(dataset_id: str):
+    _require_dataset(dataset_id)
+    db.clear_golden_runs(dataset_id)
+    return {"status": "cleared"}
+
+
+@app.delete("/datasets/{dataset_id}/golden-runs/{run_id}")
+def delete_golden_run(dataset_id: str, run_id: str):
+    _require_dataset(dataset_id)
+    run = db.get_golden_run(run_id)
+    if not run or run["dataset_id"] != dataset_id:
+        raise HTTPException(status_code=404, detail="run_not_found")
+    db.delete_golden_run(run_id)
+    return {"status": "deleted"}
