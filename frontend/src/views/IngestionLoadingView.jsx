@@ -7,6 +7,7 @@ const PREPARING_STEP_MS = 700
 
 export default function IngestionLoadingView({ datasetId, onComplete }) {
   const [message, setMessage] = useState('Reading your documents...')
+  const [fileInfo, setFileInfo] = useState({ filename: null, index: null, total: null, kind: null })
   const [error, setError] = useState(null)
   const [phase, setPhase] = useState('ingesting')
 
@@ -26,6 +27,12 @@ export default function IngestionLoadingView({ datasetId, onComplete }) {
           return
         }
         if (status.message) setMessage(status.message)
+        setFileInfo({
+          filename: status.filename ?? null,
+          index: status.file_index ?? null,
+          total: status.file_total ?? null,
+          kind: status.kind ?? null,
+        })
 
         if (status.done) {
           setPhase('preparing')
@@ -51,6 +58,7 @@ export default function IngestionLoadingView({ datasetId, onComplete }) {
 
     let step = 0
     setMessage(PREPARING_MESSAGES[0])
+    setFileInfo({ filename: null, index: null, total: null, kind: null })
 
     const interval = setInterval(() => {
       step += 1
@@ -65,15 +73,37 @@ export default function IngestionLoadingView({ datasetId, onComplete }) {
     return () => clearInterval(interval)
   }, [phase, onComplete])
 
+  const isOcr = fileInfo.kind === 'ocr'
+
   return (
     <div className="ingestion-loading-view">
+      {phase === 'ingesting' && !error && (
+        <div className={`reading-icon${isOcr ? ' ocr' : ''}`} aria-hidden="true">
+          <span className="reading-line" />
+          <span className="reading-line" />
+          <span className="reading-line" />
+        </div>
+      )}
+
       <div className="loading-strip">
         <div className="loading-bar" />
       </div>
+
       {error ? (
         <p className="loading-message error">{error}</p>
       ) : (
         <p className="loading-message">{message}</p>
+      )}
+
+      {/* keyed by filename so each new file re-triggers the fade-in
+          instead of the text just snapping to the new value */}
+      {fileInfo.filename && !error && (
+        <p key={fileInfo.filename} className="reading-filename">
+          {fileInfo.filename}
+          {fileInfo.total > 1 && (
+            <span className="reading-count"> · file {fileInfo.index} of {fileInfo.total}</span>
+          )}
+        </p>
       )}
     </div>
   )

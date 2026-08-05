@@ -7,7 +7,7 @@ import './CitationDrawer.css'
 // splitting on the double-space/newline boundaries first, then only
 // rejoining runs that are genuinely single-char tokens, fixes that case
 // without mangling PDFs that never had this problem in the first place
-function formatChunkText(text) {
+export function formatChunkText(text) {
   return text
     .split(/ {2,}|\n+/)
     .map((part) => {

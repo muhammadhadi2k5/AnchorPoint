@@ -14,11 +14,21 @@ def _loader_progress(dataset_id):
     def handler(event, **kwargs):
         if event == "reading":
             set_progress(dataset_id, "Reading your documents...")
+        elif event == "reading_file":
+            set_progress(
+                dataset_id,
+                "Reading your documents...",
+                filename=kwargs.get("filename"),
+                kind="reading",
+                file_index=kwargs.get("index"),
+                file_total=kwargs.get("total"),
+            )
         elif event == "ocr_fallback":
             set_progress(
                 dataset_id,
                 "This one's a scanned image: Running OCR, might take longer.",
                 filename=kwargs.get("filename"),
+                kind="ocr",
             )
     return handler
 

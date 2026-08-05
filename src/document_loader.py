@@ -112,9 +112,11 @@ def process_all_documents(data_directory, on_progress=None):
 
     print(f"\nFound {len(supported_files)} supported files in {data_directory}")
 
-    for file in supported_files:
+    for i, file in enumerate(supported_files, start=1):
         file_type = file.suffix.lower().lstrip(".")
         print(f"\nProcessing {file_type.upper()} file: {file.name}")
+        if on_progress:
+            on_progress("reading_file", filename=file.name, index=i, total=len(supported_files))
         try:
             file_hash = get_file_hash(file)
             documents = load_from_cache(file_hash)

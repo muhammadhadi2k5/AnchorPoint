@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import { listMessages, sendMessageStream } from '../api.js'
-import CitationDrawer from '../components/CitationDrawer.jsx'
+import CitationDrawer, { formatChunkText } from '../components/CitationDrawer.jsx'
 import DocumentLibrary from '../components/DocumentLibrary.jsx'
 import copyIcon from '../../elements/copy-logo.png'
 import './ChatView.css'
@@ -45,6 +45,14 @@ function CopyButton({ text }) {
       )}
     </button>
   )
+}
+
+const PREVIEW_LENGTH = 160
+
+function citationPreview(citation) {
+  if (!citation.text) return "Chunk text isn't available for this older message."
+  const cleaned = formatChunkText(citation.text)
+  return cleaned.length > PREVIEW_LENGTH ? `${cleaned.slice(0, PREVIEW_LENGTH).trimEnd()}...` : cleaned
 }
 
 export default function ChatView({ datasetId, onQuotaExceeded, onAddDocuments, onReingest, onOpenEvaluations }) {
@@ -158,14 +166,19 @@ export default function ChatView({ datasetId, onQuotaExceeded, onAddDocuments, o
                   <div className="citation-row">
                     <span className="citation-label">Sources</span>
                     {message.citations.map((citation, i) => (
-                      <button
-                        type="button"
-                        key={i}
-                        className="citation-tag"
-                        onClick={() => setActiveCitation(citation)}
-                      >
-                        {i + 1}
-                      </button>
+                      <span className="citation-tag-wrap" key={i}>
+                        <button
+                          type="button"
+                          className="citation-tag"
+                          onClick={() => setActiveCitation(citation)}
+                        >
+                          {i + 1}
+                        </button>
+                        <span className="citation-hover-preview" role="tooltip">
+                          <span className="citation-hover-source">{citation.source_file}</span>
+                          <span className="citation-hover-text">{citationPreview(citation)}</span>
+                        </span>
+                      </span>
                     ))}
                   </div>
                 )}

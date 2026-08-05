@@ -244,6 +244,75 @@
   cursor: pointer;
 }
 
+.citation-tag-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+/* pure CSS hover reveal, no JS positioning - anchored relative to the tag
+   itself rather than computed off the viewport, so it can't run into the
+   position:fixed containing-block gotcha a portal-based tooltip elsewhere
+   in this app already hit once (see InfoTooltip.jsx) */
+.citation-hover-preview {
+  position: absolute;
+  bottom: calc(100% + 9px);
+  left: 50%;
+  width: 240px;
+  max-width: 60vw;
+  transform: translateX(-50%) translateY(4px);
+  background: var(--ink);
+  color: var(--cream);
+  border-radius: 10px;
+  padding: 10px 12px;
+  text-align: left;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  box-shadow: 0 6px 18px rgba(43, 35, 24, 0.25);
+  z-index: 5;
+}
+
+.citation-hover-preview::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: var(--ink);
+}
+
+.citation-tag-wrap:hover .citation-hover-preview,
+.citation-tag-wrap:focus-within .citation-hover-preview {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
+
+.citation-hover-source {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--coral);
+  margin-bottom: 4px;
+}
+
+.citation-hover-text {
+  display: block;
+  font-size: 12px;
+  line-height: 1.5;
+  color: rgba(247, 239, 225, 0.9);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .citation-hover-preview {
+    transition: none;
+  }
+}
+
 .message-actions {
   display: flex;
   padding-left: 2px;

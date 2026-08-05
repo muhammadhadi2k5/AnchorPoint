@@ -6,13 +6,19 @@ _lock = threading.Lock()
 _store = {}
 
 
-def set_progress(dataset_id, message, filename=None, done=False, error=None):
+def set_progress(
+    dataset_id, message, filename=None, done=False, error=None,
+    kind=None, file_index=None, file_total=None,
+):
     with _lock:
         _store[dataset_id] = {
             "message": message,
             "filename": filename,
             "done": done,
             "error": error,
+            "kind": kind,
+            "file_index": file_index,
+            "file_total": file_total,
         }
 
 

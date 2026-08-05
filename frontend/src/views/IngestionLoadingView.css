@@ -8,6 +8,111 @@
   padding: 48px 24px;
 }
 
+/* a little "page" with text lines and a colored bar sweeping down through
+   them, reads as "actively reading this file" instead of a generic spinner.
+   purple (the app's existing citation/special-state accent) instead of
+   coral when kind is 'ocr', so the OCR fallback reads as a genuinely
+   different beat, not just the same animation with new words next to it */
+.reading-icon {
+  position: relative;
+  width: 32px;
+  height: 40px;
+  padding: 7px 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  background: var(--white);
+  border: 1.5px solid var(--sand-line);
+  border-radius: 3px 8px 3px 3px;
+  overflow: hidden;
+}
+
+.reading-icon::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 8px;
+  height: 8px;
+  background: var(--cream-2);
+  border-left: 1.5px solid var(--sand-line);
+  border-bottom: 1.5px solid var(--sand-line);
+  border-bottom-left-radius: 3px;
+}
+
+.reading-line {
+  height: 2.5px;
+  border-radius: 2px;
+  background: var(--sand-line);
+}
+
+.reading-line:nth-child(1) {
+  width: 85%;
+}
+
+.reading-line:nth-child(2) {
+  width: 100%;
+}
+
+.reading-line:nth-child(3) {
+  width: 60%;
+}
+
+.reading-icon::after {
+  content: '';
+  position: absolute;
+  left: 5px;
+  right: 5px;
+  top: 7px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--coral);
+  box-shadow: 0 0 6px rgba(225, 90, 60, 0.55);
+  animation: reading-sweep 1.5s ease-in-out infinite;
+}
+
+.reading-icon.ocr::after {
+  background: var(--purple);
+  box-shadow: 0 0 6px rgba(166, 138, 235, 0.55);
+}
+
+@keyframes reading-sweep {
+  0%, 100% {
+    top: 7px;
+  }
+  50% {
+    top: 27px;
+  }
+}
+
+.reading-filename {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink);
+  margin: -4px 0 0;
+  max-width: 320px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  animation: reading-filename-in 0.35s ease both;
+}
+
+.reading-count {
+  font-weight: 500;
+  color: var(--ink-soft);
+}
+
+@keyframes reading-filename-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .loading-strip {
   width: 100%;
   max-width: 360px;
@@ -45,6 +150,15 @@
     animation: none;
     width: 55%;
     transform: none;
+  }
+
+  .reading-icon::after {
+    animation: none;
+    top: 17px;
+  }
+
+  .reading-filename {
+    animation: none;
   }
 }
 
