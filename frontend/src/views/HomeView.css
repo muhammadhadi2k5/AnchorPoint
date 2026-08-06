@@ -141,6 +141,8 @@
 }
 
 .drop-zone {
+  position: relative;
+  overflow: hidden;
   margin-top: 8px;
   padding: 28px 20px;
   border: 1.5px dashed var(--sand-line);
@@ -157,6 +159,54 @@
 
 .drop-zone.has-error {
   border-color: var(--error);
+}
+
+/* ripple pulsing out from center while a file is dragged over, water-drop
+   style - loops only during .dragging, not a fixed-count animation */
+.drop-zone.dragging::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 20px;
+  height: 20px;
+  margin: -10px 0 0 -10px;
+  border-radius: 50%;
+  background: var(--coral);
+  opacity: 0.3;
+  animation: dropzone-ripple 1.1s ease-out infinite;
+}
+
+@keyframes dropzone-ripple {
+  to {
+    transform: scale(11);
+    opacity: 0;
+  }
+}
+
+/* one-shot bounce right as files actually land, separate from the ripple */
+.drop-zone.caught {
+  animation: dropzone-catch 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes dropzone-catch {
+  35% {
+    transform: scale(1.035);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .drop-zone.dragging::before {
+    animation: none;
+    opacity: 0;
+  }
+
+  .drop-zone.caught {
+    animation: none;
+  }
 }
 
 .drop-text {

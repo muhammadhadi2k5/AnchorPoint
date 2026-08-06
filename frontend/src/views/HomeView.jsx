@@ -29,10 +29,12 @@ export default function HomeView({ onStart, onBack, showBrandWord }) {
   const [name, setName] = useState('')
   const [files, setFiles] = useState([])
   const [isDragging, setIsDragging] = useState(false)
+  const [justCaught, setJustCaught] = useState(false)
   const [nameError, setNameError] = useState(null)
   const [filesError, setFilesError] = useState(null)
   const fileInputRef = useRef(null)
   const nameInputRef = useRef(null)
+  const catchTimeoutRef = useRef(null)
 
   // incoming must already be a plain array, not a live FileList - callers
   // that reset input.value right after selection would otherwise clear the
@@ -62,6 +64,15 @@ export default function HomeView({ onStart, onBack, showBrandWord }) {
     event.preventDefault()
     setIsDragging(false)
     addFiles(Array.from(event.dataTransfer.files))
+
+    // re-triggerable one-shot "caught it" bounce, separate from .dragging's
+    // looping ripple which stops the instant the drag ends
+    setJustCaught(false)
+    clearTimeout(catchTimeoutRef.current)
+    requestAnimationFrame(() => {
+      setJustCaught(true)
+      catchTimeoutRef.current = setTimeout(() => setJustCaught(false), 450)
+    })
   }
 
   const removeFile = (index) => {
@@ -117,7 +128,7 @@ export default function HomeView({ onStart, onBack, showBrandWord }) {
         {nameError && <p className="field-error">{nameError}</p>}
 
         <div
-          className={`drop-zone${isDragging ? ' dragging' : ''}${filesError ? ' has-error' : ''}`}
+          className={`drop-zone${isDragging ? ' dragging' : ''}${filesError ? ' has-error' : ''}${justCaught ? ' caught' : ''}`}
           onDragOver={(e) => {
             e.preventDefault()
             setIsDragging(true)

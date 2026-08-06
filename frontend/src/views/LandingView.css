@@ -17,9 +17,7 @@
 }
 
 /* horizon wave - an SVG shape (not a hardcoded clip-path) so it stretches
-   correctly at any hero width instead of only fitting one exact size.
-   negative z-index so it sits behind the hero content without needing to
-   reposition every sibling */
+   correctly at any hero width instead of only fitting one exact size */
 .landing-wave {
   position: absolute;
   inset: auto 0 0 0;
@@ -35,9 +33,7 @@
   flex-direction: column;
   align-items: center;
   gap: 14px;
-  /* delayed to fire right as the anchor lands (18% of its 1s drop), a
-     quick decaying jitter across the whole hero content so the impact
-     reads as something that actually happened, not just the icon settling */
+  /* delay matches when the anchor lands (18% of its 1s drop) */
   animation: hero-shake 0.4s ease-out 0.18s both;
 }
 
@@ -71,10 +67,7 @@
   }
 }
 
-/* drops in from above like it's actually being lowered, then swings from
-   its top point a few times with decreasing amplitude before settling -
-   transform-origin near the top edge is what makes the swing read as a
-   pendulum hanging from a rope rather than the icon just spinning in place */
+/* falls, then swings from the top edge like it's hanging from a rope */
 .landing-logo {
   width: 64px;
   height: 64px;
@@ -84,11 +77,7 @@
   animation: anchor-drop 1s ease both;
 }
 
-/* the fall itself gets its own steep accelerating curve (cubic-bezier here,
-   not the animation's overall easing) so it actually reads as gravity
-   yanking it down fast, impact, then the swing plays out slower afterward -
-   a uniform easing across the whole thing was what made it feel like a
-   gentle float instead of a drop */
+/* steep accelerating curve on the fall only, so it reads as gravity not a float */
 @keyframes anchor-drop {
   0% {
     transform: translateY(-90px) rotate(0deg);
