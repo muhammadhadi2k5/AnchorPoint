@@ -210,7 +210,7 @@ export default function ChatView({ datasetId, datasetName, onQuotaExceeded, onAd
                         <button
                           type="button"
                           className="citation-tag"
-                          onClick={() => setActiveCitation(citation)}
+                          onClick={() => setActiveCitation({ ...citation, answerText: message.content })}
                         >
                           {i + 1}
                         </button>

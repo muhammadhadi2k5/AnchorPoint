@@ -20,8 +20,40 @@ export function formatChunkText(text) {
     .trim()
 }
 
+const STOPWORDS = new Set([
+  'a', 'an', 'the', 'is', 'are', 'was', 'were', 'be', 'been', 'being', 'of', 'in', 'on', 'at', 'to',
+  'for', 'and', 'or', 'but', 'with', 'as', 'by', 'from', 'that', 'this', 'these', 'those', 'it', 'its',
+  'if', 'then', 'than', 'so', 'not', 'no', 'do', 'does', 'did', 'has', 'have', 'had', 'can', 'could',
+  'should', 'would', 'will', 'shall', 'may', 'might', 'must', 'also', 'which', 'who', 'whom', 'whose',
+  'what', 'when', 'where', 'why', 'how', 'there', 'here', 'their', 'they', 'them', 'he', 'she', 'his',
+  'her', 'we', 'our', 'you', 'your', 'i', 'my', 'source',
+])
+
+function significantWords(text) {
+  return (text.toLowerCase().match(/[a-z0-9']+/g) || []).filter((w) => w.length > 2 && !STOPWORDS.has(w))
+}
+
+// splits the chunk into sentences and flags which ones share enough
+// vocabulary with the generated answer to have plausibly been drawn from -
+// a coarse heuristic (word overlap, not real attribution), but good enough
+// to point at the right neighborhood of a long chunk
+function highlightUsedSentences(chunkText, answerText) {
+  const answerWords = new Set(significantWords(answerText.replace(/\[Source \d+\]/g, '')))
+  if (answerWords.size === 0) return null
+
+  const sentences = chunkText.split(/(?<=[.!?])\s+/).filter(Boolean)
+  return sentences.map((sentence) => {
+    const words = significantWords(sentence)
+    const overlap = words.filter((w) => answerWords.has(w)).length
+    return { text: sentence, used: words.length >= 3 && overlap / words.length >= 0.5 }
+  })
+}
+
 export default function CitationDrawer({ citation, onClose }) {
   if (!citation) return null
+
+  const chunkText = citation.text ? formatChunkText(citation.text) : null
+  const highlights = chunkText && citation.answerText ? highlightUsedSentences(chunkText, citation.answerText) : null
 
   return (
     <>
@@ -48,9 +80,14 @@ export default function CitationDrawer({ citation, onClose }) {
         <div className="citation-drawer-chunk">
           <span className="citation-drawer-chunk-label">Chunk content</span>
           <p className="citation-drawer-chunk-text">
-            {citation.text
-              ? formatChunkText(citation.text)
-              : "Chunk text isn't available for this older message."}
+            {highlights
+              ? highlights.map((segment, i) => (
+                  <span key={i}>
+                    {segment.used ? <mark className="citation-used">{segment.text}</mark> : segment.text}
+                    {i < highlights.length - 1 ? ' ' : ''}
+                  </span>
+                ))
+              : chunkText ?? "Chunk text isn't available for this older message."}
           </p>
         </div>
       </aside>

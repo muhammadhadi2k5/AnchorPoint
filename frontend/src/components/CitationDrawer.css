@@ -94,3 +94,24 @@
      the broken glyph entirely, and reads better for quoted source text anyway */
   font-family: ui-sans-serif, system-ui, sans-serif;
 }
+
+.citation-used {
+  background: rgba(225, 90, 60, 0.28);
+  color: inherit;
+  border-radius: 3px;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  animation: citation-used-flash 0.9s ease-out;
+}
+
+@keyframes citation-used-flash {
+  from {
+    background: rgba(225, 90, 60, 0.6);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .citation-used {
+    animation: none;
+  }
+}
