@@ -5,21 +5,13 @@
   flex-direction: column;
 }
 
-/* ambient wash - strongest at the top, fading to nothing by mid-pane.
+/* ambient wash - strongest at the top, fading to nothing by mid-scroll.
    negative z-index so it sits behind the header/messages/input without
-   needing to reposition every sibling in this fairly dense layout. same
-   uneven multi-blob coral treatment as the landing hero's glow (a single
-   flat linear fade read as flat next to it), just lower-strength since
-   this sits behind real UI that still needs to stay readable */
+   needing to reposition every sibling in this fairly dense layout */
 .chat-ambient-wash {
   position: absolute;
-  inset: 0 0 auto 0;
-  height: 60%;
-  background:
-    radial-gradient(ellipse 60% 55% at 22% 0%, rgba(225, 90, 60, 0.26), transparent 65%),
-    radial-gradient(ellipse 55% 50% at 76% 8%, rgba(225, 90, 60, 0.18), transparent 62%),
-    radial-gradient(ellipse 75% 60% at 50% -10%, rgba(225, 90, 60, 0.14), transparent 70%);
-  filter: blur(50px);
+  inset: 0;
+  background: linear-gradient(180deg, rgba(225, 90, 60, 0.24) 0%, rgba(225, 90, 60, 0.05) 32%, rgba(225, 90, 60, 0) 55%);
   z-index: -1;
   pointer-events: none;
 }
