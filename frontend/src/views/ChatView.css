@@ -60,6 +60,15 @@
   background: var(--cream-2);
 }
 
+.chat-library-toggle:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.chat-library-toggle:disabled:hover {
+  background: rgba(247, 239, 225, 0.85);
+}
+
 .chat-messages {
   max-width: 720px;
   margin: 0 auto;

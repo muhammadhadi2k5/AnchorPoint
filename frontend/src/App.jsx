@@ -164,6 +164,7 @@ export default function App() {
         {view === 'chat' && (
           <ChatView
             datasetId={datasetId}
+            datasetName={datasets.find((d) => d.id === datasetId)?.name ?? 'Dataset'}
             onQuotaExceeded={() => setQuotaExceeded(true)}
             onAddDocuments={handleAddDocuments}
             onReingest={handleReingest}

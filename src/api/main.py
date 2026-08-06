@@ -8,7 +8,7 @@ from pydantic import BaseModel
 from api import chat, db, golden, ingest
 from api.progress import clear_progress, get_progress
 from rate_limit_guard import QuotaExceededError
-from vector_db import delete_collection
+from vector_db import VectorDB, delete_collection
 
 db.init_db()
 
@@ -128,6 +128,27 @@ def ingest_status(dataset_id: str):
     if progress is None:
         return {"message": None, "filename": None, "done": True, "error": None}
     return progress
+
+
+@app.get("/datasets/{dataset_id}/stats")
+def dataset_stats(dataset_id: str):
+    dataset = _require_dataset(dataset_id)
+    files_dir = db.dataset_dir_for(dataset_id)
+    files = [f for f in files_dir.iterdir() if f.is_file()] if files_dir.exists() else []
+
+    messages = db.list_messages(dataset_id)
+    questions_asked = sum(1 for m in messages if m["role"] == "user")
+
+    vector_db = VectorDB(collection_name=db.collection_name_for(dataset_id))
+
+    return {
+        "document_count": len(files),
+        "total_bytes": sum(f.stat().st_size for f in files),
+        "chunk_count": vector_db.count(),
+        "questions_asked": questions_asked,
+        "created_at": dataset["created_at"],
+        "last_activity": messages[-1]["created_at"] if messages else None,
+    }
 
 
 @app.get("/datasets/{dataset_id}/messages")

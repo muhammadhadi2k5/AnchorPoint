@@ -55,7 +55,31 @@ function citationPreview(citation) {
   return cleaned.length > PREVIEW_LENGTH ? `${cleaned.slice(0, PREVIEW_LENGTH).trimEnd()}...` : cleaned
 }
 
-export default function ChatView({ datasetId, onQuotaExceeded, onAddDocuments, onReingest, onOpenEvaluations }) {
+function buildExportMarkdown(datasetName, messages) {
+  const lines = [`# ${datasetName} — Chat Export`, '', `_Exported ${new Date().toLocaleString()}_`]
+
+  for (const message of messages) {
+    lines.push('', message.role === 'user' ? `**You:** ${message.content}` : `**Assistant:** ${message.content}`)
+    if (message.citations?.length > 0) {
+      const sources = message.citations.map((c, i) => `${i + 1}. ${c.source_file}`).join(', ')
+      lines.push('', `*Sources: ${sources}*`)
+    }
+  }
+
+  return lines.join('\n')
+}
+
+function downloadExport(datasetName, messages) {
+  const blob = new Blob([buildExportMarkdown(datasetName, messages)], { type: 'text/markdown' })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = `${datasetName.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}-chat-${new Date().toISOString().slice(0, 10)}.md`
+  link.click()
+  URL.revokeObjectURL(url)
+}
+
+export default function ChatView({ datasetId, datasetName, onQuotaExceeded, onAddDocuments, onReingest, onOpenEvaluations }) {
   const [messages, setMessages] = useState([])
   const [messagesLoaded, setMessagesLoaded] = useState(false)
   const [greeting, setGreeting] = useState('')
@@ -147,6 +171,14 @@ export default function ChatView({ datasetId, onQuotaExceeded, onAddDocuments, o
         </button>
         <button type="button" className="chat-library-toggle" onClick={onOpenEvaluations}>
           Evaluations
+        </button>
+        <button
+          type="button"
+          className="chat-library-toggle"
+          onClick={() => downloadExport(datasetName, messages)}
+          disabled={messages.length === 0}
+        >
+          Export
         </button>
       </div>
 

@@ -84,6 +84,11 @@ export async function reingestDataset(datasetId) {
   return response.json()
 }
 
+export async function getDatasetStats(datasetId) {
+  const response = await request(`/datasets/${datasetId}/stats`)
+  return response.json()
+}
+
 export async function listMessages(datasetId) {
   const response = await request(`/datasets/${datasetId}/messages`)
   return response.json()
