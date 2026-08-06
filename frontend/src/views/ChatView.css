@@ -100,6 +100,24 @@
   align-items: flex-start;
 }
 
+/* the just-sent bubble rises up from roughly where the input bar sits */
+.message-group.sending {
+  animation: message-send-in 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes message-send-in {
+  from {
+    opacity: 0;
+    transform: translateY(28px) scale(0.95);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .message-group.sending {
+    animation: none;
+  }
+}
+
 .bubble {
   font-size: 14.5px;
   line-height: 1.55;

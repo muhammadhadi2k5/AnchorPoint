@@ -153,7 +153,10 @@ export default function ChatView({ datasetId, onQuotaExceeded, onAddDocuments, o
       <div className="chat-scroll-area">
         <div className="chat-messages">
           {messages.map((message, index) => (
-            <div key={message.id ?? index} className={`message-group ${message.role}`}>
+            <div
+              key={message.id ?? index}
+              className={`message-group ${message.role}${message.id === 'pending-user' ? ' sending' : ''}`}
+            >
               <div className={`bubble ${message.role}`}>
                 {message.role === 'assistant' ? (
                   <div className="markdown-body">
