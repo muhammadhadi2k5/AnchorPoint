@@ -35,13 +35,91 @@
   flex-direction: column;
   align-items: center;
   gap: 14px;
+  /* delayed to fire right as the anchor lands (18% of its 1s drop), a
+     quick decaying jitter across the whole hero content so the impact
+     reads as something that actually happened, not just the icon settling */
+  animation: hero-shake 0.4s ease-out 0.18s both;
 }
 
+@keyframes hero-shake {
+  0%, 100% {
+    transform: translate(0, 0);
+  }
+  15% {
+    transform: translate(-5px, 2px);
+  }
+  30% {
+    transform: translate(4px, -2px);
+  }
+  45% {
+    transform: translate(-3px, 1.5px);
+  }
+  60% {
+    transform: translate(2px, -1px);
+  }
+  75% {
+    transform: translate(-1px, 0.5px);
+  }
+  90% {
+    transform: translate(0.5px, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-hero-content {
+    animation: none;
+  }
+}
+
+/* drops in from above like it's actually being lowered, then swings from
+   its top point a few times with decreasing amplitude before settling -
+   transform-origin near the top edge is what makes the swing read as a
+   pendulum hanging from a rope rather than the icon just spinning in place */
 .landing-logo {
   width: 64px;
   height: 64px;
   object-fit: contain;
   margin-bottom: 4px;
+  transform-origin: 50% 6%;
+  animation: anchor-drop 1s ease both;
+}
+
+/* the fall itself gets its own steep accelerating curve (cubic-bezier here,
+   not the animation's overall easing) so it actually reads as gravity
+   yanking it down fast, impact, then the swing plays out slower afterward -
+   a uniform easing across the whole thing was what made it feel like a
+   gentle float instead of a drop */
+@keyframes anchor-drop {
+  0% {
+    transform: translateY(-90px) rotate(0deg);
+    opacity: 0;
+    animation-timing-function: cubic-bezier(0.55, 0, 1, 0.45);
+  }
+  18% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 1;
+  }
+  37% {
+    transform: translateY(0) rotate(-9deg);
+  }
+  57% {
+    transform: translateY(0) rotate(6deg);
+  }
+  76% {
+    transform: translateY(0) rotate(-3deg);
+  }
+  90% {
+    transform: translateY(0) rotate(1.5deg);
+  }
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-logo {
+    animation: none;
+  }
 }
 
 .landing-word {
