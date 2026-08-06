@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import { listMessages, sendMessageStream } from '../api.js'
 import CitationDrawer, { formatChunkText } from '../components/CitationDrawer.jsx'
+import DatasetStats from '../components/DatasetStats.jsx'
 import DocumentLibrary from '../components/DocumentLibrary.jsx'
 import copyIcon from '../../elements/copy-logo.png'
 import './ChatView.css'
@@ -89,6 +90,7 @@ export default function ChatView({ datasetId, datasetName, onQuotaExceeded, onAd
   const [connectionError, setConnectionError] = useState(null)
   const [activeCitation, setActiveCitation] = useState(null)
   const [showLibrary, setShowLibrary] = useState(false)
+  const [showStats, setShowStats] = useState(false)
   const bottomRef = useRef(null)
   const inputRef = useRef(null)
 
@@ -171,6 +173,9 @@ export default function ChatView({ datasetId, datasetName, onQuotaExceeded, onAd
         </button>
         <button type="button" className="chat-library-toggle" onClick={onOpenEvaluations}>
           Evaluations
+        </button>
+        <button type="button" className="chat-library-toggle" onClick={() => setShowStats(true)}>
+          Stats
         </button>
         <button
           type="button"
@@ -286,6 +291,8 @@ export default function ChatView({ datasetId, datasetName, onQuotaExceeded, onAd
           }}
         />
       )}
+
+      {showStats && <DatasetStats datasetId={datasetId} onClose={() => setShowStats(false)} />}
     </div>
   )
 }
