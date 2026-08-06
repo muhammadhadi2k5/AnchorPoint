@@ -160,7 +160,11 @@ export default function HomeView({ onStart, onBack, showBrandWord }) {
         {files.length > 0 && (
           <div className="file-chips">
             {files.map((file, index) => (
-              <span className="file-chip" key={`${file.name}-${index}`}>
+              <span
+                className="file-chip"
+                key={`${file.name}-${file.size}`}
+                style={{ animationDelay: `${Math.min(index, 6) * 40}ms` }}
+              >
                 {file.name}
                 <button
                   type="button"
