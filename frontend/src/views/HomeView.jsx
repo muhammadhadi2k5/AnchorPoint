@@ -112,6 +112,7 @@ export default function HomeView({ onStart, onBack, showBrandWord }) {
           placeholder="e.g. Research Papers"
           value={name}
           onChange={handleNameChange}
+          autoComplete="off"
         />
         {nameError && <p className="field-error">{nameError}</p>}
 
