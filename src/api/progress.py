@@ -8,7 +8,7 @@ _store = {}
 
 def set_progress(
     dataset_id, message, filename=None, done=False, error=None,
-    kind=None, file_index=None, file_total=None,
+    kind=None, file_index=None, file_total=None, stage=None,
 ):
     with _lock:
         _store[dataset_id] = {
@@ -19,6 +19,7 @@ def set_progress(
             "kind": kind,
             "file_index": file_index,
             "file_total": file_total,
+            "stage": stage,
         }
 
 

@@ -85,6 +85,106 @@
   }
 }
 
+/* shared wrapper for whichever icon is active (reading/vector/check) - keyed
+   by stage in the JSX so swapping icons re-triggers this fade-in, making the
+   reading icon feel like it "becomes" the next one instead of hard-cutting */
+.ingestion-icon-slot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  animation: icon-slot-in 0.4s ease both;
+}
+
+@keyframes icon-slot-in {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* text becoming points in vector space - a center node (the chunk) with
+   satellite nodes blinking into existence one after another, each still
+   tethered back to the center by a thin line */
+.vector-icon {
+  width: 40px;
+  height: 40px;
+  overflow: visible;
+}
+
+.vector-edge {
+  stroke: var(--coral);
+  stroke-width: 1;
+  opacity: 0.3;
+}
+
+.vector-node {
+  fill: var(--coral);
+  transform-origin: center;
+  transform-box: fill-box;
+  animation: vector-node-pulse 1.8s ease-in-out infinite;
+}
+
+.vector-node-center {
+  animation: none;
+  opacity: 0.9;
+}
+
+@keyframes vector-node-pulse {
+  0%, 100% {
+    opacity: 0.35;
+    transform: scale(0.7);
+  }
+  40% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+  70% {
+    opacity: 0.8;
+    transform: scale(1);
+  }
+}
+
+/* classic draw-on success mark: the ring traces first, the check traces
+   after it, using pathLength="1" so stroke-dasharray/offset stay simple
+   integers instead of needing each path's real geometric length */
+.check-icon {
+  width: 40px;
+  height: 40px;
+  overflow: visible;
+}
+
+.check-ring {
+  fill: none;
+  stroke: var(--success);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: check-draw 0.5s ease forwards;
+}
+
+.check-mark {
+  fill: none;
+  stroke: var(--success);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: check-draw 0.35s ease forwards 0.45s;
+}
+
+@keyframes check-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
 .reading-filename {
   font-size: 12.5px;
   font-weight: 600;
@@ -136,6 +236,13 @@
   animation: loading-slide 1.6s ease-in-out infinite;
 }
 
+/* matches the reading-icon's sweep color during OCR, so the whole loading
+   screen reads as one consistent "this file is different" beat instead of
+   just the small icon changing color on its own */
+.loading-bar.ocr::after {
+  background: var(--purple);
+}
+
 @keyframes loading-slide {
   0% {
     transform: translateX(-100%);
@@ -159,6 +266,21 @@
 
   .reading-filename {
     animation: none;
+  }
+
+  .ingestion-icon-slot {
+    animation: none;
+  }
+
+  .vector-node {
+    animation: none;
+    opacity: 0.85;
+  }
+
+  .check-ring,
+  .check-mark {
+    animation: none;
+    stroke-dashoffset: 0;
   }
 }
 
