@@ -27,7 +27,7 @@ def _loader_progress(dataset_id):
         elif event == "ocr_fallback":
             set_progress(
                 dataset_id,
-                "This one's a scanned image: Running OCR, might take longer.",
+                "Running OCR",
                 filename=kwargs.get("filename"),
                 kind="ocr",
                 stage="reading",

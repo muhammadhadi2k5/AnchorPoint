@@ -125,6 +125,12 @@ export default function IngestionLoadingView({ datasetId, onComplete }) {
 
   const isOcr = fileInfo.kind === 'ocr'
 
+  // drives the Reading / Embedding / Done tracker below the headline -
+  // same stage/phase state already used to pick the icon, just projected
+  // onto a 3-step index instead of a single active step
+  const stageIndex = phase === 'preparing' ? 2 : stage === 'embedding' ? 1 : 0
+  const stageStatus = (i) => (i < stageIndex ? 'done' : i === stageIndex ? 'active' : '')
+
   return (
     <div className="ingestion-loading-view">
       {!error && (
@@ -139,18 +145,10 @@ export default function IngestionLoadingView({ datasetId, onComplete }) {
         </div>
       )}
 
-      {/* the checkmark above already says "done" - a still-sliding loading
-          bar underneath it during the preparing phase would contradict that */}
-      {phase !== 'preparing' && (
-        <div className="loading-strip">
-          <div className={`loading-bar${isOcr ? ' ocr' : ''}`} />
-        </div>
-      )}
-
       {error ? (
-        <p className="loading-message error">{error}</p>
+        <h1 className="loading-headline error">{error}</h1>
       ) : (
-        <p className="loading-message">{message}</p>
+        <h1 className="loading-headline">{message}</h1>
       )}
 
       {/* keyed by filename so each new file re-triggers the fade-in
@@ -162,6 +160,22 @@ export default function IngestionLoadingView({ datasetId, onComplete }) {
             <span className="reading-count"> · file {fileInfo.index} of {fileInfo.total}</span>
           )}
         </p>
+      )}
+
+      {/* the checkmark above already says "done" - a still-sliding track
+          underneath it during the preparing phase would contradict that */}
+      {phase !== 'preparing' && (
+        <div className="loading-track">
+          <div className={`loading-track-fill${isOcr ? ' ocr' : ''}`} />
+        </div>
+      )}
+
+      {!error && (
+        <div className="loading-stages">
+          <span className={`loading-stage ${stageStatus(0)}`}>Reading</span>
+          <span className={`loading-stage ${stageStatus(1)}`}>Embedding</span>
+          <span className={`loading-stage ${stageStatus(2)}`}>Done</span>
+        </div>
       )}
     </div>
   )

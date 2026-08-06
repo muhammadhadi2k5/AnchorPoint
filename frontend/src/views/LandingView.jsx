@@ -60,6 +60,7 @@ export default function LandingView({ onStart }) {
   return (
     <div className="landing-view">
       <section className="landing-hero">
+        <div className="landing-glow" aria-hidden="true" />
         <div className="landing-wave-top" aria-hidden="true" />
         <div className="landing-wave" aria-hidden="true" />
 

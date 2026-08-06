@@ -4,8 +4,9 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 14px;
+  gap: 20px;
   padding: 48px 24px;
+  text-align: center;
 }
 
 /* a little "page" with text lines and a colored bar sweeping down through
@@ -92,8 +93,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 40px;
+  min-height: 72px;
+  margin-bottom: 6px;
   animation: icon-slot-in 0.4s ease both;
+}
+
+.ingestion-icon-slot .reading-icon {
+  transform: scale(1.8);
 }
 
 @keyframes icon-slot-in {
@@ -111,8 +117,8 @@
    satellite nodes blinking into existence one after another, each still
    tethered back to the center by a thin line */
 .vector-icon {
-  width: 40px;
-  height: 40px;
+  width: 72px;
+  height: 72px;
   overflow: visible;
 }
 
@@ -153,8 +159,8 @@
    after it, using pathLength="1" so stroke-dasharray/offset stay simple
    integers instead of needing each path's real geometric length */
 .check-icon {
-  width: 40px;
-  height: 40px;
+  width: 72px;
+  height: 72px;
   overflow: visible;
 }
 
@@ -213,25 +219,19 @@
   }
 }
 
-.loading-strip {
+.loading-track {
   width: 100%;
-  max-width: 360px;
-}
-
-.loading-bar {
-  height: 4px;
-  border-radius: 999px;
-  background: var(--sand);
-  overflow: hidden;
+  max-width: 380px;
+  height: 1px;
+  background: var(--sand-line);
   position: relative;
+  overflow: hidden;
 }
 
-.loading-bar::after {
-  content: '';
+.loading-track-fill {
   position: absolute;
   inset: 0;
   width: 40%;
-  border-radius: 999px;
   background: var(--coral);
   animation: loading-slide 1.6s ease-in-out infinite;
 }
@@ -239,7 +239,7 @@
 /* matches the reading-icon's sweep color during OCR, so the whole loading
    screen reads as one consistent "this file is different" beat instead of
    just the small icon changing color on its own */
-.loading-bar.ocr::after {
+.loading-track-fill.ocr {
   background: var(--purple);
 }
 
@@ -253,7 +253,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .loading-bar::after {
+  .loading-track-fill {
     animation: none;
     width: 55%;
     transform: none;
@@ -284,13 +284,42 @@
   }
 }
 
-.loading-message {
-  font-size: 13.5px;
-  color: var(--ink-soft);
+.loading-headline {
+  font-family: 'ENTRA', sans-serif;
+  font-weight: 700;
+  font-size: clamp(26px, 4.2vw, 42px);
+  letter-spacing: 0.01em;
+  color: var(--ink);
   margin: 0;
-  text-align: center;
+  text-wrap: balance;
 }
 
-.loading-message.error {
+.loading-headline.error {
   color: var(--error);
+}
+
+.loading-stages {
+  display: flex;
+  gap: 28px;
+  margin-top: 4px;
+}
+
+.loading-stage {
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sand-line);
+  padding-bottom: 8px;
+  border-bottom: 2px solid transparent;
+}
+
+.loading-stage.done {
+  color: var(--ink-soft);
+  border-bottom-color: var(--sand-line);
+}
+
+.loading-stage.active {
+  color: var(--ink);
+  border-bottom-color: var(--coral);
 }
