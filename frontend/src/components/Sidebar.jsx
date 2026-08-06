@@ -12,6 +12,8 @@ export default function Sidebar({
   onDeleteDataset,
   collapsed,
   onToggleCollapsed,
+  theme,
+  onToggleTheme,
 }) {
   const [menu, setMenu] = useState(null) // { id, x, y, confirmDelete }
   const [renamingId, setRenamingId] = useState(null)
@@ -146,6 +148,38 @@ export default function Sidebar({
           ))}
         </ul>
       )}
+
+      <button
+        type="button"
+        className="sidebar-theme-toggle"
+        onClick={onToggleTheme}
+        title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+        aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+      >
+        {theme === 'dark' ? (
+          <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true">
+            <circle cx="10" cy="10" r="4.5" fill="currentColor" />
+            <g stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+              <line x1="10" y1="1" x2="10" y2="3.2" />
+              <line x1="10" y1="16.8" x2="10" y2="19" />
+              <line x1="1" y1="10" x2="3.2" y2="10" />
+              <line x1="16.8" y1="10" x2="19" y2="10" />
+              <line x1="3.9" y1="3.9" x2="5.4" y2="5.4" />
+              <line x1="14.6" y1="14.6" x2="16.1" y2="16.1" />
+              <line x1="3.9" y1="16.1" x2="5.4" y2="14.6" />
+              <line x1="14.6" y1="5.4" x2="16.1" y2="3.9" />
+            </g>
+          </svg>
+        ) : (
+          <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true">
+            <path
+              fill="currentColor"
+              d="M17.3 12.8A7.5 7.5 0 0 1 7.2 2.7a7.5 7.5 0 1 0 10.1 10.1Z"
+            />
+          </svg>
+        )}
+        <span className="sidebar-theme-toggle-label">{theme === 'dark' ? 'Light mode' : 'Dark mode'}</span>
+      </button>
 
       {menu && menuDataset && (
         <div className="context-menu" style={{ top: menu.y, left: menu.x }} onClick={(e) => e.stopPropagation()}>

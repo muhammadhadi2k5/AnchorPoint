@@ -69,6 +69,20 @@
   background: rgba(247, 239, 225, 0.85);
 }
 
+/* frosted-glass translucent cream, hardcoded rather than token-driven since
+   it needs its own opacity - needs its own dark counterpart to match */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .chat-library-toggle,
+  :root:not([data-theme='light']) .chat-library-toggle:disabled:hover {
+    background: rgba(23, 22, 26, 0.85);
+  }
+}
+
+:root[data-theme='dark'] .chat-library-toggle,
+:root[data-theme='dark'] .chat-library-toggle:disabled:hover {
+  background: rgba(23, 22, 26, 0.85);
+}
+
 .chat-messages {
   max-width: 720px;
   margin: 0 auto;
@@ -145,7 +159,7 @@
 }
 
 .bubble.assistant {
-  background: var(--white);
+  background: var(--surface);
   border: 1px solid var(--sand-line);
   border-left: 3px solid var(--coral);
   border-bottom-left-radius: 4px;
@@ -271,6 +285,18 @@
   cursor: pointer;
 }
 
+/* --purple becomes gold in dark mode (see theme.css) so white text on it
+   would lose all contrast - flip to dark text there instead */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .citation-tag {
+    color: #171216;
+  }
+}
+
+:root[data-theme='dark'] .citation-tag {
+  color: #171216;
+}
+
 .citation-tag-wrap {
   position: relative;
   display: inline-flex;
@@ -332,6 +358,21 @@
   font-size: 12px;
   line-height: 1.5;
   color: rgba(247, 239, 225, 0.9);
+}
+
+/* the preview bubble intentionally inverts --ink/--cream for its own
+   background/text (see .citation-hover-preview above), so in dark mode
+   (where --ink turns light and --cream turns dark) this bubble flips from
+   dark-with-light-text to light-with-dark-text - this hardcoded rgba is the
+   one piece of that text that doesn't ride the token flip automatically */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .citation-hover-text {
+    color: rgba(11, 11, 13, 0.85);
+  }
+}
+
+:root[data-theme='dark'] .citation-hover-text {
+  color: rgba(11, 11, 13, 0.85);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -479,7 +520,7 @@
   padding: 12px 18px;
   border-radius: 22px;
   border: 1px solid var(--sand-line);
-  background: var(--white);
+  background: var(--surface);
   color: var(--ink);
   resize: none;
   overflow-y: auto;

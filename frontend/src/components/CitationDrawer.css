@@ -11,7 +11,7 @@
   right: 0;
   height: 100%;
   width: min(360px, 85vw);
-  background: var(--white);
+  background: var(--surface);
   border-left: 1px solid var(--sand-line);
   z-index: 21;
   display: flex;

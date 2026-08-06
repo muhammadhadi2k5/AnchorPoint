@@ -221,6 +221,19 @@
   margin: 0 0 14px;
 }
 
+/* this band stays coral in both themes (see .landing-how), so this text
+   needs to stay light too - without this it would go dark-on-coral once
+   --cream flips to near-black for the dark theme */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .landing-how-eyebrow {
+    color: #f7efe1;
+  }
+}
+
+:root[data-theme='dark'] .landing-how-eyebrow {
+  color: #f7efe1;
+}
+
 .landing-how-title {
   font-family: 'ENTRA', sans-serif;
   font-weight: 700;
@@ -284,7 +297,7 @@
   border-radius: 999px;
   padding: 16px 36px;
   color: var(--coral-deep);
-  background: var(--white);
+  background: var(--surface);
   cursor: pointer;
   transition: background 0.15s ease;
 }

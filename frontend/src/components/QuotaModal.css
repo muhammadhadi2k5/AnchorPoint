@@ -10,7 +10,7 @@
 }
 
 .quota-modal {
-  background: var(--white);
+  background: var(--surface);
   border-radius: var(--radius);
   padding: 28px;
   max-width: 360px;

@@ -24,7 +24,50 @@
   --success: #6e8f72;
   --error: #d6301f;
   --white: #fffaf2;
+  /* surface is the "card/panel background" half of what --white used to do
+     on its own - --white stays put (it's also used as literal white text on
+     coral buttons, which must stay light in both themes), while --surface
+     is the half that actually needs to flip dark */
+  --surface: #fffaf2;
   --radius: 14px;
+}
+
+/* dark mode: same coral, same layout/radius/spacing everywhere - only the
+   neutrals flip (black canvas instead of cream, beige instead of brown ink).
+   citation accent becomes gold instead of the purple/coral pairing, since
+   coral is doing double duty as the one accent color here (see .citation-tag
+   in ChatView.css for the one spot that also needs its text color flipped
+   to match). declared twice on purpose - once for the system-preference
+   case, once for the explicit toggle - so an explicit choice always wins
+   over prefers-color-scheme in both directions */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --cream: #0b0b0d;
+    --cream-2: #17161a;
+    --ink: #f3ead9;
+    --ink-soft: #a89880;
+    --purple: #dba968;
+    --sand: #1e1c22;
+    --sand-line: #2a2830;
+    --peach: #201d24;
+    --success: #7fbf8f;
+    --error: #ff6b57;
+    --surface: #17161a;
+  }
+}
+
+:root[data-theme='dark'] {
+  --cream: #0b0b0d;
+  --cream-2: #17161a;
+  --ink: #f3ead9;
+  --ink-soft: #a89880;
+  --purple: #dba968;
+  --sand: #1e1c22;
+  --sand-line: #2a2830;
+  --peach: #201d24;
+  --success: #7fbf8f;
+  --error: #ff6b57;
+  --surface: #17161a;
 }
 
 * {

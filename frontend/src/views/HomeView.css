@@ -121,7 +121,7 @@
   padding: 12px 18px;
   border-radius: 999px;
   border: 1px solid var(--sand-line);
-  background: var(--white);
+  background: var(--surface);
   color: var(--ink);
 }
 
@@ -150,6 +150,16 @@
   background: rgba(255, 255, 255, 0.4);
   cursor: pointer;
   transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .drop-zone {
+    background: rgba(255, 255, 255, 0.03);
+  }
+}
+
+:root[data-theme='dark'] .drop-zone {
+  background: rgba(255, 255, 255, 0.03);
 }
 
 .drop-zone.dragging {

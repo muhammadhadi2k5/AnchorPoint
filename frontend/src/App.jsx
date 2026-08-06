@@ -18,6 +18,7 @@ import {
 import './App.css'
 
 const SIDEBAR_COLLAPSE_KEY = 'anchorpoint-sidebar-collapsed'
+const THEME_KEY = 'anchorpoint-theme'
 
 export default function App() {
   // 'landing' -> 'app' - no login gate, everyone shares the same datasets
@@ -33,6 +34,12 @@ export default function App() {
     } catch {
       return false
     }
+  })
+  // index.html's own inline script already set this on <html> before React
+  // mounted (avoids a light-mode flash) - read it back here so React's
+  // state agrees with what's already on screen
+  const [theme, setTheme] = useState(() => {
+    return document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light'
   })
 
   const refreshDatasets = () => listDatasets().then(setDatasets)
@@ -73,6 +80,19 @@ export default function App() {
       } catch {
         // localStorage can be unavailable (private browsing, etc.) - collapse
         // still works for the session, it just won't be remembered
+      }
+      return next
+    })
+  }
+
+  const toggleTheme = () => {
+    setTheme((current) => {
+      const next = current === 'dark' ? 'light' : 'dark'
+      document.documentElement.setAttribute('data-theme', next)
+      try {
+        localStorage.setItem(THEME_KEY, next)
+      } catch {
+        // same as sidebar collapse above - still works for the session
       }
       return next
     })
@@ -155,6 +175,8 @@ export default function App() {
         onDeleteDataset={handleDeleteDataset}
         collapsed={sidebarCollapsed}
         onToggleCollapsed={toggleSidebarCollapsed}
+        theme={theme}
+        onToggleTheme={toggleTheme}
       />
 
       <main className="app-main">

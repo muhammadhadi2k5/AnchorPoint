@@ -12,7 +12,7 @@
   transform: translate(-50%, -50%);
   width: min(400px, 90vw);
   max-height: 70vh;
-  background: var(--white);
+  background: var(--surface);
   border-radius: var(--radius);
   z-index: 21;
   display: flex;
