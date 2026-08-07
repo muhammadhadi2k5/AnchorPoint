@@ -14,8 +14,8 @@ import {
   listDatasets,
   reingestDataset,
   updateDataset,
-} from './api.js'
-import './App.css'
+} from './lib/api.js'
+import './styles/App.css'
 
 const SIDEBAR_COLLAPSE_KEY = 'anchorpoint-sidebar-collapsed'
 const THEME_KEY = 'anchorpoint-theme'

@@ -1,12 +1,12 @@
 import threading
 
-from document_loader import process_all_documents
-from chunker import chunking
-from embedding_manager import EmbeddingManager
-from rate_limit_guard import QuotaExceededError
-from vector_db import VectorDB, make_doc_id
+from ingestion.document_loader import process_all_documents
+from ingestion.chunker import chunking
+from core.embedding_manager import EmbeddingManager
+from core.rate_limit_guard import QuotaExceededError
+from core.vector_db import VectorDB, make_doc_id
 
-from api import db
+from models import db
 from api.progress import set_progress
 
 

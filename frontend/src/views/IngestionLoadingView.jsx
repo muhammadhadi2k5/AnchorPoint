@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { getIngestStatus } from '../api.js'
+import { getIngestStatus } from '../lib/api.js'
 import './IngestionLoadingView.css'
 
 const PREPARING_MESSAGES = ['Warming things up...', 'Preparing your chat...']

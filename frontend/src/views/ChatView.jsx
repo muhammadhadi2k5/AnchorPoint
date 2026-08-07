@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
-import { listMessages, sendMessageStream } from '../api.js'
+import { listMessages, sendMessageStream } from '../lib/api.js'
 import CitationDrawer, { formatChunkText } from '../components/CitationDrawer.jsx'
 import DatasetStats from '../components/DatasetStats.jsx'
 import DocumentLibrary from '../components/DocumentLibrary.jsx'

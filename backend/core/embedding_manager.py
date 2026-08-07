@@ -4,8 +4,8 @@ import numpy as np
 from typing import List
 from dotenv import load_dotenv
 from google import genai
-from google.genai import types
-from rate_limit_guard import RateLimitGuard
+from google.genai import errors, types
+from core.rate_limit_guard import raise_on_quota_exceeded
 
 load_dotenv()
 
@@ -32,7 +32,6 @@ class EmbeddingManager:
             api_key=api_key,
             http_options=types.HttpOptions(timeout=60000),
         )
-        self.guard = RateLimitGuard(name="embedding")
 
     # embeds chunks going INTO the vectorDB. handles batching + pacing
     def embed_documents(self, texts: List[str]) -> np.ndarray:
@@ -76,15 +75,17 @@ class EmbeddingManager:
     def _embed(self, texts: List[str], task_type: str) -> np.ndarray:
         print(f"Generating {task_type} embeddings for {len(texts)} text(s)...")
 
-        result = self.guard.call(
-            self.client.models.embed_content,
-            model=MODEL_NAME,
-            contents=texts,
-            config=types.EmbedContentConfig(
-                task_type=task_type,
-                output_dimensionality=EMBEDDING_DIM,
-            ),
-        )
+        try:
+            result = self.client.models.embed_content(
+                model=MODEL_NAME,
+                contents=texts,
+                config=types.EmbedContentConfig(
+                    task_type=task_type,
+                    output_dimensionality=EMBEDDING_DIM,
+                ),
+            )
+        except errors.APIError as e:
+            raise_on_quota_exceeded(e, "embedding")
 
         embeddings = np.array([e.values for e in result.embeddings])
         print(f"Generated embeddings with shape: {embeddings.shape}")

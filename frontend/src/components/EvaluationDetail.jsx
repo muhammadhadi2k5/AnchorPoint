@@ -1,4 +1,4 @@
-import { METRIC_INFO } from '../evalMetricInfo.js'
+import { METRIC_INFO } from '../lib/evalMetricInfo.js'
 import InfoTooltip from './InfoTooltip.jsx'
 import './EvaluationDetail.css'
 

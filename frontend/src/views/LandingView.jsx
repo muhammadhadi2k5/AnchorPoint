@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import logoIcon from '../../elements/anchorpoint-icon.png'
+import logoIcon from '../assets/anchorpoint-icon.png'
 import './LandingView.css'
 
 const STEPS = [

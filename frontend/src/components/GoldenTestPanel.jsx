@@ -7,7 +7,7 @@ import {
   listGoldenQuestions,
   listGoldenRuns,
   startGoldenRun,
-} from '../api.js'
+} from '../lib/api.js'
 import GoldenRunDetail from './GoldenRunDetail.jsx'
 
 const POLL_MS = 3000

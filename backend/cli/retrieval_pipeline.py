@@ -1,11 +1,19 @@
 import sys
+from pathlib import Path
 sys.stdout.reconfigure(encoding="utf-8")
 import httpx
 
-from vector_db import VectorDB
-from embedding_manager import EmbeddingManager
-from retriever import Retriever
-from llm_generator import Generator
+# lets this script import its sibling top-level packages (core, retrieval,
+# generation) regardless of the caller's working directory, same reasoning
+# as api/__init__.py
+_BACKEND_DIR = Path(__file__).resolve().parent.parent
+if str(_BACKEND_DIR) not in sys.path:
+    sys.path.insert(0, str(_BACKEND_DIR))
+
+from core.vector_db import VectorDB
+from core.embedding_manager import EmbeddingManager
+from retrieval.retriever import Retriever
+from generation.llm_generator import Generator
 
 vectorDB = VectorDB()
 embedding_manager = EmbeddingManager()

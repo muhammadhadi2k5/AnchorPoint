@@ -1,8 +1,8 @@
 import threading
 
-from api import db
-from evaluator import Evaluator
-from rate_limit_guard import QuotaExceededError
+from models import db
+from evaluation.evaluator import Evaluator
+from core.rate_limit_guard import QuotaExceededError
 
 
 def _run(evaluation_id, query, results, answer):

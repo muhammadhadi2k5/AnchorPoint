@@ -2,7 +2,7 @@ import os
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types, errors
-from rate_limit_guard import RateLimitGuard, QuotaExceededError
+from core.rate_limit_guard import raise_on_quota_exceeded
 
 load_dotenv()
 
@@ -33,7 +33,6 @@ class Generator:
             api_key=api_key,
             http_options=types.HttpOptions(timeout=60000),
         )
-        self.guard = RateLimitGuard(name="llm")
 
     # labels each chunk with its source file so the model can cite where it
     # got each part of the answer from
@@ -78,8 +77,4 @@ class Generator:
                 if chunk.text:
                     yield chunk.text
         except errors.APIError as e:
-            if e.code == 429:
-                raise QuotaExceededError(
-                    f"[{self.guard.name}] Google's API reports the quota is exceeded: {e.message}"
-                ) from e
-            raise
+            raise_on_quota_exceeded(e, "llm")

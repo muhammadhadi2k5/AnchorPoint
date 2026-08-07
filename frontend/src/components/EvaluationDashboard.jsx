@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { getEvaluationsSummary, listEvaluations } from '../api.js'
-import { METRIC_INFO } from '../evalMetricInfo.js'
+import { getEvaluationsSummary, listEvaluations } from '../lib/api.js'
+import { METRIC_INFO } from '../lib/evalMetricInfo.js'
 import EvaluationDetail from './EvaluationDetail.jsx'
 import GoldenTestPanel from './GoldenTestPanel.jsx'
 import InfoTooltip from './InfoTooltip.jsx'

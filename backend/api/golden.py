@@ -1,11 +1,11 @@
 import threading
 
-from api import db
-from embedding_manager import EmbeddingManager
-from evaluator import Evaluator
-from llm_generator import Generator
-from retriever import Retriever
-from vector_db import VectorDB
+from models import db
+from core.embedding_manager import EmbeddingManager
+from evaluation.evaluator import Evaluator
+from generation.llm_generator import Generator
+from retrieval.retriever import Retriever
+from core.vector_db import VectorDB
 
 
 # runs strictly sequentially, not one thread per question - this already

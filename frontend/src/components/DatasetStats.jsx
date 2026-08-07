@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { getDatasetStats } from '../api.js'
+import { getDatasetStats } from '../lib/api.js'
 import './DatasetStats.css'
 
 function formatBytes(bytes) {

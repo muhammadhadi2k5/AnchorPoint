@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { getGoldenRun } from '../api.js'
+import { getGoldenRun } from '../lib/api.js'
 import './GoldenRunDetail.css'
 
 function scoreTier(score) {

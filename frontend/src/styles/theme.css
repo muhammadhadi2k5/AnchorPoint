@@ -1,12 +1,12 @@
 @font-face {
   font-family: 'ENTRA';
-  src: url('../elements/ENTRA-Free/ENTRA-Caps.woff') format('woff');
+  src: url('../assets/ENTRA-Free/ENTRA-Caps.woff') format('woff');
   font-display: block;
 }
 
 @font-face {
   font-family: 'Horizonia';
-  src: url('../elements/horizonia.regular.otf') format('opentype');
+  src: url('../assets/horizonia.regular.otf') format('opentype');
   font-display: swap;
 }
 

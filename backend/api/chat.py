@@ -1,8 +1,9 @@
-from api import db, evaluate
-from embedding_manager import EmbeddingManager
-from llm_generator import Generator
-from retriever import Retriever
-from vector_db import VectorDB
+from api import evaluate
+from models import db
+from core.embedding_manager import EmbeddingManager
+from generation.llm_generator import Generator
+from retrieval.retriever import Retriever
+from core.vector_db import VectorDB
 
 # flip to False to test latency without conversation memory. generate_answer
 # treats history=None the same as if this whole feature never existed, so
@@ -47,10 +48,15 @@ def ask(dataset_id, query):
     history = _build_history(dataset_id)
     db.add_message(dataset_id, "user", query)
 
-    results = retriever.retrieve(query, top_k=7, threshold=0.45)
-    citations = _build_citations(results) if results else None
-
     def stream():
+        # retrieval (and its embedding call) happens lazily in here rather
+        # than eagerly in ask() itself, so a quota error from it surfaces
+        # during the caller's first next(stream) peek - which is wrapped in
+        # a try/except - instead of escaping before that try/except even
+        # starts
+        results = retriever.retrieve(query, top_k=7, threshold=0.45)
+        citations = _build_citations(results) if results else None
+
         pieces = []
         for piece in generator.generate_answer(query, results, history=history):
             pieces.append(piece)

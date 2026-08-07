@@ -5,10 +5,11 @@ from fastapi.responses import StreamingResponse
 from google.genai import errors as genai_errors
 from pydantic import BaseModel
 
-from api import chat, db, golden, ingest
+from api import chat, golden, ingest
 from api.progress import clear_progress, get_progress
-from rate_limit_guard import QuotaExceededError
-from vector_db import VectorDB, delete_collection
+from models import db
+from core.rate_limit_guard import QuotaExceededError
+from core.vector_db import VectorDB, delete_collection
 
 db.init_db()
 

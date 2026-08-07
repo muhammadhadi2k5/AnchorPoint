@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { listFiles } from '../api.js'
+import { listFiles } from '../lib/api.js'
 import './DocumentLibrary.css'
 
 export default function DocumentLibrary({ datasetId, onClose, onAddDocuments, onReingest }) {

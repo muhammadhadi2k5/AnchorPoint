@@ -5,7 +5,7 @@ from google import genai
 from google.genai import errors, types
 from pydantic import BaseModel, Field
 
-from rate_limit_guard import QuotaExceededError, RateLimitGuard
+from core.rate_limit_guard import raise_on_quota_exceeded
 
 load_dotenv()
 
@@ -83,10 +83,6 @@ class Evaluator:
             api_key=api_key,
             http_options=types.HttpOptions(timeout=60000),
         )
-        # separate name from the "llm" guard on purpose, just so a 429 from a
-        # background eval call reads differently in logs/errors than one from
-        # a real chat answer
-        self.guard = RateLimitGuard(name="eval")
 
     # same labeling scheme as Generator._format_context, so the judge sees
     # exactly what the answering model saw
@@ -110,11 +106,10 @@ class Evaluator:
             )
             return response.parsed
         except errors.APIError as e:
-            if e.code == 429:
-                raise QuotaExceededError(
-                    f"[{self.guard.name}] Google's API reports the quota is exceeded: {e.message}"
-                ) from e
-            raise
+            # separate name from "llm" on purpose, just so a 429 from a
+            # background eval call reads differently in logs/errors than one
+            # from a real chat answer
+            raise_on_quota_exceeded(e, "eval")
 
     # Live tab - query: the user's question, results: same shape
     # Retriever.retrieve() returns (may be []), answer: the full assistant
