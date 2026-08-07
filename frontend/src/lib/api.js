@@ -125,6 +125,8 @@ export async function getEvaluationsSummary(datasetId) {
   return response.json()
 }
 
+// not called anywhere in the app yet, kept for a plausible future feature
+// like a shareable single-evaluation link
 export async function getEvaluation(datasetId, evaluationId) {
   const response = await request(`/datasets/${datasetId}/evaluations/${evaluationId}`)
   return response.json()

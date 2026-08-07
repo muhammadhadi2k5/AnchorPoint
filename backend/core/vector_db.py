@@ -101,20 +101,6 @@ class VectorDB:
                 break
         return _points_to_result(all_points)
 
-    # quick look at a few stored chunks without pulling the whole collection
-    def peek(self, limit=3):
-        points, _ = self.client.scroll(
-            collection_name=self.collection_name,
-            limit=limit,
-            with_payload=True,
-            with_vectors=True,
-        )
-        return _points_to_result(points)
-
-    def get_by_ids(self, ids):
-        points = self.client.retrieve(collection_name=self.collection_name, ids=ids, with_vectors=True)
-        return _points_to_result(points)
-
     def add_documents(self, documents: List[Any], embeddings: np.ndarray):
         if len(documents) != len(embeddings):
             raise ValueError("Number of documents and embeddings must match.")

@@ -375,6 +375,9 @@ def fail_evaluation(evaluation_id, error):
         conn.close()
 
 
+# not called by the UI right now (the dashboard already has the full row from
+# list_evaluations), kept for a plausible future feature like a shareable
+# single-evaluation link
 def get_evaluation(evaluation_id):
     conn = get_connection()
     try:

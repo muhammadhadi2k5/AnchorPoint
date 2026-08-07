@@ -209,6 +209,8 @@ def evaluations_summary(dataset_id: str):
     return db.get_evaluation_summary(dataset_id)
 
 
+# no frontend caller right now, kept as working API surface for a plausible
+# future feature like a shareable single-evaluation link
 @app.get("/datasets/{dataset_id}/evaluations/{evaluation_id}")
 def get_evaluation(dataset_id: str, evaluation_id: str):
     _require_dataset(dataset_id)
