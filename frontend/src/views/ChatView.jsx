@@ -4,7 +4,6 @@ import { listMessages, sendMessageStream } from '../api.js'
 import CitationDrawer, { formatChunkText } from '../components/CitationDrawer.jsx'
 import DatasetStats from '../components/DatasetStats.jsx'
 import DocumentLibrary from '../components/DocumentLibrary.jsx'
-import copyIcon from '../../elements/copy-logo.png'
 import './ChatView.css'
 
 const GREETINGS = [
@@ -42,7 +41,15 @@ function CopyButton({ text }) {
           <path d="M3 8.5L6.5 12L13 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       ) : (
-        <img src={copyIcon} alt="" className="copy-icon" />
+        <svg width="19" height="19" viewBox="0 0 16 16" fill="none" className="copy-icon" aria-hidden="true">
+          <rect x="2" y="4.5" width="8" height="9.5" rx="1.75" stroke="currentColor" strokeWidth="1.3" />
+          <path
+            d="M5.5 4.5V3.75C5.5 2.784 6.284 2 7.25 2H12.25C13.216 2 14 2.784 14 3.75V9.75C14 10.716 13.216 11.5 12.25 11.5H11.5"
+            stroke="currentColor"
+            strokeWidth="1.3"
+            strokeLinejoin="round"
+          />
+        </svg>
       )}
     </button>
   )

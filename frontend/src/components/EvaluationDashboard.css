@@ -1,7 +1,7 @@
 .eval-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(43, 35, 24, 0.25);
+  background: rgba(43, 35, 24, 0.45);
   z-index: 20;
 }
 
@@ -13,6 +13,7 @@
   width: min(720px, 92vw);
   max-height: 82vh;
   background: var(--surface);
+  border: 1px solid var(--sand-line);
   border-radius: var(--radius);
   z-index: 21;
   display: flex;

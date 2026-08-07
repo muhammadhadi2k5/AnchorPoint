@@ -1,7 +1,7 @@
 .stats-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(43, 35, 24, 0.25);
+  background: rgba(43, 35, 24, 0.45);
   z-index: 20;
 }
 
@@ -12,6 +12,7 @@
   transform: translate(-50%, -50%);
   width: min(400px, 90vw);
   background: var(--surface);
+  border: 1px solid var(--sand-line);
   border-radius: var(--radius);
   z-index: 21;
   display: flex;
