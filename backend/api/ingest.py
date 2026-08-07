@@ -35,11 +35,8 @@ def _loader_progress(dataset_id):
     return handler
 
 
-# does the same thing as ingestion_pipeline.py, just scoped to one dataset's
-# folder/collection instead of the shared data/, and reporting progress as it goes.
-# 'stage' groups the play-by-play messages into the 3 states the frontend
-# actually animates differently: reading -> chunking is still "reading" as
-# far as the UI cares, embedding/saving both read as "generating embeddings"
+# same as ingestion_pipeline.py, just scoped to one dataset and reporting progress as it goes.
+# 'stage' collapses the play-by-play into the 3 states the frontend actually animates differently
 def _run(dataset_id):
     try:
         data_dir = db.dataset_dir_for(dataset_id)

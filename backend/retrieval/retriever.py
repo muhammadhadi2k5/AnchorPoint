@@ -77,9 +77,8 @@ class Retriever:
         target_sources = self._detect_target_sources(query, known_sources)
 
         if len(target_sources) > 1:
-            # comparison query - search each named doc separately so the
-            # higher-scoring one can't crowd the other out of a pooled top_k.
-            # each doc gets its own full top_k budget
+            # comparison query, search each doc separately so the higher-scoring one can't
+            # crowd the other out of a pooled top_k, each gets its own full budget
             results = []
             for source in target_sources:
                 subset = self._filter_by_source(stored, [source])

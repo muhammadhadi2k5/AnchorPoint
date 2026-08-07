@@ -17,9 +17,8 @@ SYSTEM_INSTRUCTION = (
     "Mention which source file each part of your answer comes from."
 )
 
-# an earlier version routed "which document is this about" through an LLM
-# call (see git history) - dropped in favor of retriever._detect_target_sources'
-# plain word-overlap match, which is free and just as accurate for this use case
+# used to route "which document is this about" through an LLM call, dropped for
+# retriever._detect_target_sources' word-overlap match instead, free and just as good here
 
 
 class Generator:
@@ -43,10 +42,8 @@ class Generator:
             parts.append(f"[Source {i}: {source}]\n{result['text']}")
         return "\n\n".join(parts)
 
-    # turns [{"role": "user"/"assistant", "content": "..."}] into Gemini's
-    # native multi-turn Content list, "assistant" -> "model" is Gemini's own naming.
-    # history=None (or []) collapses back to exactly one turn, same as before
-    # this existed - safe to rip out or disable upstream without this breaking
+    # "assistant" -> "model" is just Gemini's own naming. history=None collapses back to one
+    # turn, same as before this existed, safe to disable upstream without breaking anything
     def _build_contents(self, history, prompt):
         contents = []
         for turn in history or []:

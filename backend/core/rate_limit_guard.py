@@ -2,9 +2,8 @@ class QuotaExceededError(Exception):
     pass
 
 
-# translates an already-caught errors.APIError into QuotaExceededError if it
-# was a 429, re-raises as-is otherwise. name identifies which caller hit it
-# ("llm" / "eval" / "embedding") so a 429 in the logs says which quota bucket
+# name ("llm"/"eval"/"embedding") just labels which caller hit the 429, so the logs say
+# which quota bucket ran out instead of just "something did"
 def raise_on_quota_exceeded(e, name):
     if e.code == 429:
         raise QuotaExceededError(

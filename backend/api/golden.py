@@ -8,9 +8,8 @@ from retrieval.retriever import Retriever
 from core.vector_db import VectorDB
 
 
-# runs strictly sequentially, not one thread per question - this already
-# shares the same daily llm/embedding/eval guards as real traffic, so
-# parallel bursts would just hit QuotaExceededError faster with no benefit
+# strictly sequential, not one thread per question, this shares the same daily quota guards
+# as real traffic so parallel bursts would just hit QuotaExceededError faster for no benefit
 def _run_all(run_id, dataset_id):
     questions = db.list_golden_questions(dataset_id)
     vector_db = VectorDB(collection_name=db.collection_name_for(dataset_id))

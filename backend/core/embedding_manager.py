@@ -66,9 +66,8 @@ class EmbeddingManager:
 
         return batches
 
-    # embeds the search query. different task_type than documents on purpose -
-    # a short question and a long stored chunk aren't symmetric, gemini
-    # handles them differently under the hood
+    # different task_type than documents on purpose, a short question and a long stored chunk
+    # aren't symmetric and gemini treats them differently under the hood
     def embed_query(self, text: str) -> np.ndarray:
         return self._embed([text], task_type="RETRIEVAL_QUERY")[0]
 

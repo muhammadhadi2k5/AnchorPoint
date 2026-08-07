@@ -3,9 +3,8 @@ from pathlib import Path
 sys.stdout.reconfigure(encoding="utf-8")
 import httpx
 
-# lets this script import its sibling top-level packages (core, retrieval,
-# generation) regardless of the caller's working directory, same reasoning
-# as api/__init__.py
+# lets this script import its sibling packages regardless of the caller's cwd, same
+# reasoning as api/__init__.py
 _BACKEND_DIR = Path(__file__).resolve().parent.parent
 if str(_BACKEND_DIR) not in sys.path:
     sys.path.insert(0, str(_BACKEND_DIR))

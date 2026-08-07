@@ -106,16 +106,12 @@ class Evaluator:
             )
             return response.parsed
         except errors.APIError as e:
-            # separate name from "llm" on purpose, just so a 429 from a
-            # background eval call reads differently in logs/errors than one
-            # from a real chat answer
+            # separate name from "llm" on purpose, so a 429 from a background eval reads
+            # differently in the logs than one from a real chat answer
             raise_on_quota_exceeded(e, "eval")
 
-    # Live tab - query: the user's question, results: same shape
-    # Retriever.retrieve() returns (may be []), answer: the full assistant
-    # answer text. always returns all three keys; faithfulness/
-    # context_relevance are None (not a bad score) when there was no
-    # retrieved context to judge them against
+    # Live tab. always returns all three keys, faithfulness/context_relevance are None (not
+    # a bad score) when there was no retrieved context to judge them against
     def evaluate(self, query, results, answer):
         if results:
             prompt = (
@@ -153,10 +149,8 @@ class Evaluator:
         )
         return parsed.model_dump()
 
-    # Test Set tab - deterministic, no LLM call: "was file X among the
-    # retrieved chunks" is a plain fact, not a judgment call. None (not
-    # applicable) when the user didn't specify which file the answer should
-    # come from
+    # Test Set tab, no LLM call needed, "was file X retrieved" is a plain fact not a judgment
+    # call. None when the user didn't specify an expected source
     def context_recall(self, results, expected_sources):
         if not expected_sources:
             return None

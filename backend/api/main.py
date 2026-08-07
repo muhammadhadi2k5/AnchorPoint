@@ -100,9 +100,8 @@ def list_files(dataset_id: str):
     return sorted(f.name for f in files_dir.iterdir() if f.is_file())
 
 
-# adds more files to an existing dataset and re-runs ingestion, scoped to
-# that dataset's own folder/collection. dedup in ingestion_pipeline's logic
-# means already-embedded chunks won't be redone
+# scoped to this dataset's own folder/collection, dedup in the ingestion logic means
+# already-embedded chunks just get skipped, not redone
 @app.post("/datasets/{dataset_id}/documents")
 def add_documents(dataset_id: str, files: list[UploadFile] = File(...)):
     _require_dataset(dataset_id)
@@ -111,10 +110,8 @@ def add_documents(dataset_id: str, files: list[UploadFile] = File(...)):
     return {"status": "ingesting"}
 
 
-# re-runs ingestion on the files already saved for this dataset, no new
-# uploads needed. same dedup as add_documents means already-embedded chunks
-# get skipped, so this just picks up whatever didn't make it in the first
-# time (e.g. a run that died partway through on a quota error)
+# no new uploads, just reruns ingestion on files already saved. same dedup as add_documents
+# means this picks up whatever didn't make it in last time, e.g. a quota error mid-run
 @app.post("/datasets/{dataset_id}/reingest")
 def reingest_dataset(dataset_id: str):
     _require_dataset(dataset_id)
@@ -163,18 +160,16 @@ def send_message(dataset_id: str, body: MessageIn):
     _require_dataset(dataset_id)
     stream = chat.ask(dataset_id, body.content)
 
-    # errors from the guard/embedding call happen before the first token is
-    # yielded, so peeking one chunk ahead lets a real error become a proper
-    # HTTP status instead of a broken stream
+    # quota/embedding errors happen before the first token yields, peeking one chunk ahead
+    # turns that into a real HTTP status instead of a broken stream
     try:
         first_chunk = next(stream, "")
     except QuotaExceededError:
         raise HTTPException(status_code=429, detail="quota_exceeded")
     except (httpx.ConnectError, httpx.TimeoutException):
         raise HTTPException(status_code=503, detail="connection_error")
-    # Gemini itself reporting overloaded/unavailable - distinct from us failing
-    # to reach it at all, so the frontend can tell the user the truth instead
-    # of blaming their own connection
+    # Gemini reporting overloaded is different from us failing to reach it at all, keep them
+    # separate so the frontend tells the truth instead of blaming the user's connection
     except genai_errors.ServerError:
         raise HTTPException(status_code=503, detail="ai_service_unavailable")
 

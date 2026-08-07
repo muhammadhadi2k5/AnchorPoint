@@ -5,9 +5,8 @@ import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 
-# anchored to the project root via this file's own location rather than a
-# relative path, so it lands in the same data/ the CLI scripts use regardless
-# of whatever directory the API server happens to be launched from
+# anchored to this file's own location, not a relative path, so it lands in the same data/
+# the CLI uses no matter where the API server gets launched from
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 DB_PATH = _PROJECT_ROOT / "data" / "anchorpoint.db"
 DATASETS_DIR = _PROJECT_ROOT / "data" / "datasets"
@@ -29,11 +28,8 @@ CREATE TABLE IF NOT EXISTS messages (
     created_at TEXT NOT NULL
 );
 
--- Live tab: one row per real assistant message, scored automatically in the
--- background (see api/evaluate.py). question/answer/citations are
--- denormalized straight onto the row so every dashboard read is a single
--- table, no joins - same spirit as messages.citations already being a
--- denormalized JSON blob
+-- Live tab, one row per real message, scored in the background (api/evaluate.py). denormalized
+-- onto the row on purpose so the dashboard is a single table read, no joins
 CREATE TABLE IF NOT EXISTS evaluations (
     id TEXT PRIMARY KEY,
     dataset_id TEXT NOT NULL REFERENCES datasets(id),
@@ -67,10 +63,8 @@ CREATE TABLE IF NOT EXISTS golden_questions (
     created_at TEXT NOT NULL
 );
 
--- one row per "Run test set" click - keeping runs separate (not just
--- overwriting a single latest-result-per-question) is what makes "did
--- tuning top_k actually help" answerable, same reasoning as messages
--- being append-only
+-- one row per "Run test set" click, kept separate rather than overwritten so "did tuning
+-- top_k actually help" is answerable from run history
 CREATE TABLE IF NOT EXISTS golden_runs (
     id TEXT PRIMARY KEY,
     dataset_id TEXT NOT NULL REFERENCES datasets(id),
@@ -117,16 +111,14 @@ def init_db():
     try:
         conn.executescript(SCHEMA)
         _ensure_column(conn, "datasets", "pinned", "INTEGER NOT NULL DEFAULT 0")
-        # one-time cleanup for databases created back when there was a login
-        # system - everyone shares the same datasets now, so there's nothing
-        # left to scope them by
+        # leftover cleanup from when there used to be a login system, everyone shares
+        # datasets now so there's nothing left to scope by visitor
         _drop_column_if_exists(conn, "datasets", "visitor_id")
         conn.execute("DROP TABLE IF EXISTS sessions")
         conn.execute("DROP TABLE IF EXISTS verification_codes")
         conn.execute("DROP TABLE IF EXISTS users")
-        # a golden run's background thread can't survive a server restart -
-        # any row still 'running' at startup means the process that owned it
-        # is gone, so without this it would show "running" forever
+        # a golden run's thread can't survive a server restart, any row still 'running' at
+        # startup means its owner is gone, without this it'd show "running" forever
         conn.execute(
             "UPDATE golden_runs SET status = 'complete', completed_at = ? WHERE status = 'running'",
             (_now(),),
@@ -209,12 +201,8 @@ def set_pinned(dataset_id, pinned):
     return get_dataset(dataset_id)
 
 
-# removes the dataset's row, its messages, and its on-disk files. the
-# caller is responsible for dropping the matching qdrant collection, since
-# that lives outside sqlite. eval tables reference datasets/messages via
-# foreign keys with no ON DELETE CASCADE, so they have to be cleared first
-# in child-to-parent order or this raises IntegrityError and leaves the
-# dataset row behind, even though the caller's qdrant delete already ran
+# caller still has to drop the qdrant collection separately, outside sqlite's reach. eval
+# tables have no ON DELETE CASCADE so they're cleared child-to-parent first or this raises IntegrityError
 def delete_dataset(dataset_id):
     conn = get_connection()
     try:
@@ -290,10 +278,8 @@ def list_messages(dataset_id):
         conn.close()
 
 
-# clears the conversation without touching the dataset or its documents.
-# evaluations reference messages by id with no ON DELETE CASCADE, so they
-# have to go first or this raises the same IntegrityError delete_dataset
-# hit for the same reason
+# evaluations reference messages with no ON DELETE CASCADE, so they go first or this hits
+# the same IntegrityError delete_dataset had to work around
 def clear_messages(dataset_id):
     conn = get_connection()
     try:
@@ -485,10 +471,8 @@ def list_golden_questions(dataset_id):
         conn.close()
 
 
-# golden_results references questions by id with no ON DELETE CASCADE, so a
-# question that's already been run at least once has to have its results
-# cleared first or this raises IntegrityError, same issue delete_dataset
-# and clear_messages hit for the same reason
+# golden_results has no ON DELETE CASCADE either, a question that's already been run needs
+# its results cleared first, same FK issue as delete_dataset/clear_messages above
 def delete_golden_question(question_id):
     conn = get_connection()
     try:
@@ -576,10 +560,8 @@ def add_golden_result(
         conn.close()
 
 
-# runs ordered newest first, each with a computed pass-rate summary
-# (answer_correctness_score >= 4 counts as a pass, same tier convention the
-# Live tab's score badges use) so the dashboard's run history list doesn't
-# need a second round-trip per run just to show "4/5 passed"
+# pass-rate computed here (score >= 4 counts as a pass, same tier as the Live tab badges) so
+# run history doesn't need a second round-trip per run just to show "4/5 passed"
 def list_golden_runs(dataset_id):
     conn = get_connection()
     try:

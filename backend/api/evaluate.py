@@ -21,9 +21,8 @@ def _run(evaluation_id, query, results, answer):
         db.fail_evaluation(evaluation_id, str(e))
 
 
-# fire-and-forget, mirrors ingest.start_ingestion: caller gets control back
-# immediately, the dashboard reads status via the evaluations endpoints
-# instead of a dedicated progress poll (the row itself carries status)
+# fire-and-forget, same pattern as ingest.start_ingestion, the dashboard just polls the
+# evaluations endpoint since the row itself already carries status
 def start_evaluation(dataset_id, message_id, query, results, answer, citations):
     evaluation = db.create_evaluation(dataset_id, message_id, query, answer, citations)
     thread = threading.Thread(
