@@ -89,6 +89,21 @@
   color: var(--ink);
 }
 
+/* this sits on the coral hero band, which stays coral in both themes - ANCHOR
+   is white here so it reads against the coral regardless of theme, but in
+   dark mode POINT (var(--ink), which flips to light beige) ends up nearly as
+   light, so the two words lose their contrast against each other. darkening
+   ANCHOR specifically restores that */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .home-brand-word {
+    color: #2b2318;
+  }
+}
+
+:root[data-theme='dark'] .home-brand-word {
+  color: #2b2318;
+}
+
 .greeting {
   font-family: 'ENTRA', sans-serif;
   font-weight: 700;
