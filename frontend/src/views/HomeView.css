@@ -10,11 +10,8 @@
   text-align: center;
 }
 
-/* dual-tone hero band - coral wedge across the top of the home canvas.
-   lives behind everything else via a negative z-index rather than
-   reordering/repositioning every sibling, since a negative z-index
-   descendant paints behind an ancestor's own in-flow content regardless
-   of DOM order */
+/* the coral wedge across the top. uses a negative z-index to sit behind everything else
+   instead of reordering every sibling, that way it paints behind no matter the DOM order */
 .home-hero-band {
   position: absolute;
   inset: 0 0 auto 0;
@@ -89,11 +86,9 @@
   color: var(--ink);
 }
 
-/* this sits on the coral hero band, which stays coral in both themes - ANCHOR
-   is white here so it reads against the coral regardless of theme, but in
-   dark mode POINT (var(--ink), which flips to light beige) ends up nearly as
-   light, so the two words lose their contrast against each other. darkening
-   ANCHOR specifically restores that */
+/* ANCHOR is white so it stands out against the coral band, but in dark mode POINT
+   (var(--ink)) turns light beige too and the two words stop contrasting, darkening
+   ANCHOR here fixes that */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) .home-brand-word {
     color: #2b2318;
@@ -246,9 +241,8 @@
   color: var(--ink-soft);
 }
 
-/* capped + internally scrollable so a big batch of files grows this list
-   instead of the button - the button stays put instead of drifting off
-   the bottom of the screen as more files get added */
+/* capped height and scrolls internally, so adding a ton of files grows this list instead
+   of pushing the button further down the screen */
 .file-chips {
   display: flex;
   flex-wrap: wrap;

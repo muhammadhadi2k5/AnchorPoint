@@ -101,9 +101,8 @@ export default function ChatView({ datasetId, datasetName, onQuotaExceeded, onAd
   const bottomRef = useRef(null)
   const inputRef = useRef(null)
 
-  // grows the textarea to fit the query up to a max height, then scrolls -
-  // recalculated on every keystroke since a paste or a deleted line both
-  // need the height reassessed, not just growth
+  // grows the textarea as you type, up to a max height, then it scrolls. recalculated on
+  // every keystroke since pasting or deleting a line both need the height rechecked too
   useEffect(() => {
     const el = inputRef.current
     if (!el) return
@@ -120,9 +119,8 @@ export default function ChatView({ datasetId, datasetName, onQuotaExceeded, onAd
     })
   }, [datasetId])
 
-  // known-empty (not just "hasn't loaded yet") is what puts the input bar in
-  // its centered starting position, so a dataset that already has history
-  // doesn't flash centered before snapping to the bottom once it loads
+  // only counts as empty once we're sure, not just "hasn't loaded yet", otherwise a dataset
+  // with real history would flash centered before snapping down once it loads
   const isEmpty = messagesLoaded && messages.length === 0 && streamingText === null
 
   useEffect(() => {

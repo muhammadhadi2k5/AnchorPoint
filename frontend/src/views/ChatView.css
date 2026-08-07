@@ -5,9 +5,8 @@
   flex-direction: column;
 }
 
-/* ambient wash - strongest at the top, fading to nothing by mid-scroll.
-   negative z-index so it sits behind the header/messages/input without
-   needing to reposition every sibling in this fairly dense layout */
+/* soft coral fade, strongest at the top and gone by mid-scroll. negative z-index so it
+   sits behind everything else without having to reposition every sibling here */
 .chat-ambient-wash {
   position: absolute;
   inset: 0;
@@ -16,9 +15,8 @@
   pointer-events: none;
 }
 
-/* no header bar at all - just the Documents button floating in place. it
-   takes no row of its own, so the message list underneath can scroll all
-   the way up to the true top edge of the window with nothing blocking it */
+/* there's no real header bar, just these buttons floating on top, so the message list can
+   scroll all the way up to the true top of the window with nothing in the way */
 .chat-header {
   position: absolute;
   top: 20px;
@@ -33,10 +31,8 @@
   pointer-events: auto;
 }
 
-/* the actual scrolling element spans the full pane (right under the
-   floating header) so its scrollbar sits at the true right edge and its
-   content can scroll flush to the true top edge, while the bubbles inside
-   stay centered and width-capped for readability */
+/* this is what actually scrolls, spans the full pane so the scrollbar sits at the true
+   right edge and content can scroll flush to the top, bubbles inside stay centered */
 .chat-scroll-area {
   flex: 1;
   min-height: 0;
@@ -92,20 +88,15 @@
   padding: 84px 24px 24px;
 }
 
-/* scrollIntoView({block:'end'}) aligns THIS element's own edges with the
-   viewport - a zero-height spacer gets satisfied the instant it touches the
-   viewport bottom, which leaves the real last bubble sitting right under
-   the floating .chat-bottom overlay's fade band. giving the spacer real
-   height means clearing the overlay's height is what satisfies the scroll,
-   so the last bubble ends up above it instead */
+/* scrollIntoView needs this spacer to have real height, a zero-height one would satisfy
+   the scroll immediately and leave the last bubble hidden under the floating input bar */
 .chat-bottom-spacer {
   height: 170px;
   flex-shrink: 0;
 }
 
-/* the copy button lives outside the bubble now (bottom-left, Gemini-style),
-   so alignment/width live on this wrapper - the bubble itself just sizes to
-   its own content within it */
+/* the copy button lives outside the bubble now (bottom-left, gemini-style), so alignment
+   and width live on this wrapper instead, the bubble just sizes to its own content */
 .message-group {
   display: flex;
   flex-direction: column;
@@ -302,10 +293,8 @@
   display: inline-flex;
 }
 
-/* pure CSS hover reveal, no JS positioning - anchored relative to the tag
-   itself rather than computed off the viewport, so it can't run into the
-   position:fixed containing-block gotcha a portal-based tooltip elsewhere
-   in this app already hit once (see InfoTooltip.jsx) */
+/* pure css hover, no JS positioning needed, anchored to the tag itself instead of the
+   viewport so it avoids the same position:fixed gotcha InfoTooltip.jsx had to work around */
 .citation-hover-preview {
   position: absolute;
   bottom: calc(100% + 9px);
@@ -360,11 +349,8 @@
   color: rgba(247, 239, 225, 0.9);
 }
 
-/* the preview bubble intentionally inverts --ink/--cream for its own
-   background/text (see .citation-hover-preview above), so in dark mode
-   (where --ink turns light and --cream turns dark) this bubble flips from
-   dark-with-light-text to light-with-dark-text - this hardcoded rgba is the
-   one piece of that text that doesn't ride the token flip automatically */
+/* this bubble deliberately inverts ink/cream for its own colors, so in dark mode it flips
+   from dark-with-light-text to light-with-dark-text, this rgba just needs to flip along with it */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) .citation-hover-text {
     color: rgba(11, 11, 13, 0.85);
@@ -440,13 +426,9 @@
   padding: 8px 14px;
 }
 
-/* floats over the scroll area rather than taking its own row, so messages
-   dissolve into it via the gradient instead of hard-cutting at its edge -
-   inset from the true right edge by the scrollbar's own width so that
-   overlay never paints over (and visually breaks up) the scrollbar itself.
-   always anchored at bottom:0 - the empty state doesn't reposition it, it
-   just transforms it upward, so the same element slides smoothly back down
-   to this exact spot the moment the first message is sent */
+/* floats over the messages instead of taking its own row, so they fade into it instead of
+   getting cut off sharply. always pinned to bottom:0, the empty state just transforms it
+   upward so it slides back into place the moment the first message sends */
 .chat-bottom {
   position: absolute;
   left: 0;
@@ -459,9 +441,8 @@
   transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-/* no scrolled content behind it yet, so the dissolve gradient would just
-   read as an odd translucent panel floating mid-screen - go fully solid
-   instead, matching the "clean start" feel */
+/* nothing's scrolled behind it yet, so the fade gradient would just look like a weird
+   translucent panel floating mid-screen, goes fully solid instead for a cleaner start */
 .chat-bottom-centered {
   padding-top: 0;
   background: none;
@@ -509,9 +490,8 @@
   align-items: flex-end;
 }
 
-/* height is driven from JS (scrollHeight, capped by max-height below) so it
-   grows with the query up to a point, then scrolls internally rather than
-   pushing the send button further and further down */
+/* height is actually controlled from JS (scrollHeight, capped below), grows with what you
+   type up to a point then scrolls internally instead of pushing the send button down forever */
 .chat-input {
   flex: 1;
   font-family: inherit;

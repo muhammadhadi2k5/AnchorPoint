@@ -1,12 +1,7 @@
 import './CitationDrawer.css'
 
-// some PDFs (certificate templates especially) extract with a real space
-// between every single character, using a double space only at actual word
-// boundaries - collapsing all whitespace to one space (like a normal PDF
-// needs) would leave "C o u r s e s" looking exactly as broken as before.
-// splitting on the double-space/newline boundaries first, then only
-// rejoining runs that are genuinely single-char tokens, fixes that case
-// without mangling PDFs that never had this problem in the first place
+// some PDFs (certificates especially) come out with a space between every letter and only a
+// double space at real word breaks, this splits on those double spaces first then glues the broken single-letter runs back together
 export function formatChunkText(text) {
   return text
     .split(/ {2,}|\n+/)
@@ -33,10 +28,8 @@ function significantWords(text) {
   return (text.toLowerCase().match(/[a-z0-9']+/g) || []).filter((w) => w.length > 2 && !STOPWORDS.has(w))
 }
 
-// splits the chunk into sentences and flags which ones share enough
-// vocabulary with the generated answer to have plausibly been drawn from -
-// a coarse heuristic (word overlap, not real attribution), but good enough
-// to point at the right neighborhood of a long chunk
+// splits the chunk into sentences and flags the ones that share enough words with the answer
+// to have plausibly come from there, rough guesswork but good enough to point you nearby
 function highlightUsedSentences(chunkText, answerText) {
   const answerWords = new Set(significantWords(answerText.replace(/\[Source \d+\]/g, '')))
   if (answerWords.size === 0) return null

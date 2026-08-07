@@ -5,9 +5,8 @@ import './IngestionLoadingView.css'
 const PREPARING_MESSAGES = ['Warming things up...', 'Preparing your chat...']
 const PREPARING_STEP_MS = 700
 
-// small "page being read" icon - document lines with a sweeping bar,
-// purple instead of coral when this file needed OCR, a genuinely different
-// beat rather than just new words next to the same animation
+// the little "reading a page" icon, turns purple instead of coral when ocr kicks in so it
+// actually feels different, not just the same animation with new text next to it
 function ReadingIcon({ ocr }) {
   return (
     <div className={`reading-icon${ocr ? ' ocr' : ''}`} aria-hidden="true">
@@ -18,9 +17,8 @@ function ReadingIcon({ ocr }) {
   )
 }
 
-// text turning into points in vector space - a center node (the chunk) with
-// satellite nodes (its embedding dimensions, loosely) blinking into
-// existence one after another, connected back to the center
+// shows text turning into points in vector space, one dot in the center for the chunk with
+// little satellite dots blinking in one by one, loosely standing in for its embedding dimensions
 function VectorIcon() {
   const nodes = [
     { cx: 29, cy: 11 },
@@ -41,9 +39,8 @@ function VectorIcon() {
   )
 }
 
-// classic success draw-on: the ring traces itself, then the check traces
-// inside it - signals "this part is genuinely done" right as the app
-// transitions out of ingesting and into the chat itself
+// classic checkmark draw-on, the ring traces first then the check traces inside it, timed to
+// land right as the app finishes ingesting and switches over to chat
 function CheckIcon() {
   return (
     <svg className="check-icon" viewBox="0 0 40 40" aria-hidden="true">
@@ -125,9 +122,8 @@ export default function IngestionLoadingView({ datasetId, onComplete }) {
 
   const isOcr = fileInfo.kind === 'ocr'
 
-  // drives the Reading / Embedding / Done tracker below the headline -
-  // same stage/phase state already used to pick the icon, just projected
-  // onto a 3-step index instead of a single active step
+  // drives the Reading / Embedding / Done tracker below the headline, just reuses the same
+  // stage state that picks the icon above, mapped onto a 3-step index instead
   const stageIndex = phase === 'preparing' ? 2 : stage === 'embedding' ? 1 : 0
   const stageStatus = (i) => (i < stageIndex ? 'done' : i === stageIndex ? 'active' : '')
 

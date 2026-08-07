@@ -9,11 +9,9 @@
   text-align: center;
 }
 
-/* a little "page" with text lines and a colored bar sweeping down through
-   them, reads as "actively reading this file" instead of a generic spinner.
-   purple (the app's existing citation/special-state accent) instead of
-   coral when kind is 'ocr', so the OCR fallback reads as a genuinely
-   different beat, not just the same animation with new words next to it */
+/* a little page icon with a bar sweeping down it, reads as "actively reading" instead of
+   a generic spinner. goes purple during ocr (reusing the citation accent color) so it
+   actually feels different, not just the same animation relabeled */
 .reading-icon {
   position: relative;
   width: 32px;
@@ -86,9 +84,8 @@
   }
 }
 
-/* shared wrapper for whichever icon is active (reading/vector/check) - keyed
-   by stage in the JSX so swapping icons re-triggers this fade-in, making the
-   reading icon feel like it "becomes" the next one instead of hard-cutting */
+/* wraps whichever icon is showing, keyed by stage in the JSX so switching icons re-triggers
+   this fade-in, makes it feel like one icon turns into the next instead of jump-cutting */
 .ingestion-icon-slot {
   display: flex;
   align-items: center;
@@ -113,9 +110,8 @@
   }
 }
 
-/* text becoming points in vector space - a center node (the chunk) with
-   satellite nodes blinking into existence one after another, each still
-   tethered back to the center by a thin line */
+/* shows text turning into points in vector space, a center dot for the chunk with little
+   dots blinking on one by one around it, each connected back by a thin line */
 .vector-icon {
   width: 72px;
   height: 72px;
@@ -155,9 +151,8 @@
   }
 }
 
-/* classic draw-on success mark: the ring traces first, the check traces
-   after it, using pathLength="1" so stroke-dasharray/offset stay simple
-   integers instead of needing each path's real geometric length */
+/* the ring draws itself first, then the checkmark draws after it. uses pathLength="1" so
+   the dash values can just be simple numbers instead of each path's real length */
 .check-icon {
   width: 72px;
   height: 72px;
@@ -236,9 +231,8 @@
   animation: loading-slide 1.6s ease-in-out infinite;
 }
 
-/* matches the reading-icon's sweep color during OCR, so the whole loading
-   screen reads as one consistent "this file is different" beat instead of
-   just the small icon changing color on its own */
+/* matches the reading icon's purple during ocr, so the whole screen feels consistent
+   instead of just the small icon changing color on its own */
 .loading-track-fill.ocr {
   background: var(--purple);
 }

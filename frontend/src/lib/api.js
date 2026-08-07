@@ -1,7 +1,5 @@
-// falls back to whatever host the page itself was loaded from (same
-// hostname, backend's port) instead of a hardcoded 'localhost' - that way
-// it also works when the page is opened from another device on the LAN via
-// this machine's IP, where 'localhost' would otherwise mean the phone itself
+// uses whatever host the page loaded from instead of hardcoding 'localhost', so it still
+// works when you open the app from your phone on the same wifi
 const BASE_URL = import.meta.env.VITE_API_BASE || `http://${window.location.hostname}:8000`
 
 export class ApiError extends Error {
@@ -16,9 +14,8 @@ async function handleErrors(response) {
     throw new ApiError('quota_exceeded', 'Daily quota exceeded')
   }
   if (!response.ok) {
-    // 503s come from two different backend causes (couldn't reach Gemini at
-    // all vs. Gemini itself reporting overloaded) - the detail field is what
-    // tells them apart, so it has to be read here rather than assumed
+    // a 503 can mean two different things, couldn't reach gemini at all, or gemini said
+    // it's overloaded, gotta check the detail field to tell which one actually happened
     let detail = response.status === 503 ? 'connection_error' : 'unknown'
     try {
       detail = (await response.json()).detail || detail

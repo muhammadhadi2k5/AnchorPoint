@@ -36,9 +36,8 @@ export default function HomeView({ onStart, onBack, showBrandWord }) {
   const nameInputRef = useRef(null)
   const catchTimeoutRef = useRef(null)
 
-  // incoming must already be a plain array, not a live FileList - callers
-  // that reset input.value right after selection would otherwise clear the
-  // very FileList this reads from before React gets to process it
+  // needs a plain array here, not a live FileList, resetting input.value right after picking
+  // files would wipe the FileList before react even gets to read from it
   const addFiles = (incoming) => {
     const existingKeys = new Set(files.map((f) => `${f.name}-${f.size}`))
     const newFiles = []

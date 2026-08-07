@@ -233,9 +233,8 @@
   background: var(--success);
 }
 
-/* --ink flips to a light beige in dark mode, which is nearly unreadable on
-   the green success tile - black stays the most visible pairing there in
-   either theme, so it's pinned rather than left to ride the ink token */
+/* --ink turns light beige in dark mode, which is nearly unreadable on the green tile,
+   black just stays the clearest choice in either theme so it's pinned here instead */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) .eval-score-badge.tier-good {
     color: #14100a;
@@ -373,11 +372,8 @@
   padding: 9px 11px;
 }
 
-/* the app-wide focus outline (theme.css) doesn't follow border-radius in
-   every browser - Chromium clips it to the curve, but Firefox draws it as a
-   sharp rectangle that pokes out past this input's rounded corners. a
-   box-shadow ring is clipped to border-radius in every browser, so it can
-   never visually escape the pill shape the way the outline could */
+/* the usual focus outline doesn't respect rounded corners in every browser, firefox draws
+   it as a sharp rectangle poking out past the curve, a box-shadow ring stays inside instead */
 .golden-input:focus-visible {
   outline: none;
   border-color: var(--coral-deep);

@@ -86,12 +86,8 @@
   line-height: 1.6;
   color: var(--ink);
   overflow-y: auto;
-  /* some PDFs extract with a real space between every single character
-     (not just between words) - the app's Horizonia display font renders
-     its space glyph at ~zero width, which real prose never exposes (each
-     word's own letters still read fine) but this single-char-spaced text
-     does, collapsing into an illegible run-on. Plain system font sidesteps
-     the broken glyph entirely, and reads better for quoted source text anyway */
+  /* some PDFs have a space between every character, and our display font's space is basically
+     zero-width, that collapses into an unreadable run-on, plain system font just sidesteps it */
   font-family: ui-sans-serif, system-ui, sans-serif;
 }
 

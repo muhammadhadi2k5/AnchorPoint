@@ -35,19 +35,16 @@ export default function App() {
       return false
     }
   })
-  // index.html's own inline script already set this on <html> before React
-  // mounted (avoids a light-mode flash) - read it back here so React's
-  // state agrees with what's already on screen
+  // index.html already set the theme on <html> before react even mounted, just reading it
+  // back here so react's state matches what's already on screen
   const [theme, setTheme] = useState(() => {
     return document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light'
   })
 
   const refreshDatasets = () => listDatasets().then(setDatasets)
 
-  // pushes a history entry on the way in, so the browser's own back button
-  // (and the in-app back button, which just calls history.back()) both
-  // land here through the same popstate handler instead of two code paths
-  // that could drift out of sync
+  // pushes a history entry on the way in, so both the browser's back button and our own
+  // back button go through this same handler instead of two paths that could get out of sync
   useEffect(() => {
     const handlePopState = (event) => {
       if (event.state?.stage === 'app') {

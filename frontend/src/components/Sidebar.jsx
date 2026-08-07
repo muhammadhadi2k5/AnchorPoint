@@ -22,10 +22,8 @@ export default function Sidebar({
   const itemRefs = useRef(new Map())
   const prevTopsRef = useRef(new Map())
 
-  // FLIP: reordering (e.g. pinning something to the top) moves these li's
-  // instantly in the DOM, so this animates that jump instead of letting it
-  // just snap - measure the new position, offset back to the old one with
-  // no transition, then release it into a transition on the next frame
+  // FLIP trick: pinning something moves it instantly in the DOM, this makes that jump animate
+  // instead of snap, measure the new spot, fake-offset back to the old one, then transition forward
   useLayoutEffect(() => {
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 

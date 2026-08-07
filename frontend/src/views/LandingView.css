@@ -17,9 +17,8 @@
   text-align: center;
 }
 
-/* top-down coral wash, same flat fade as the chat pane's ambient wash for
-   consistency between the two. sits below the wave (-2 vs -1) so the wave
-   still reads as the sharp foreground edge */
+/* same soft coral fade as the chat pane's wash, just here for consistency. sits behind the
+   wave (-2 vs -1) so the wave still looks like the sharp edge in front */
 .landing-glow {
   position: absolute;
   inset: 0;
@@ -216,13 +215,9 @@
   }
 }
 
-/* full-bleed coral field below the horizon wave - the wave's fill and this
-   section's background are the same solid coral, so the line between them
-   is just the wave's shape, not a color change to notice. a generous
-   negative margin pulls this section up underneath the tail end of the
-   wave - since both are the same solid coral the overlap is invisible, and
-   being generous (rather than a 1-2px nudge) means it isn't a near-miss
-   that reopens at a different zoom level or screen DPI */
+/* the wave and this section are the exact same coral, so the seam between them just
+   disappears. pulled up with a generous negative margin on purpose, a tiny 1-2px nudge
+   could reopen a gap at a different zoom level */
 .landing-how {
   background: var(--coral);
   text-align: center;
@@ -243,9 +238,8 @@
   margin: 0 0 14px;
 }
 
-/* this band stays coral in both themes (see .landing-how), so this text
-   needs to stay light too - without this it would go dark-on-coral once
-   --cream flips to near-black for the dark theme */
+/* this whole band stays coral even in dark mode, so the text needs to stay light too,
+   otherwise it'd turn dark-on-coral once --cream flips to near-black */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) .landing-how-eyebrow {
     color: #f7efe1;
@@ -264,10 +258,8 @@
   margin: 0 0 88px;
 }
 
-/* its own centered column, narrower than landing-how-inner - otherwise the
-   left-aligned step text (correctly ragged-right for readability) ends up
-   hugging the left edge while the centered title floats above it, reading
-   as lopsided on wide screens instead of anchored to the same axis */
+/* narrower than landing-how-inner on purpose, otherwise the left-aligned step text hugs the
+   left edge while the centered title floats above it, looks lopsided on wide screens */
 .landing-steps {
   max-width: 680px;
   margin: 0 auto;

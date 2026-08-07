@@ -9,14 +9,8 @@ export default function InfoTooltip({ text }) {
   const [position, setPosition] = useState(null)
   const triggerRef = useRef(null)
 
-  // fixed-position + measured on show, rather than centering with plain CSS,
-  // so the bubble stays on-screen no matter where in the row/column the
-  // trigger sits (a centered bubble would spill past the panel edge for the
-  // rightmost stat tile otherwise). portaled to <body> because the dashboard
-  // panel is centered via CSS transform, which makes it the containing block
-  // for any position:fixed descendant instead of the viewport - without the
-  // portal, the bubble's coordinates would resolve against the wrong box and
-  // its own overflow:hidden would just clip the bubble out of view entirely
+  // measures its own spot when it opens instead of just centering with css, so it stays on
+  // screen no matter where the trigger is, and portals to <body> since the dashboard panel is centered with a css transform, which would otherwise clip it away
   const show = () => {
     const rect = triggerRef.current.getBoundingClientRect()
     const centered = rect.left + rect.width / 2 - BUBBLE_WIDTH / 2
