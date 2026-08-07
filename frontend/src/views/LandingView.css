@@ -40,6 +40,28 @@
   z-index: -1;
 }
 
+.landing-theme-toggle {
+  position: absolute;
+  top: 28px;
+  right: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: none;
+  background: none;
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.landing-theme-toggle:hover {
+  background: var(--cream-2);
+  color: var(--ink);
+}
+
 .landing-hero-content {
   display: flex;
   flex-direction: column;

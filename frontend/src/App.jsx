@@ -160,7 +160,7 @@ export default function App() {
   }
 
   if (stage === 'landing') {
-    return <LandingView onStart={handleEnterApp} />
+    return <LandingView onStart={handleEnterApp} theme={theme} onToggleTheme={toggleTheme} />
   }
 
   return (
