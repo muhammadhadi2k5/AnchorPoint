@@ -5,6 +5,18 @@
   z-index: 20;
 }
 
+/* see DocumentLibrary.css - same warm-brown-not-dark-enough problem against
+   near-white text in dark mode */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .eval-backdrop {
+    background: rgba(3, 2, 2, 0.75);
+  }
+}
+
+:root[data-theme='dark'] .eval-backdrop {
+  background: rgba(3, 2, 2, 0.75);
+}
+
 .eval-panel {
   position: fixed;
   top: 50%;
@@ -219,6 +231,19 @@
 
 .eval-score-badge.tier-good {
   background: var(--success);
+}
+
+/* --ink flips to a light beige in dark mode, which is nearly unreadable on
+   the green success tile - black stays the most visible pairing there in
+   either theme, so it's pinned rather than left to ride the ink token */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .eval-score-badge.tier-good {
+    color: #14100a;
+  }
+}
+
+:root[data-theme='dark'] .eval-score-badge.tier-good {
+  color: #14100a;
 }
 
 .eval-score-badge.tier-mid {

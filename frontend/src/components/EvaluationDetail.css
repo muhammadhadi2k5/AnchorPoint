@@ -106,6 +106,18 @@
   background: var(--success);
 }
 
+/* see EvaluationDashboard.css - --ink flips too light in dark mode to read
+   on the green success tile, so black is pinned there in either theme */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .eval-detail-metric-score.tier-good {
+    color: #14100a;
+  }
+}
+
+:root[data-theme='dark'] .eval-detail-metric-score.tier-good {
+  color: #14100a;
+}
+
 .eval-detail-metric-score.tier-mid {
   background: var(--sand);
 }

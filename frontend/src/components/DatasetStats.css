@@ -5,6 +5,18 @@
   z-index: 20;
 }
 
+/* see DocumentLibrary.css - same warm-brown-not-dark-enough problem against
+   near-white text in dark mode */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .stats-backdrop {
+    background: rgba(3, 2, 2, 0.75);
+  }
+}
+
+:root[data-theme='dark'] .stats-backdrop {
+  background: rgba(3, 2, 2, 0.75);
+}
+
 .stats-panel {
   position: fixed;
   top: 50%;

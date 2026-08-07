@@ -5,6 +5,19 @@
   z-index: 20;
 }
 
+/* the warm-brown backdrop above reads fine in light mode, but in dark mode
+   the page behind it is full of near-white text that stays legible right
+   through it at the same opacity - darker + more neutral so it actually dulls */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .library-backdrop {
+    background: rgba(3, 2, 2, 0.75);
+  }
+}
+
+:root[data-theme='dark'] .library-backdrop {
+  background: rgba(3, 2, 2, 0.75);
+}
+
 .library-panel {
   position: fixed;
   top: 50%;
