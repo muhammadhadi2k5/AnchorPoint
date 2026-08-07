@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { getGoldenRun } from '../lib/api.js'
+import { TESTSET_METRICS } from '../lib/evalMetricInfo.js'
 import './GoldenRunDetail.css'
 
 function scoreTier(score) {
@@ -46,16 +47,15 @@ export default function GoldenRunDetail({ datasetId, runId, onClose }) {
                 ) : (
                   <>
                     <div className="golden-detail-scores">
-                      <span
-                        className={`golden-detail-score tier-${scoreTier(result.answer_correctness_score)}`}
-                      >
-                        Correctness {result.answer_correctness_score ?? '—'}/5
-                      </span>
-                      {result.context_recall_score !== null && result.context_recall_score !== undefined && (
-                        <span className={`golden-detail-score tier-${scoreTier(result.context_recall_score)}`}>
-                          Context recall {result.context_recall_score}/5
-                        </span>
-                      )}
+                      {TESTSET_METRICS.map((metric) => {
+                        const score = result[metric.scoreField]
+                        if (metric.nullable && (score === null || score === undefined)) return null
+                        return (
+                          <span key={metric.key} className={`golden-detail-score tier-${scoreTier(score)}`}>
+                            {metric.label} {score ?? '—'}/5
+                          </span>
+                        )
+                      })}
                     </div>
                     <div className="golden-detail-answers">
                       <div>

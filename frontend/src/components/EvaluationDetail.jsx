@@ -1,4 +1,4 @@
-import { METRIC_INFO } from '../lib/evalMetricInfo.js'
+import { LIVE_METRICS } from '../lib/evalMetricInfo.js'
 import InfoTooltip from './InfoTooltip.jsx'
 import './EvaluationDetail.css'
 
@@ -9,7 +9,7 @@ function scoreTier(score) {
   return 'bad'
 }
 
-function MetricSection({ title, info, score, reasoning }) {
+function MetricSection({ title, info, score, reasoning, nullReason }) {
   return (
     <div className="eval-detail-metric">
       <div className="eval-detail-metric-header">
@@ -23,7 +23,7 @@ function MetricSection({ title, info, score, reasoning }) {
       </div>
       <p className="eval-detail-metric-reasoning">
         {score === null || score === undefined
-          ? 'Not applicable — no context was retrieved.'
+          ? `Not applicable, ${nullReason || 'this metric does not apply here'}.`
           : reasoning}
       </p>
     </div>
@@ -60,24 +60,16 @@ export default function EvaluationDetail({ evaluation, onClose }) {
           <p className="eval-detail-text">Still being scored...</p>
         ) : (
           <div className="eval-detail-metrics">
-            <MetricSection
-              title="Faithfulness"
-              info={METRIC_INFO.faithfulness}
-              score={evaluation.faithfulness_score}
-              reasoning={evaluation.faithfulness_reasoning}
-            />
-            <MetricSection
-              title="Answer relevance"
-              info={METRIC_INFO.answerRelevance}
-              score={evaluation.answer_relevance_score}
-              reasoning={evaluation.answer_relevance_reasoning}
-            />
-            <MetricSection
-              title="Context relevance"
-              info={METRIC_INFO.contextRelevance}
-              score={evaluation.context_relevance_score}
-              reasoning={evaluation.context_relevance_reasoning}
-            />
+            {LIVE_METRICS.map((metric) => (
+              <MetricSection
+                key={metric.key}
+                title={metric.label}
+                info={metric.description}
+                score={evaluation[metric.scoreField]}
+                reasoning={evaluation[metric.reasoningField]}
+                nullReason={metric.nullReason}
+              />
+            ))}
           </div>
         )}
       </aside>

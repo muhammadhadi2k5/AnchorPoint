@@ -27,12 +27,8 @@ LOADER_REGISTRY = {
     ".jpeg": (UnstructuredImageLoader, {}),
 }
 
-# pypdf reads some browser-rendered PDFs (Chromium print-to-PDF, e.g.
-# Coursera certificates) as a real space between every single glyph instead
-# of between words - looks fine by char-count (so the low-yield check below
-# never catches it) but reads as "C o u r s e s" instead of "Courses". this
-# catches that pattern: if most whitespace-split tokens are a single
-# character, something upstream mistook individual glyphs for whole words
+# catches browser-rendered PDFs pypdf reads as "C o u r s e s" instead of "Courses" (space
+# between every glyph, not just words), char-count alone doesn't catch that, this does
 def _is_character_spaced(text, sample_len=2000):
     tokens = text[:sample_len].split(' ')
     if len(tokens) < 10:
@@ -41,9 +37,8 @@ def _is_character_spaced(text, sample_len=2000):
     return single_char / len(tokens) > 0.6
 
 
-# PyMuPDF reads the same PDFs with normal word spacing - only reached for
-# the specific PDFs that need it, pypdf's plain extraction stays the default
-# since it's what's been working for every other PDF so far
+# only reached for PDFs that fail the character-spacing check above, pypdf stays default
+# everywhere else since it just works there
 def _load_with_pymupdf(file_path):
     pdf = fitz.open(file_path)
     documents = [
@@ -73,9 +68,8 @@ def load_pdf(file_path, min_chars_per_page=20, on_progress=None):
 
     return documents
 
-# cache so it doesnt re-OCR the same pdf every single run. anchored to the
-# project root via this file's location rather than a bare relative path, so
-# it lands in the same place regardless of the caller's working directory
+# avoids re-OCRing the same pdf every run. anchored to this file's own location, not a bare
+# relative path, so it lands in the same place no matter the caller's cwd
 CACHE_DIR = Path(__file__).resolve().parent.parent.parent / "data" / ".doc_cache"
 
 def get_file_hash(file_path):

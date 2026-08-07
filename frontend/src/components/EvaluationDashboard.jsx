@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { getEvaluationsSummary, listEvaluations } from '../lib/api.js'
-import { METRIC_INFO } from '../lib/evalMetricInfo.js'
+import { LIVE_METRICS } from '../lib/evalMetricInfo.js'
 import EvaluationDetail from './EvaluationDetail.jsx'
 import GoldenTestPanel from './GoldenTestPanel.jsx'
 import InfoTooltip from './InfoTooltip.jsx'
@@ -56,36 +56,18 @@ function LiveTab({ datasetId, onSelectEvaluation }) {
   return (
     <div className="eval-tab">
       <div className="eval-stats">
-        <div className="eval-stat-tile">
-          <span className="eval-stat-label">
-            Faithfulness
-            <InfoTooltip text={METRIC_INFO.faithfulness} />
-          </span>
-          <span className="eval-stat-value">
-            {summary?.averages?.faithfulness ?? '—'}
-            <span className="eval-stat-max">/5</span>
-          </span>
-        </div>
-        <div className="eval-stat-tile">
-          <span className="eval-stat-label">
-            Answer relevance
-            <InfoTooltip text={METRIC_INFO.answerRelevance} />
-          </span>
-          <span className="eval-stat-value">
-            {summary?.averages?.answer_relevance ?? '—'}
-            <span className="eval-stat-max">/5</span>
-          </span>
-        </div>
-        <div className="eval-stat-tile">
-          <span className="eval-stat-label">
-            Context relevance
-            <InfoTooltip text={METRIC_INFO.contextRelevance} />
-          </span>
-          <span className="eval-stat-value">
-            {summary?.averages?.context_relevance ?? '—'}
-            <span className="eval-stat-max">/5</span>
-          </span>
-        </div>
+        {LIVE_METRICS.map((metric) => (
+          <div className="eval-stat-tile" key={metric.key}>
+            <span className="eval-stat-label">
+              {metric.label}
+              <InfoTooltip text={metric.description} />
+            </span>
+            <span className="eval-stat-value">
+              {summary?.averages?.[metric.key] ?? '—'}
+              <span className="eval-stat-max">/5</span>
+            </span>
+          </div>
+        ))}
       </div>
 
       {summary && summary.total > 0 && (
@@ -108,9 +90,9 @@ function LiveTab({ datasetId, onSelectEvaluation }) {
                 <span className={`eval-row-status status-${evaluation.status}`}>{evaluation.status}</span>
                 <span className="eval-row-question">{evaluation.question}</span>
                 <span className="eval-row-scores">
-                  <ScoreBadge label="F" score={evaluation.faithfulness_score} />
-                  <ScoreBadge label="A" score={evaluation.answer_relevance_score} />
-                  <ScoreBadge label="C" score={evaluation.context_relevance_score} />
+                  {LIVE_METRICS.map((metric) => (
+                    <ScoreBadge key={metric.key} label={metric.shortLabel} score={evaluation[metric.scoreField]} />
+                  ))}
                 </span>
               </button>
             </li>
