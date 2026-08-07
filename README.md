@@ -82,3 +82,8 @@ means seeing the second half of a function before you know what it's holding.
 - `backend/.env` with `GEMINI_API_KEY`
 - `uv` installed
 - `npm` installed
+<br>
+<br>
+<div align="center"> 
+  <strong><em>Your anchor point for accurate, sourced answers.</em></strong> 
+</div>
