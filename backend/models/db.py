@@ -10,6 +10,7 @@ from pathlib import Path
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 DB_PATH = _PROJECT_ROOT / "data" / "anchorpoint.db"
 DATASETS_DIR = _PROJECT_ROOT / "data" / "datasets"
+PARSE_JOBS_DIR = _PROJECT_ROOT / "data" / "parse_jobs"
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS datasets (
@@ -651,6 +652,12 @@ def _deserialize_golden_result(row):
 
 # --- Parse (standalone document parsing, independent of any dataset) ---
 
+# where a parse job's uploaded file lives, isolated from every other job and from
+# dataset storage entirely - a job never needs a dataset to exist
+def parse_job_dir_for(job_id):
+    return PARSE_JOBS_DIR / job_id
+
+
 def create_parse_job(filename):
     job_id = uuid.uuid4().hex
     conn = get_connection()
@@ -662,6 +669,7 @@ def create_parse_job(filename):
         conn.commit()
     finally:
         conn.close()
+    parse_job_dir_for(job_id).mkdir(parents=True, exist_ok=True)
     return get_parse_job(job_id)
 
 
@@ -714,3 +722,4 @@ def delete_parse_job(job_id):
         conn.commit()
     finally:
         conn.close()
+    shutil.rmtree(parse_job_dir_for(job_id), ignore_errors=True)
