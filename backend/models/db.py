@@ -91,6 +91,18 @@ CREATE TABLE IF NOT EXISTS golden_results (
 );
 
 CREATE INDEX IF NOT EXISTS idx_golden_results_run ON golden_results(run_id);
+
+-- one row per uploaded file run through Parse, independent of any dataset. markdown holds
+-- the LLM-restructured result, raw text/json views are derived from the doc cache on read
+CREATE TABLE IF NOT EXISTS parse_jobs (
+    id TEXT PRIMARY KEY,
+    filename TEXT NOT NULL,
+    status TEXT NOT NULL CHECK (status IN ('pending', 'complete', 'failed')) DEFAULT 'pending',
+    markdown TEXT,
+    error TEXT,
+    created_at TEXT NOT NULL,
+    completed_at TEXT
+);
 """
 
 
@@ -635,3 +647,70 @@ def _deserialize_golden_result(row):
         json.loads(result["retrieved_chunks"]) if result["retrieved_chunks"] else None
     )
     return result
+
+
+# --- Parse (standalone document parsing, independent of any dataset) ---
+
+def create_parse_job(filename):
+    job_id = uuid.uuid4().hex
+    conn = get_connection()
+    try:
+        conn.execute(
+            "INSERT INTO parse_jobs (id, filename, status, created_at) VALUES (?, ?, 'pending', ?)",
+            (job_id, filename, _now()),
+        )
+        conn.commit()
+    finally:
+        conn.close()
+    return get_parse_job(job_id)
+
+
+def get_parse_job(job_id):
+    conn = get_connection()
+    try:
+        row = conn.execute("SELECT * FROM parse_jobs WHERE id = ?", (job_id,)).fetchone()
+        return dict(row) if row else None
+    finally:
+        conn.close()
+
+
+def list_parse_jobs():
+    conn = get_connection()
+    try:
+        rows = conn.execute("SELECT * FROM parse_jobs ORDER BY created_at DESC").fetchall()
+        return [dict(row) for row in rows]
+    finally:
+        conn.close()
+
+
+def complete_parse_job(job_id, markdown):
+    conn = get_connection()
+    try:
+        conn.execute(
+            "UPDATE parse_jobs SET status = 'complete', markdown = ?, completed_at = ? WHERE id = ?",
+            (markdown, _now(), job_id),
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def fail_parse_job(job_id, error):
+    conn = get_connection()
+    try:
+        conn.execute(
+            "UPDATE parse_jobs SET status = 'failed', error = ?, completed_at = ? WHERE id = ?",
+            (str(error), _now(), job_id),
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def delete_parse_job(job_id):
+    conn = get_connection()
+    try:
+        conn.execute("DELETE FROM parse_jobs WHERE id = ?", (job_id,))
+        conn.commit()
+    finally:
+        conn.close()
