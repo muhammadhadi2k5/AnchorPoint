@@ -1,6 +1,6 @@
 # AnchorPoint
 
-AnchorPoint is a RAG app for asking questions against your own documents, but the part
+AnchorPoint is a full-stack RAG app for asking questions against your own documents, but the part
 worth actually looking at is what happens after retrieval, not before it. Most weekend
 RAG projects stop at "chunk it, embed it, stuff it in a prompt" and call it done. This one
 tries to answer a harder question: how do you actually know if any of that is working?
