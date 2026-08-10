@@ -202,7 +202,7 @@ export default function App() {
           />
         )}
         {view === 'parse' && (
-          <ParseView onBack={() => setView('home')} showBrandWord={sidebarCollapsed} />
+          <ParseView onBack={handleBackToLanding} showBrandWord={sidebarCollapsed} />
         )}
       </main>
 
