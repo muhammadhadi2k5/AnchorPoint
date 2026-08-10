@@ -1,3 +1,6 @@
+import shutil
+from pathlib import Path
+
 import httpx
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
@@ -53,6 +56,10 @@ class GoldenQuestionIn(BaseModel):
     question: str
     expected_answer: str
     expected_sources: list[str] | None = None
+
+
+class CreateDatasetFromParseJobIn(BaseModel):
+    name: str | None = None
 
 
 @app.post("/datasets")
@@ -313,3 +320,21 @@ def delete_parse_job(job_id: str):
     _require_parse_job(job_id)
     db.delete_parse_job(job_id)
     return {"status": "deleted"}
+
+
+# copies the already-parsed file into a new dataset rather than moving it, so the parse
+# job still has its own file to show/download from afterward
+@app.post("/parse-jobs/{job_id}/create-dataset")
+def create_dataset_from_parse_job(job_id: str, body: CreateDatasetFromParseJobIn):
+    job = _require_parse_job(job_id)
+    if job["status"] != "complete":
+        raise HTTPException(status_code=400, detail="parse_job_not_complete")
+
+    name = body.name or Path(job["filename"]).stem
+    dataset = db.create_dataset(name)
+    shutil.copy(
+        db.parse_job_dir_for(job_id) / job["filename"],
+        db.dataset_dir_for(dataset["id"]) / job["filename"],
+    )
+    ingest.start_ingestion(dataset["id"])
+    return dataset
