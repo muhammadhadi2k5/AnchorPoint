@@ -202,7 +202,9 @@ export default function App() {
             onOpenParse={handleOpenParse}
           />
         )}
-        {view === 'parse' && <ParseView onBack={() => setView('home')} />}
+        {view === 'parse' && (
+          <ParseView onBack={() => setView('home')} showBrandWord={sidebarCollapsed} />
+        )}
       </main>
 
       {quotaExceeded && <QuotaModal onClose={() => setQuotaExceeded(false)} />}

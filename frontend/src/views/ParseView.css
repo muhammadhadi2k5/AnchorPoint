@@ -39,7 +39,7 @@
 .parse-view-back {
   position: absolute;
   top: 28px;
-  left: 32px;
+  right: 32px;
   font-weight: 600;
   font-size: 13.5px;
   color: var(--white);
@@ -51,6 +51,49 @@
 
 .parse-view-back:hover {
   opacity: 0.8;
+}
+
+.parse-view-brand {
+  position: absolute;
+  top: 28px;
+  left: 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+}
+
+.parse-view-brand-word {
+  font-family: 'ENTRA', sans-serif;
+  font-weight: 700;
+  font-size: 20px;
+  letter-spacing: 0.02em;
+  color: var(--white);
+  opacity: 1;
+  max-height: 28px;
+  overflow: hidden;
+  transition: opacity 0.16s ease, max-height 0.16s ease;
+}
+
+.parse-view-brand-word.hidden {
+  opacity: 0;
+  max-height: 0;
+}
+
+.parse-view-brand-word .accent {
+  color: var(--ink);
+}
+
+/* same fix as .home-brand-word - ANCHOR needs to stay dark-pinned in dark mode
+   or it loses contrast against POINT once --ink flips to light beige */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .parse-view-brand-word {
+    color: #2b2318;
+  }
+}
+
+:root[data-theme='dark'] .parse-view-brand-word {
+  color: #2b2318;
 }
 
 .parse-view-heading {

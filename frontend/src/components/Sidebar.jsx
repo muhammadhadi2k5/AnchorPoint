@@ -109,7 +109,18 @@ export default function Sidebar({
       </button>
 
       <button type="button" className="sidebar-parse" onClick={onOpenParse} title="Parse a document">
-        <span className="sidebar-parse-icon">⎘</span>
+        <svg className="sidebar-parse-icon" viewBox="0 0 20 20" width="16" height="16" aria-hidden="true">
+          <path
+            d="M5 2.5h6l4 4v10a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-13a1 1 0 0 1 1-1Z"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.4"
+            strokeLinejoin="round"
+          />
+          <path d="M11 2.5v4h4" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
+          <line x1="6.5" y1="11" x2="13.5" y2="11" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+          <line x1="6.5" y1="14" x2="13.5" y2="14" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+        </svg>
         <span className="sidebar-parse-label">Parse a document</span>
       </button>
 

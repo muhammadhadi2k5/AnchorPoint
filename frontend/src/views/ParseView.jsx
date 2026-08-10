@@ -5,7 +5,27 @@ import './ParseView.css'
 
 const POLL_MS = 3000
 
-export default function ParseView({ onBack }) {
+const PARSE_GREETINGS = [
+  'What are we parsing today?',
+  'Parse a document...',
+  "Let's format your documents",
+  'Drop a document and get it parsed',
+  'What should we read today?',
+  'Ready to parse',
+  'What do you want extracted?',
+  'Upload it, watch it get parsed',
+  "Let's turn your data into something readable",
+  'What are we extracting today?',
+  'What can I clean up for you?',
+  'What needs parsing?',
+  'Your documents, cleaned up and readable',
+  'Your anchor point for accurate parsing',
+  'What can I parse for you?',
+  'Ready to clean up your documents',
+]
+
+export default function ParseView({ onBack, showBrandWord }) {
+  const [greeting] = useState(() => PARSE_GREETINGS[Math.floor(Math.random() * PARSE_GREETINGS.length)])
   const [isDragging, setIsDragging] = useState(false)
   const [jobs, setJobs] = useState([])
   const [error, setError] = useState(null)
@@ -74,7 +94,14 @@ export default function ParseView({ onBack }) {
       <div className="parse-hero-band" aria-hidden="true" />
 
       <button type="button" className="parse-view-back" onClick={onBack}>&lsaquo; Back</button>
-      <h1 className="parse-view-heading">Parse your documents</h1>
+
+      <div className="parse-view-brand">
+        <span className={`parse-view-brand-word${showBrandWord ? '' : ' hidden'}`}>
+          ANCHOR<span className="accent">POINT</span>
+        </span>
+      </div>
+
+      <h1 className="parse-view-heading">{greeting}</h1>
 
       <div
         className={`parse-drop-zone${isDragging ? ' dragging' : ''}`}
