@@ -28,7 +28,7 @@ function downloadParseJob(job, format) {
   URL.revokeObjectURL(url)
 }
 
-export default function ParseJobDetail({ job, onClose }) {
+export default function ParseJobDetail({ job, batch = [], onSelectBatchJob, onClose }) {
   const [currentJob, setCurrentJob] = useState(job)
   const [tab, setTab] = useState('markdown')
   const [showDownloadMenu, setShowDownloadMenu] = useState(false)
@@ -36,9 +36,11 @@ export default function ParseJobDetail({ job, onClose }) {
   const cancelledRef = useRef(false)
 
   // only polls if the job wasn't already done when this opened, same
-  // pending -> complete/failed shape as the ingestion loading screen
+  // pending -> complete/failed shape as the ingestion loading screen.
+  // also resyncs currentJob whenever a different batch card gets picked
   useEffect(() => {
     cancelledRef.current = false
+    setCurrentJob(job)
 
     const poll = async () => {
       try {
@@ -96,6 +98,24 @@ export default function ParseJobDetail({ job, onClose }) {
           </button>
         </div>
       </div>
+
+      {batch.length > 1 && (
+        <div className="parse-detail-batch-row">
+          {batch.map((item) => (
+            <button
+              type="button"
+              key={item.id}
+              className={`parse-detail-batch-card${item.id === currentJob.id ? ' active' : ''}`}
+              onClick={() => onSelectBatchJob(item)}
+            >
+              <span className="parse-detail-batch-name">{item.filename}</span>
+              <span className={`parse-detail-batch-progress status-${item.status}`}>
+                <span className="parse-detail-batch-progress-fill" />
+              </span>
+            </button>
+          ))}
+        </div>
+      )}
 
       <div className="parse-detail-body">
         <div className="parse-detail-pdf-pane">

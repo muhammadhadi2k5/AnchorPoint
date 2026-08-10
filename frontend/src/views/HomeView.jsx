@@ -24,7 +24,7 @@ const BASE_GREETINGS = [
   'Ready to search',
 ]
 
-export default function HomeView({ onStart, onBack, showBrandWord, onOpenParse }) {
+export default function HomeView({ onStart, onBack, showBrandWord }) {
   const [greeting] = useState(() => BASE_GREETINGS[Math.floor(Math.random() * BASE_GREETINGS.length)])
   const [name, setName] = useState('')
   const [files, setFiles] = useState([])
@@ -180,10 +180,6 @@ export default function HomeView({ onStart, onBack, showBrandWord, onOpenParse }
 
         <button className="cta-button" onClick={handleStartClick}>
           Start ingesting
-        </button>
-
-        <button type="button" className="cta-button parse-cta-button" onClick={onOpenParse}>
-          Or parse a document first
         </button>
       </div>
     </div>

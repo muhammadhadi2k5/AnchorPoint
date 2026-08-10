@@ -199,7 +199,6 @@ export default function App() {
             onStart={handleStart}
             onBack={handleBackToLanding}
             showBrandWord={sidebarCollapsed}
-            onOpenParse={handleOpenParse}
           />
         )}
         {view === 'parse' && (

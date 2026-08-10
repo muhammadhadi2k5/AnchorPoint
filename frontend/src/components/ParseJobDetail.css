@@ -91,6 +91,88 @@
   background: var(--sand);
 }
 
+/* row of everything uploaded in the same Start parsing click, so switching
+   between them doesn't mean leaving the split view to go dig through history */
+.parse-detail-batch-row {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  flex-shrink: 0;
+  padding-bottom: 2px;
+}
+
+.parse-detail-batch-card {
+  flex-shrink: 0;
+  min-width: 140px;
+  max-width: 200px;
+  text-align: left;
+  border: 1.5px solid var(--sand-line);
+  border-radius: 8px;
+  background: var(--cream-2);
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.parse-detail-batch-card.active {
+  border-color: var(--parse-blue);
+}
+
+.parse-detail-batch-name {
+  display: block;
+  font-size: 12px;
+  color: var(--ink);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.parse-detail-batch-progress {
+  position: relative;
+  margin-top: 6px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--sand-line);
+  overflow: hidden;
+}
+
+.parse-detail-batch-progress-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: 2px;
+}
+
+.parse-detail-batch-progress.status-pending .parse-detail-batch-progress-fill {
+  width: 40%;
+  background: var(--parse-blue);
+  animation: parse-batch-progress-slide 1.2s ease-in-out infinite;
+}
+
+.parse-detail-batch-progress.status-complete .parse-detail-batch-progress-fill {
+  width: 100%;
+  background: var(--success);
+}
+
+.parse-detail-batch-progress.status-failed .parse-detail-batch-progress-fill {
+  width: 100%;
+  background: var(--error);
+}
+
+@keyframes parse-batch-progress-slide {
+  0% {
+    left: -40%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .parse-detail-batch-progress.status-pending .parse-detail-batch-progress-fill {
+    animation: none;
+    left: 0;
+  }
+}
+
 .parse-detail-body {
   flex: 1;
   min-height: 0;

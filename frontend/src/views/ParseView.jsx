@@ -27,10 +27,13 @@ const PARSE_GREETINGS = [
 export default function ParseView({ onBack, showBrandWord }) {
   const [greeting] = useState(() => PARSE_GREETINGS[Math.floor(Math.random() * PARSE_GREETINGS.length)])
   const [isDragging, setIsDragging] = useState(false)
+  const [pendingFiles, setPendingFiles] = useState([])
   const [jobs, setJobs] = useState([])
   const [error, setError] = useState(null)
   const [selectedJob, setSelectedJob] = useState(null)
+  const [activeBatch, setActiveBatch] = useState([])
   const [confirmDeleteId, setConfirmDeleteId] = useState(null)
+  const [showHistory, setShowHistory] = useState(false)
   const fileInputRef = useRef(null)
   const pollTimeoutRef = useRef(null)
   const cancelledRef = useRef(false)
@@ -60,21 +63,41 @@ export default function ParseView({ onBack, showBrandWord }) {
     }
   }, [])
 
-  // each file becomes its own job right away, no name field or submit button
-  // needed since there's nothing else to fill in first. opens the detail view
-  // on the last one uploaded so you land straight on it instead of the list
-  const uploadFiles = async (incoming) => {
+  // dedupes by name+size same as HomeView, files just sit here until Start parsing is clicked
+  const addFiles = (incoming) => {
+    setPendingFiles((current) => {
+      const existingKeys = new Set(current.map((f) => `${f.name}-${f.size}`))
+      const newFiles = incoming.filter((file) => !existingKeys.has(`${file.name}-${file.size}`))
+      return [...current, ...newFiles]
+    })
+  }
+
+  const removeFile = (index) => {
+    setPendingFiles((current) => current.filter((_, i) => i !== index))
+  }
+
+  // each file becomes its own job, one create call per file. opens the detail
+  // view on the last one uploaded so you land straight on it instead of the list.
+  // the whole created batch is kept around too, so the detail view can offer
+  // quick switching between everything from this one upload
+  const handleStartParsing = async () => {
+    if (pendingFiles.length === 0) {
+      setError('Add at least one document to continue')
+      return
+    }
     setError(null)
-    let lastCreated = null
-    for (const file of incoming) {
+    const created = []
+    for (const file of pendingFiles) {
       try {
-        lastCreated = await createParseJob(file)
+        created.push(await createParseJob(file))
       } catch {
         setError(`Couldn't start parsing ${file.name}`)
       }
     }
+    setPendingFiles([])
+    setActiveBatch(created)
     refreshJobs()
-    if (lastCreated) setSelectedJob(lastCreated)
+    if (created.length > 0) setSelectedJob(created[created.length - 1])
   }
 
   const handleDeleteJob = async (jobId) => {
@@ -86,7 +109,7 @@ export default function ParseView({ onBack, showBrandWord }) {
   const handleDrop = (event) => {
     event.preventDefault()
     setIsDragging(false)
-    uploadFiles(Array.from(event.dataTransfer.files))
+    addFiles(Array.from(event.dataTransfer.files))
   }
 
   return (
@@ -121,7 +144,7 @@ export default function ParseView({ onBack, showBrandWord }) {
           onChange={(e) => {
             const picked = Array.from(e.target.files)
             e.target.value = ''
-            uploadFiles(picked)
+            addFiles(picked)
           }}
         />
         <p className="parse-drop-text">
@@ -130,44 +153,113 @@ export default function ParseView({ onBack, showBrandWord }) {
         <p className="parse-drop-hint">PDF, DOCX, XLSX, CSV, TXT, or images</p>
       </div>
 
-      {error && <p className="parse-field-error">{error}</p>}
-
-      {jobs.length > 0 && (
-        <ul className="parse-job-list">
-          {jobs.map((job) => (
-            <li key={job.id} className="parse-job-row">
-              <button type="button" className="parse-job-row-main" onClick={() => setSelectedJob(job)}>
-                <span className="parse-job-name">{job.filename}</span>
-                <span className={`parse-job-status status-${job.status}`}>{job.status}</span>
+      {pendingFiles.length > 0 && (
+        <div className="parse-file-chips">
+          {pendingFiles.map((file, index) => (
+            <span className="parse-file-chip" key={`${file.name}-${file.size}`}>
+              {file.name}
+              <button
+                type="button"
+                className="parse-file-chip-remove"
+                aria-label={`Remove ${file.name}`}
+                onClick={() => removeFile(index)}
+              >
+                ×
               </button>
-              {confirmDeleteId === job.id ? (
-                <span className="parse-job-confirm">
-                  <button type="button" className="parse-job-confirm-delete" onClick={() => handleDeleteJob(job.id)}>
-                    Delete
-                  </button>
-                  <button type="button" className="parse-job-confirm-cancel" onClick={() => setConfirmDeleteId(null)}>
-                    Cancel
-                  </button>
-                </span>
-              ) : (
-                <button
-                  type="button"
-                  className="parse-job-delete"
-                  onClick={(event) => {
-                    event.stopPropagation()
-                    setConfirmDeleteId(job.id)
-                  }}
-                  aria-label={`Delete ${job.filename}`}
-                >
-                  ×
-                </button>
-              )}
-            </li>
+            </span>
           ))}
-        </ul>
+        </div>
       )}
 
-      {selectedJob && <ParseJobDetail job={selectedJob} onClose={() => setSelectedJob(null)} />}
+      <div className="parse-main-actions">
+        <button type="button" className="parse-start-button" onClick={handleStartParsing}>
+          Start parsing
+        </button>
+        <button type="button" className="parse-history-tile" onClick={() => setShowHistory(true)}>
+          View history
+        </button>
+      </div>
+
+      {error && <p className="parse-field-error">{error}</p>}
+
+      {showHistory && (
+        <div
+          className="parse-history-overlay"
+          role="dialog"
+          aria-label="Parse history"
+          onClick={() => setShowHistory(false)}
+        >
+          <div className="parse-history-panel" onClick={(event) => event.stopPropagation()}>
+            <div className="parse-history-header">
+              <span>Parse history</span>
+              <button
+                type="button"
+                className="parse-history-close"
+                onClick={() => setShowHistory(false)}
+                aria-label="Close"
+              >
+                ×
+              </button>
+            </div>
+
+            {jobs.length === 0 ? (
+              <p className="parse-history-empty">Nothing parsed yet.</p>
+            ) : (
+              <ul className="parse-job-list">
+                {jobs.map((job) => (
+                  <li key={job.id} className="parse-job-row">
+                    <button
+                      type="button"
+                      className="parse-job-row-main"
+                      onClick={() => {
+                        setSelectedJob(job)
+                        setShowHistory(false)
+                      }}
+                    >
+                      <span className="parse-job-name">{job.filename}</span>
+                      <span className={`parse-job-status status-${job.status}`}>{job.status}</span>
+                    </button>
+                    {confirmDeleteId === job.id ? (
+                      <span className="parse-job-confirm">
+                        <button type="button" className="parse-job-confirm-delete" onClick={() => handleDeleteJob(job.id)}>
+                          Delete
+                        </button>
+                        <button type="button" className="parse-job-confirm-cancel" onClick={() => setConfirmDeleteId(null)}>
+                          Cancel
+                        </button>
+                      </span>
+                    ) : (
+                      <button
+                        type="button"
+                        className="parse-job-delete"
+                        onClick={(event) => {
+                          event.stopPropagation()
+                          setConfirmDeleteId(job.id)
+                        }}
+                        aria-label={`Delete ${job.filename}`}
+                      >
+                        ×
+                      </button>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
+      )}
+
+      {selectedJob && (
+        <ParseJobDetail
+          job={selectedJob}
+          batch={activeBatch.length > 1 ? activeBatch.map((b) => jobs.find((j) => j.id === b.id) || b) : []}
+          onSelectBatchJob={setSelectedJob}
+          onClose={() => {
+            setSelectedJob(null)
+            setActiveBatch([])
+          }}
+        />
+      )}
     </div>
   )
 }
