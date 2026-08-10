@@ -117,15 +117,23 @@
   gap: 6px;
 }
 
-.parse-job-row {
+.parse-job-row-main {
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
+  text-align: left;
+  border: none;
   background: var(--cream-2);
   border-radius: 10px;
   padding: 10px 14px;
   font-size: 13px;
+  cursor: pointer;
+}
+
+.parse-job-row-main:hover {
+  background: var(--sand);
 }
 
 .parse-job-name {

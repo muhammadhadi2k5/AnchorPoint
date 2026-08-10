@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { createParseJob, listParseJobs } from '../lib/api.js'
+import ParseJobDetail from '../components/ParseJobDetail.jsx'
 import './ParseView.css'
 
 const POLL_MS = 3000
@@ -8,6 +9,7 @@ export default function ParseView({ onBack }) {
   const [isDragging, setIsDragging] = useState(false)
   const [jobs, setJobs] = useState([])
   const [error, setError] = useState(null)
+  const [selectedJob, setSelectedJob] = useState(null)
   const fileInputRef = useRef(null)
   const pollTimeoutRef = useRef(null)
   const cancelledRef = useRef(false)
@@ -97,12 +99,16 @@ export default function ParseView({ onBack }) {
         <ul className="parse-job-list">
           {jobs.map((job) => (
             <li key={job.id} className="parse-job-row">
-              <span className="parse-job-name">{job.filename}</span>
-              <span className={`parse-job-status status-${job.status}`}>{job.status}</span>
+              <button type="button" className="parse-job-row-main" onClick={() => setSelectedJob(job)}>
+                <span className="parse-job-name">{job.filename}</span>
+                <span className={`parse-job-status status-${job.status}`}>{job.status}</span>
+              </button>
             </li>
           ))}
         </ul>
       )}
+
+      {selectedJob && <ParseJobDetail job={selectedJob} onClose={() => setSelectedJob(null)} />}
     </div>
   )
 }

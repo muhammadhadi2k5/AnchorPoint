@@ -194,3 +194,13 @@ export async function listParseJobs() {
   const response = await request('/parse-jobs')
   return response.json()
 }
+
+export async function getParseJob(jobId) {
+  const response = await request(`/parse-jobs/${jobId}`)
+  return response.json()
+}
+
+// used directly as an <embed> src, not fetched through request() like everything else here
+export function parseJobFileUrl(jobId) {
+  return `${BASE_URL}/parse-jobs/${jobId}/file`
+}

@@ -4,7 +4,7 @@ from pathlib import Path
 import httpx
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
+from fastapi.responses import FileResponse, StreamingResponse
 from google.genai import errors as genai_errors
 from pydantic import BaseModel
 
@@ -313,6 +313,12 @@ def list_parse_jobs():
 @app.get("/parse-jobs/{job_id}")
 def get_parse_job(job_id: str):
     return _require_parse_job(job_id)
+
+
+@app.get("/parse-jobs/{job_id}/file")
+def get_parse_job_file(job_id: str):
+    job = _require_parse_job(job_id)
+    return FileResponse(db.parse_job_dir_for(job_id) / job["filename"])
 
 
 @app.delete("/parse-jobs/{job_id}")
