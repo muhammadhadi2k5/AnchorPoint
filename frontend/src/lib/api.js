@@ -180,3 +180,12 @@ export async function clearGoldenRuns(datasetId) {
   const response = await request(`/datasets/${datasetId}/golden-runs/clear`, { method: 'DELETE' })
   return response.json()
 }
+
+// --- Parse (standalone document parsing, independent of any dataset) ---
+
+export async function createParseJob(file) {
+  const form = new FormData()
+  form.append('file', file)
+  const response = await request('/parse-jobs', { method: 'POST', body: form })
+  return response.json()
+}
