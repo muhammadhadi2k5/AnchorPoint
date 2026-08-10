@@ -52,8 +52,16 @@ export default function ParseJobDetail({ job, onClose }) {
         <div className="parse-detail-content-pane">
           {currentJob.status === 'pending' && (
             <div className="parse-detail-loading">
-              <span className="parse-detail-spinner" aria-hidden="true" />
-              <p className="parse-detail-loading-text">Still parsing…</p>
+              <div className="parse-detail-parsing-icon" aria-hidden="true">
+                <span className="parse-detail-parsing-page">
+                  <span className="parse-detail-parsing-line" />
+                  <span className="parse-detail-parsing-line" />
+                  <span className="parse-detail-parsing-line" />
+                  <span className="parse-detail-parsing-line" />
+                  <span className="parse-detail-parsing-sweep" />
+                </span>
+              </div>
+              <p className="parse-detail-loading-text">Parsing your documents…</p>
             </div>
           )}
           {currentJob.status === 'failed' && (
