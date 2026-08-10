@@ -127,7 +127,7 @@ export default function ParseView({ onBack, showBrandWord }) {
       <h1 className="parse-view-heading">{greeting}</h1>
 
       <div
-        className={`parse-drop-zone${isDragging ? ' dragging' : ''}`}
+        className={`parse-drop-zone${isDragging ? ' dragging' : ''}${error ? ' has-error' : ''}`}
         onDragOver={(e) => {
           e.preventDefault()
           setIsDragging(true)
@@ -152,6 +152,8 @@ export default function ParseView({ onBack, showBrandWord }) {
         </p>
         <p className="parse-drop-hint">PDF, DOCX, XLSX, CSV, TXT, or images</p>
       </div>
+
+      {error && <p className="parse-field-error">{error}</p>}
 
       {pendingFiles.length > 0 && (
         <div className="parse-file-chips">
@@ -179,8 +181,6 @@ export default function ParseView({ onBack, showBrandWord }) {
           View history
         </button>
       </div>
-
-      {error && <p className="parse-field-error">{error}</p>}
 
       {showHistory && (
         <div

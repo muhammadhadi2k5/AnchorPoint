@@ -131,6 +131,10 @@
   background: var(--cream-2);
 }
 
+.parse-drop-zone.has-error {
+  border-color: var(--error);
+}
+
 .parse-drop-text {
   margin: 0 0 4px;
   font-size: 14.5px;
@@ -144,9 +148,12 @@
 }
 
 .parse-field-error {
-  margin: 0;
+  width: 100%;
+  max-width: 440px;
+  margin: -4px 0 0;
   font-size: 12px;
   color: var(--error);
+  text-align: left;
 }
 
 .parse-file-chips {
