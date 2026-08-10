@@ -36,66 +36,68 @@ export default function ParseJobDetail({ job, onClose }) {
   }, [job.id, job.status])
 
   return (
-    <>
-      <div className="parse-detail-backdrop" onClick={onClose} />
-      <div className="parse-detail-panel" role="dialog" aria-label="Parsed document">
-        <div className="parse-detail-header">
-          <span>{currentJob.filename}</span>
-          <button type="button" className="parse-detail-close" onClick={onClose} aria-label="Close">
-            ×
-          </button>
+    <div className="parse-detail-panel" role="dialog" aria-label="Parsed document">
+      <div className="parse-detail-header">
+        <span>{currentJob.filename}</span>
+        <button type="button" className="parse-detail-close" onClick={onClose} aria-label="Close">
+          ×
+        </button>
+      </div>
+
+      <div className="parse-detail-body">
+        <div className="parse-detail-pdf-pane">
+          <embed src={parseJobFileUrl(currentJob.id)} type="application/pdf" className="parse-detail-embed" />
         </div>
 
-        <div className="parse-detail-body">
-          <div className="parse-detail-pdf-pane">
-            <embed src={parseJobFileUrl(currentJob.id)} type="application/pdf" className="parse-detail-embed" />
-          </div>
+        <div className="parse-detail-content-pane">
+          {currentJob.status === 'pending' && (
+            <div className="parse-detail-loading">
+              <span className="parse-detail-spinner" aria-hidden="true" />
+              <p className="parse-detail-loading-text">Still parsing…</p>
+            </div>
+          )}
+          {currentJob.status === 'failed' && (
+            <p className="parse-detail-error">{currentJob.error || 'Parsing failed.'}</p>
+          )}
+          {currentJob.status === 'complete' && (
+            <>
+              <div className="parse-detail-tabs">
+                <button
+                  type="button"
+                  className={`parse-detail-tab-btn${tab === 'markdown' ? ' active' : ''}`}
+                  onClick={() => setTab('markdown')}
+                >
+                  Markdown
+                </button>
+                <button
+                  type="button"
+                  className={`parse-detail-tab-btn${tab === 'text' ? ' active' : ''}`}
+                  onClick={() => setTab('text')}
+                >
+                  Text
+                </button>
+                <button
+                  type="button"
+                  className={`parse-detail-tab-btn${tab === 'json' ? ' active' : ''}`}
+                  onClick={() => setTab('json')}
+                >
+                  JSON
+                </button>
+              </div>
 
-          <div className="parse-detail-content-pane">
-            {currentJob.status === 'pending' && <p className="parse-detail-pending">Still parsing…</p>}
-            {currentJob.status === 'failed' && (
-              <p className="parse-detail-error">{currentJob.error || 'Parsing failed.'}</p>
-            )}
-            {currentJob.status === 'complete' && (
-              <>
-                <div className="parse-detail-tabs">
-                  <button
-                    type="button"
-                    className={`parse-detail-tab-btn${tab === 'markdown' ? ' active' : ''}`}
-                    onClick={() => setTab('markdown')}
-                  >
-                    Markdown
-                  </button>
-                  <button
-                    type="button"
-                    className={`parse-detail-tab-btn${tab === 'text' ? ' active' : ''}`}
-                    onClick={() => setTab('text')}
-                  >
-                    Text
-                  </button>
-                  <button
-                    type="button"
-                    className={`parse-detail-tab-btn${tab === 'json' ? ' active' : ''}`}
-                    onClick={() => setTab('json')}
-                  >
-                    JSON
-                  </button>
-                </div>
-
-                <div className="parse-detail-content">
-                  {tab === 'markdown' && (
-                    <div className="parse-detail-markdown">
-                      <ReactMarkdown>{currentJob.markdown}</ReactMarkdown>
-                    </div>
-                  )}
-                  {tab === 'text' && <pre className="parse-detail-raw">{currentJob.markdown}</pre>}
-                  {tab === 'json' && <pre className="parse-detail-raw">{JSON.stringify(currentJob, null, 2)}</pre>}
-                </div>
-              </>
-            )}
-          </div>
+              <div className="parse-detail-content">
+                {tab === 'markdown' && (
+                  <div className="parse-detail-markdown">
+                    <ReactMarkdown>{currentJob.markdown}</ReactMarkdown>
+                  </div>
+                )}
+                {tab === 'text' && <pre className="parse-detail-raw">{currentJob.markdown}</pre>}
+                {tab === 'json' && <pre className="parse-detail-raw">{JSON.stringify(currentJob, null, 2)}</pre>}
+              </div>
+            </>
+          )}
         </div>
       </div>
-    </>
+    </div>
   )
 }

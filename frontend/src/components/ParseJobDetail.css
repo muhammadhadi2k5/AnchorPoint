@@ -1,36 +1,20 @@
-.parse-detail-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(43, 35, 24, 0.45);
-  z-index: 20;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme='light']) .parse-detail-backdrop {
-    background: rgba(3, 2, 2, 0.75);
-  }
-}
-
-:root[data-theme='dark'] .parse-detail-backdrop {
-  background: rgba(3, 2, 2, 0.75);
-}
-
+/* full-screen takeover rather than a floating card, easier to actually
+   read a whole document in than a smaller centered popup would be */
 .parse-detail-panel {
   position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: min(1200px, 94vw);
-  height: min(800px, 90vh);
+  inset: 0;
+  width: 100%;
+  height: 100%;
   background: var(--surface);
-  border: 1px solid var(--sand-line);
-  border-radius: var(--radius);
-  z-index: 21;
+  z-index: 30;
   display: flex;
   flex-direction: column;
-  padding: 20px;
+  padding: 20px 32px;
   gap: 14px;
   overflow: hidden;
+  /* this renders as a child of .parse-view, which centers its own text for
+     the upload screen - reset that here so it doesn't leak into the preview */
+  text-align: left;
 }
 
 .parse-detail-header {
@@ -66,6 +50,8 @@
   border-radius: 10px;
   overflow: hidden;
   background: var(--cream-2);
+  border: 1px solid var(--sand-line);
+  box-shadow: 0 1px 3px rgba(43, 35, 24, 0.08);
 }
 
 .parse-detail-embed {
@@ -74,21 +60,73 @@
   border: none;
 }
 
+/* --cream-2 and --surface are the same color in dark mode (see theme.css), so
+   the box would have zero background contrast there - --sand actually differs */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .parse-detail-pdf-pane,
+  :root:not([data-theme='light']) .parse-detail-content-pane {
+    background: var(--sand);
+  }
+}
+
+:root[data-theme='dark'] .parse-detail-pdf-pane,
+:root[data-theme='dark'] .parse-detail-content-pane {
+  background: var(--sand);
+}
+
 .parse-detail-content-pane {
   flex: 1;
   min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 12px;
+  background: var(--cream-2);
+  border: 1px solid var(--sand-line);
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(43, 35, 24, 0.08);
+  padding: 16px 20px;
+  overflow: hidden;
 }
 
-.parse-detail-pending,
+.parse-detail-loading {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+}
+
+.parse-detail-spinner {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 4px solid var(--sand-line);
+  border-top-color: var(--parse-blue);
+  animation: parse-detail-spin 0.8s linear infinite;
+}
+
+@keyframes parse-detail-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .parse-detail-spinner {
+    animation: none;
+  }
+}
+
+.parse-detail-loading-text {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--ink);
+  margin: 0;
+}
+
 .parse-detail-error {
   font-size: 13px;
-  color: var(--ink-soft);
-}
-
-.parse-detail-error {
   color: var(--error);
 }
 
