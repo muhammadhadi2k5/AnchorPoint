@@ -5,9 +5,33 @@ import './ParseJobDetail.css'
 
 const POLL_MS = 3000
 
+const EXPORT_FORMATS = {
+  markdown: { label: 'Markdown (.md)', ext: 'md', mime: 'text/markdown' },
+  text: { label: 'Text (.txt)', ext: 'txt', mime: 'text/plain' },
+  json: { label: 'JSON (.json)', ext: 'json', mime: 'application/json' },
+}
+
+function buildExportContent(job, format) {
+  if (format === 'json') return JSON.stringify(job, null, 2)
+  return job.markdown
+}
+
+// same blob -> object url -> synthetic link pattern as the chat export
+function downloadParseJob(job, format) {
+  const { ext, mime } = EXPORT_FORMATS[format]
+  const blob = new Blob([buildExportContent(job, format)], { type: mime })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = `${job.filename.replace(/\.[^/.]+$/, '')}.${ext}`
+  link.click()
+  URL.revokeObjectURL(url)
+}
+
 export default function ParseJobDetail({ job, onClose }) {
   const [currentJob, setCurrentJob] = useState(job)
   const [tab, setTab] = useState('markdown')
+  const [showDownloadMenu, setShowDownloadMenu] = useState(false)
   const pollTimeoutRef = useRef(null)
   const cancelledRef = useRef(false)
 
@@ -39,9 +63,38 @@ export default function ParseJobDetail({ job, onClose }) {
     <div className="parse-detail-panel" role="dialog" aria-label="Parsed document">
       <div className="parse-detail-header">
         <span>{currentJob.filename}</span>
-        <button type="button" className="parse-detail-close" onClick={onClose} aria-label="Close">
-          ×
-        </button>
+        <div className="parse-detail-header-actions">
+          {currentJob.status === 'complete' && (
+            <div className="parse-detail-download">
+              <button
+                type="button"
+                className="parse-detail-download-btn"
+                onClick={() => setShowDownloadMenu((open) => !open)}
+              >
+                Download
+              </button>
+              {showDownloadMenu && (
+                <div className="parse-detail-download-menu">
+                  {Object.entries(EXPORT_FORMATS).map(([format, { label }]) => (
+                    <button
+                      type="button"
+                      key={format}
+                      onClick={() => {
+                        downloadParseJob(currentJob, format)
+                        setShowDownloadMenu(false)
+                      }}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+          <button type="button" className="parse-detail-close" onClick={onClose} aria-label="Close">
+            ×
+          </button>
+        </div>
       </div>
 
       <div className="parse-detail-body">
