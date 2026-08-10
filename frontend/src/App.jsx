@@ -177,6 +177,7 @@ export default function App() {
         onToggleCollapsed={toggleSidebarCollapsed}
         theme={theme}
         onToggleTheme={toggleTheme}
+        onOpenParse={handleOpenParse}
       />
 
       <main className="app-main">

@@ -200,6 +200,11 @@ export async function getParseJob(jobId) {
   return response.json()
 }
 
+export async function deleteParseJob(jobId) {
+  const response = await request(`/parse-jobs/${jobId}`, { method: 'DELETE' })
+  return response.json()
+}
+
 // used directly as an <embed> src, not fetched through request() like everything else here
 export function parseJobFileUrl(jobId) {
   return `${BASE_URL}/parse-jobs/${jobId}/file`

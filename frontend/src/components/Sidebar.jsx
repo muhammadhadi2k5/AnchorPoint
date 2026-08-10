@@ -14,6 +14,7 @@ export default function Sidebar({
   onToggleCollapsed,
   theme,
   onToggleTheme,
+  onOpenParse,
 }) {
   const [menu, setMenu] = useState(null) // { id, x, y, confirmDelete }
   const [renamingId, setRenamingId] = useState(null)
@@ -105,6 +106,11 @@ export default function Sidebar({
       <button type="button" className="sidebar-new" onClick={onNewDataset} title="New dataset">
         <span className="sidebar-new-icon">+</span>
         <span className="sidebar-new-label">New dataset</span>
+      </button>
+
+      <button type="button" className="sidebar-parse" onClick={onOpenParse} title="Parse a document">
+        <span className="sidebar-parse-icon">⎘</span>
+        <span className="sidebar-parse-label">Parse a document</span>
       </button>
 
       {datasets.length === 0 ? (

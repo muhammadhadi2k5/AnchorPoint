@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { createParseJob, listParseJobs } from '../lib/api.js'
+import { createParseJob, deleteParseJob, listParseJobs } from '../lib/api.js'
 import ParseJobDetail from '../components/ParseJobDetail.jsx'
 import './ParseView.css'
 
@@ -10,6 +10,7 @@ export default function ParseView({ onBack }) {
   const [jobs, setJobs] = useState([])
   const [error, setError] = useState(null)
   const [selectedJob, setSelectedJob] = useState(null)
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null)
   const fileInputRef = useRef(null)
   const pollTimeoutRef = useRef(null)
   const cancelledRef = useRef(false)
@@ -40,16 +41,25 @@ export default function ParseView({ onBack }) {
   }, [])
 
   // each file becomes its own job right away, no name field or submit button
-  // needed since there's nothing else to fill in first
+  // needed since there's nothing else to fill in first. opens the detail view
+  // on the last one uploaded so you land straight on it instead of the list
   const uploadFiles = async (incoming) => {
     setError(null)
+    let lastCreated = null
     for (const file of incoming) {
       try {
-        await createParseJob(file)
+        lastCreated = await createParseJob(file)
       } catch {
         setError(`Couldn't start parsing ${file.name}`)
       }
     }
+    refreshJobs()
+    if (lastCreated) setSelectedJob(lastCreated)
+  }
+
+  const handleDeleteJob = async (jobId) => {
+    await deleteParseJob(jobId)
+    setConfirmDeleteId(null)
     refreshJobs()
   }
 
@@ -103,6 +113,28 @@ export default function ParseView({ onBack }) {
                 <span className="parse-job-name">{job.filename}</span>
                 <span className={`parse-job-status status-${job.status}`}>{job.status}</span>
               </button>
+              {confirmDeleteId === job.id ? (
+                <span className="parse-job-confirm">
+                  <button type="button" className="parse-job-confirm-delete" onClick={() => handleDeleteJob(job.id)}>
+                    Delete
+                  </button>
+                  <button type="button" className="parse-job-confirm-cancel" onClick={() => setConfirmDeleteId(null)}>
+                    Cancel
+                  </button>
+                </span>
+              ) : (
+                <button
+                  type="button"
+                  className="parse-job-delete"
+                  onClick={(event) => {
+                    event.stopPropagation()
+                    setConfirmDeleteId(job.id)
+                  }}
+                  aria-label={`Delete ${job.filename}`}
+                >
+                  ×
+                </button>
+              )}
             </li>
           ))}
         </ul>
