@@ -6,22 +6,26 @@ import './ParseView.css'
 const POLL_MS = 3000
 
 const PARSE_GREETINGS = [
-  'What are we parsing today?',
-  'Parse a document...',
-  "Let's format your documents",
-  'Drop a document and get it parsed',
-  'What should we read today?',
-  'Ready to parse',
-  'What do you want extracted?',
-  'Upload it, watch it get parsed',
-  "Let's turn your data into something readable",
-  'What are we extracting today?',
-  'What can I clean up for you?',
-  'What needs parsing?',
-  'Your documents, cleaned up and readable',
-  'Your anchor point for accurate parsing',
-  'What can I parse for you?',
-  'Ready to clean up your documents',
+  'See how your document gets read',
+  'Check how well this document parses',
+  'Preview how your document gets extracted',
+  "Let's see what the parser finds",
+  'What should we take a look at?',
+  'See your document through the pipeline',
+  'Upload it, see exactly how it reads',
+  'What document should we inspect?',
+  'Preview extraction before you ingest',
+  'See the raw text behind the page',
+  'What are we reviewing today?',
+  "Let's see what's really in that PDF",
+  'Check your document before it goes in',
+  'See how clean the extraction really is',
+  'What should we take apart today?',
+  'Peek behind your document',
+  'Convert to Markdown, JSON, or plain text',
+  'Turn your document into Markdown, JSON, or text',
+  'Your anchor point before ingestion',
+  'Your anchor point for accurate parsing'
 ]
 
 export default function ParseView({ onBack, showBrandWord }) {
