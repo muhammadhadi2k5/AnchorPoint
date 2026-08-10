@@ -309,3 +309,11 @@
   opacity: 0.45;
   cursor: not-allowed;
 }
+
+.parse-cta-button {
+  background: var(--parse-blue);
+}
+
+.parse-cta-button:hover:not(:disabled) {
+  background: var(--parse-blue-deep);
+}

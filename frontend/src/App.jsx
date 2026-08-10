@@ -3,6 +3,7 @@ import HomeView from './views/HomeView.jsx'
 import IngestionLoadingView from './views/IngestionLoadingView.jsx'
 import ChatView from './views/ChatView.jsx'
 import LandingView from './views/LandingView.jsx'
+import ParseView from './views/ParseView.jsx'
 import Sidebar from './components/Sidebar.jsx'
 import QuotaModal from './components/QuotaModal.jsx'
 import EvaluationDashboard from './components/EvaluationDashboard.jsx'
@@ -123,6 +124,8 @@ export default function App() {
     setView('home')
   }
 
+  const handleOpenParse = () => setView('parse')
+
   const handleRenameDataset = async (id, name) => {
     await updateDataset(id, { name })
     refreshDatasets()
@@ -191,8 +194,14 @@ export default function App() {
           />
         )}
         {view === 'home' && (
-          <HomeView onStart={handleStart} onBack={handleBackToLanding} showBrandWord={sidebarCollapsed} />
+          <HomeView
+            onStart={handleStart}
+            onBack={handleBackToLanding}
+            showBrandWord={sidebarCollapsed}
+            onOpenParse={handleOpenParse}
+          />
         )}
+        {view === 'parse' && <ParseView onBack={() => setView('home')} />}
       </main>
 
       {quotaExceeded && <QuotaModal onClose={() => setQuotaExceeded(false)} />}

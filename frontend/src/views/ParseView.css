@@ -1,0 +1,68 @@
+.parse-view {
+  position: relative;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 96px 24px 48px;
+  text-align: center;
+}
+
+/* same falling wedge as .home-hero-band, just in the parse-blue accent instead of coral,
+   so the parse tab reads as its own area while still feeling like the same app */
+.parse-hero-band {
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 40%;
+  background: var(--parse-blue);
+  clip-path: polygon(0 0, 100% 0, 100% 74%, 0 100%);
+  z-index: -1;
+  transform: translateY(-100%);
+  animation: parse-hero-band-drop 0.65s cubic-bezier(0.22, 1, 0.36, 1) 0.05s forwards;
+}
+
+@keyframes parse-hero-band-drop {
+  to {
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .parse-hero-band {
+    animation: none;
+    transform: none;
+  }
+}
+
+.parse-view-back {
+  position: absolute;
+  top: 28px;
+  left: 32px;
+  font-weight: 600;
+  font-size: 13.5px;
+  color: var(--white);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 2px;
+}
+
+.parse-view-back:hover {
+  opacity: 0.8;
+}
+
+.parse-view-heading {
+  font-family: 'ENTRA', sans-serif;
+  font-weight: 700;
+  font-size: clamp(28px, 5vw, 40px);
+  color: var(--ink);
+  margin: 0;
+}
+
+.parse-view-placeholder {
+  font-size: 14px;
+  color: var(--ink-soft);
+  margin: 0;
+}
