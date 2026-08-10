@@ -10,6 +10,7 @@ from api.progress import clear_progress, get_progress
 from models import db
 from core.rate_limit_guard import QuotaExceededError
 from core.vector_db import VectorDB, delete_collection
+from parsing import parser
 
 db.init_db()
 
@@ -277,4 +278,38 @@ def delete_golden_run(dataset_id: str, run_id: str):
     if not run or run["dataset_id"] != dataset_id:
         raise HTTPException(status_code=404, detail="run_not_found")
     db.delete_golden_run(run_id)
+    return {"status": "deleted"}
+
+
+# --- Parse (standalone document parsing, independent of any dataset) ---
+
+def _require_parse_job(job_id):
+    job = db.get_parse_job(job_id)
+    if not job:
+        raise HTTPException(status_code=404, detail="parse_job_not_found")
+    return job
+
+
+@app.post("/parse-jobs")
+def create_parse_job(file: UploadFile = File(...)):
+    job = db.create_parse_job(file.filename)
+    (db.parse_job_dir_for(job["id"]) / file.filename).write_bytes(file.file.read())
+    parser.start_parse_job(job["id"])
+    return job
+
+
+@app.get("/parse-jobs")
+def list_parse_jobs():
+    return db.list_parse_jobs()
+
+
+@app.get("/parse-jobs/{job_id}")
+def get_parse_job(job_id: str):
+    return _require_parse_job(job_id)
+
+
+@app.delete("/parse-jobs/{job_id}")
+def delete_parse_job(job_id: str):
+    _require_parse_job(job_id)
+    db.delete_parse_job(job_id)
     return {"status": "deleted"}
