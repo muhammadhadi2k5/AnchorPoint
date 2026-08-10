@@ -1,12 +1,41 @@
-import { useRef, useState } from 'react'
-import { createParseJob } from '../lib/api.js'
+import { useEffect, useRef, useState } from 'react'
+import { createParseJob, listParseJobs } from '../lib/api.js'
 import './ParseView.css'
+
+const POLL_MS = 3000
 
 export default function ParseView({ onBack }) {
   const [isDragging, setIsDragging] = useState(false)
   const [jobs, setJobs] = useState([])
   const [error, setError] = useState(null)
   const fileInputRef = useRef(null)
+  const pollTimeoutRef = useRef(null)
+  const cancelledRef = useRef(false)
+
+  // clears any pending timer first so an upload-triggered refresh and a
+  // timer-triggered one can never both land back to back
+  const refreshJobs = async () => {
+    clearTimeout(pollTimeoutRef.current)
+    try {
+      const latest = await listParseJobs()
+      if (cancelledRef.current) return
+      setJobs(latest)
+      if (latest.some((j) => j.status === 'pending')) {
+        pollTimeoutRef.current = setTimeout(refreshJobs, POLL_MS)
+      }
+    } catch {
+      if (!cancelledRef.current) pollTimeoutRef.current = setTimeout(refreshJobs, POLL_MS)
+    }
+  }
+
+  useEffect(() => {
+    cancelledRef.current = false
+    refreshJobs()
+    return () => {
+      cancelledRef.current = true
+      clearTimeout(pollTimeoutRef.current)
+    }
+  }, [])
 
   // each file becomes its own job right away, no name field or submit button
   // needed since there's nothing else to fill in first
@@ -14,12 +43,12 @@ export default function ParseView({ onBack }) {
     setError(null)
     for (const file of incoming) {
       try {
-        const job = await createParseJob(file)
-        setJobs((current) => [job, ...current])
+        await createParseJob(file)
       } catch {
         setError(`Couldn't start parsing ${file.name}`)
       }
     }
+    refreshJobs()
   }
 
   const handleDrop = (event) => {

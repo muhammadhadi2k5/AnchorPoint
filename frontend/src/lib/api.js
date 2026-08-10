@@ -189,3 +189,8 @@ export async function createParseJob(file) {
   const response = await request('/parse-jobs', { method: 'POST', body: form })
   return response.json()
 }
+
+export async function listParseJobs() {
+  const response = await request('/parse-jobs')
+  return response.json()
+}
