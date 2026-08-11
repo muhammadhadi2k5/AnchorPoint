@@ -221,27 +221,60 @@
 .loading-bubble {
   display: flex;
   align-items: center;
-  padding: 14px 16px;
+  padding: 10px 16px;
 }
 
-.thinking-spinner {
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  border: 2.5px solid var(--sand-line);
-  border-top-color: var(--coral);
-  animation: thinking-spin 0.7s linear infinite;
+/* dim track + a brighter beam sliding across it, plus a soft halo that breathes
+   around the whole bar - reads as light moving through it, not just fading */
+.thinking-glow-bar {
+  position: relative;
+  width: 72px;
+  height: 7px;
+  border-radius: 999px;
+  background: rgba(225, 90, 60, 0.18);
+  overflow: hidden;
+  animation: thinking-halo-breathe 2.2s ease-in-out infinite;
 }
 
-@keyframes thinking-spin {
-  to {
-    transform: rotate(360deg);
+.thinking-glow-beam {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 45%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, var(--coral), transparent);
+  animation: thinking-beam-sweep 1.7s ease-in-out infinite;
+}
+
+@keyframes thinking-beam-sweep {
+  0%, 100% {
+    left: -45%;
+  }
+  50% {
+    left: 100%;
+  }
+}
+
+@keyframes thinking-halo-breathe {
+  0%, 100% {
+    box-shadow: 0 0 0 rgba(225, 90, 60, 0);
+  }
+  50% {
+    box-shadow: 0 0 10px 1px rgba(225, 90, 60, 0.45);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .thinking-spinner {
+  .thinking-glow-bar,
+  .thinking-glow-beam {
     animation: none;
+  }
+
+  .thinking-glow-beam {
+    left: 0;
+    width: 100%;
+    background: var(--coral);
+    opacity: 0.7;
   }
 }
 

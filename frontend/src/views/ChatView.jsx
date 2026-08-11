@@ -240,7 +240,9 @@ export default function ChatView({ datasetId, datasetName, onQuotaExceeded, onAd
             <div className="message-group assistant">
               {streamingText === '' ? (
                 <div className="bubble assistant loading-bubble">
-                  <span className="thinking-spinner" aria-label="Thinking" />
+                  <span className="thinking-glow-bar" aria-label="Thinking">
+                    <span className="thinking-glow-beam" />
+                  </span>
                 </div>
               ) : (
                 <div className="bubble assistant">
