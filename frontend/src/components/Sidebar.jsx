@@ -128,7 +128,7 @@ export default function Sidebar({
         <p className="sidebar-empty">Nothing here yet. Your chats will show up once you start one.</p>
       ) : (
         <>
-          <p className="sidebar-section-label">Your chats:</p>
+          <p className="sidebar-section-label">Recents:</p>
           <ul className="sidebar-list">
           {datasets.map((dataset) => (
             <li
@@ -158,6 +158,16 @@ export default function Sidebar({
                   onClick={() => onSelectDataset(dataset.id)}
                 >
                   {dataset.pinned ? <span className="pin-dot" aria-hidden="true" /> : null}
+                  <svg className="sidebar-item-icon" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
+                    <path
+                      d="M14 8c0 2.2-2.7 4-6 4-.6 0-1.2-.06-1.7-.17L3 13.5 3.8 11C2.7 10.2 2 9.1 2 8c0-2.2 2.7-4 6-4s6 1.8 6 4Z"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.3"
+                      strokeLinejoin="round"
+                      strokeLinecap="round"
+                    />
+                  </svg>
                   <span className="sidebar-item-name">{dataset.name}</span>
                 </button>
               )}
