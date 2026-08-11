@@ -43,6 +43,21 @@
   padding: 0 4px;
 }
 
+.parse-detail-create-dataset-btn {
+  border: none;
+  background: var(--parse-blue);
+  color: var(--white);
+  font-size: 12.5px;
+  font-weight: 600;
+  border-radius: 999px;
+  padding: 6px 14px;
+  cursor: pointer;
+}
+
+.parse-detail-create-dataset-btn:hover {
+  background: var(--parse-blue-deep);
+}
+
 .parse-detail-download {
   position: relative;
 }

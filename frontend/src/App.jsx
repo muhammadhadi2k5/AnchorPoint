@@ -10,6 +10,7 @@ import EvaluationDashboard from './components/EvaluationDashboard.jsx'
 import {
   addDocuments,
   createDataset,
+  createDatasetFromParseJob,
   deleteDataset,
   getIngestStatus,
   listDatasets,
@@ -126,6 +127,15 @@ export default function App() {
 
   const handleOpenParse = () => setView('parse')
 
+  // reuses the exact same ingestion loading -> chat handoff as a fresh upload,
+  // since the backend already extracted this file's text while it was parsed
+  const handleCreateDatasetFromJob = async (jobId) => {
+    const dataset = await createDatasetFromParseJob(jobId)
+    setDatasetId(dataset.id)
+    setView('loading')
+    refreshDatasets()
+  }
+
   const handleRenameDataset = async (id, name) => {
     await updateDataset(id, { name })
     refreshDatasets()
@@ -202,7 +212,11 @@ export default function App() {
           />
         )}
         {view === 'parse' && (
-          <ParseView onBack={handleBackToLanding} showBrandWord={sidebarCollapsed} />
+          <ParseView
+            onBack={handleBackToLanding}
+            showBrandWord={sidebarCollapsed}
+            onCreateDatasetFromJob={handleCreateDatasetFromJob}
+          />
         )}
       </main>
 

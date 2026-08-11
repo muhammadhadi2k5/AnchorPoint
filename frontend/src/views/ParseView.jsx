@@ -28,7 +28,7 @@ const PARSE_GREETINGS = [
   'Your anchor point for accurate parsing'
 ]
 
-export default function ParseView({ onBack, showBrandWord }) {
+export default function ParseView({ onBack, showBrandWord, onCreateDatasetFromJob }) {
   const [greeting] = useState(() => PARSE_GREETINGS[Math.floor(Math.random() * PARSE_GREETINGS.length)])
   const [isDragging, setIsDragging] = useState(false)
   const [pendingFiles, setPendingFiles] = useState([])
@@ -258,6 +258,7 @@ export default function ParseView({ onBack, showBrandWord }) {
           job={selectedJob}
           batch={activeBatch.length > 1 ? activeBatch.map((b) => jobs.find((j) => j.id === b.id) || b) : []}
           onSelectBatchJob={setSelectedJob}
+          onCreateDataset={(job) => onCreateDatasetFromJob(job.id)}
           onClose={() => {
             setSelectedJob(null)
             setActiveBatch([])

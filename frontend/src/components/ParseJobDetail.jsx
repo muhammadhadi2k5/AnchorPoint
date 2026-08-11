@@ -28,7 +28,7 @@ function downloadParseJob(job, format) {
   URL.revokeObjectURL(url)
 }
 
-export default function ParseJobDetail({ job, batch = [], onSelectBatchJob, onClose }) {
+export default function ParseJobDetail({ job, batch = [], onSelectBatchJob, onCreateDataset, onClose }) {
   const [currentJob, setCurrentJob] = useState(job)
   const [tab, setTab] = useState('markdown')
   const [showDownloadMenu, setShowDownloadMenu] = useState(false)
@@ -66,6 +66,15 @@ export default function ParseJobDetail({ job, batch = [], onSelectBatchJob, onCl
       <div className="parse-detail-header">
         <span>{currentJob.filename}</span>
         <div className="parse-detail-header-actions">
+          {currentJob.status === 'complete' && (
+            <button
+              type="button"
+              className="parse-detail-create-dataset-btn"
+              onClick={() => onCreateDataset(currentJob)}
+            >
+              Create a chat 
+            </button>
+          )}
           {currentJob.status === 'complete' && (
             <div className="parse-detail-download">
               <button

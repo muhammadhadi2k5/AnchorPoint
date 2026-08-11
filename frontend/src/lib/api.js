@@ -209,3 +209,12 @@ export async function deleteParseJob(jobId) {
 export function parseJobFileUrl(jobId) {
   return `${BASE_URL}/parse-jobs/${jobId}/file`
 }
+
+export async function createDatasetFromParseJob(jobId, name) {
+  const response = await request(`/parse-jobs/${jobId}/create-dataset`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name: name || null }),
+  })
+  return response.json()
+}
