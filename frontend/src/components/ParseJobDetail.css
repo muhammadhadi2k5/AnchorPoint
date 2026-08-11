@@ -112,6 +112,64 @@
   background: var(--sand);
 }
 
+.parse-detail-name-prompt {
+  padding: 10px 12px;
+  gap: 6px;
+  min-width: 200px;
+}
+
+.parse-detail-name-prompt label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.parse-detail-name-prompt input {
+  font-size: 13px;
+  padding: 6px 8px;
+  border: 1px solid var(--sand-line);
+  border-radius: 6px;
+  background: var(--cream-2);
+  color: var(--ink);
+}
+
+.parse-detail-name-prompt button {
+  margin-top: 2px;
+  text-align: center;
+  font-weight: 600;
+  color: var(--white);
+  background: var(--parse-blue);
+  border-radius: 6px;
+  padding: 7px 8px;
+}
+
+.parse-detail-name-prompt button:hover {
+  background: var(--parse-blue-deep);
+}
+
+.parse-detail-batch-select-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  font-size: 11px;
+  color: var(--ink-soft);
+}
+
+.parse-detail-batch-select-row button {
+  border: none;
+  background: none;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--parse-blue-deep);
+  cursor: pointer;
+  padding: 0;
+}
+
+.parse-detail-batch-select-row button:hover {
+  text-decoration: underline;
+}
+
 /* row of everything uploaded in the same Start parsing click, so switching
    between them doesn't mean leaving the split view to go dig through history */
 .parse-detail-batch-row {
@@ -394,9 +452,37 @@
   margin: 0;
 }
 
+.parse-detail-failed {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+
 .parse-detail-error {
   font-size: 13px;
   color: var(--error);
+}
+
+.parse-detail-retry-btn {
+  font-weight: 600;
+  font-size: 12.5px;
+  color: var(--white);
+  background: var(--parse-blue);
+  border: none;
+  border-radius: 999px;
+  padding: 7px 16px;
+  cursor: pointer;
+}
+
+.parse-detail-retry-btn:hover {
+  background: var(--parse-blue-deep);
+}
+
+.parse-detail-retry-btn:disabled {
+  background: var(--sand);
+  color: var(--ink-soft);
+  cursor: not-allowed;
 }
 
 .parse-detail-tabs {

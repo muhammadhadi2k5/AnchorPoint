@@ -329,6 +329,19 @@ def delete_parse_job(job_id: str):
     return {"status": "deleted"}
 
 
+# the file's still sitting in its job dir from the first attempt, delete_parse_job is the
+# only thing that ever removes it, so retry just re-runs the same job in place
+@app.post("/parse-jobs/{job_id}/retry")
+def retry_parse_job(job_id: str):
+    job = _require_parse_job(job_id)
+    if job["status"] != "failed":
+        raise HTTPException(status_code=400, detail="parse_job_not_failed")
+
+    db.retry_parse_job(job_id)
+    parser.start_parse_job(job_id)
+    return db.get_parse_job(job_id)
+
+
 # copies the already-parsed files into a new dataset rather than moving them, so the parse
 # jobs still have their own files to show/download from afterward
 @app.post("/parse-jobs/create-dataset")

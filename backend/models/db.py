@@ -715,6 +715,18 @@ def fail_parse_job(job_id, error):
         conn.close()
 
 
+def retry_parse_job(job_id):
+    conn = get_connection()
+    try:
+        conn.execute(
+            "UPDATE parse_jobs SET status = 'pending', error = NULL, completed_at = NULL WHERE id = ?",
+            (job_id,),
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+
 def delete_parse_job(job_id):
     conn = get_connection()
     try:

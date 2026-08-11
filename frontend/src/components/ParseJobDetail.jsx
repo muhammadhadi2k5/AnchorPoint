@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
-import { getParseJob, parseJobFileUrl } from '../lib/api.js'
+import { getParseJob, parseJobFileUrl, retryParseJob } from '../lib/api.js'
 import './ParseJobDetail.css'
 
 const POLL_MS = 3000
@@ -38,6 +38,9 @@ export default function ParseJobDetail({ job, batch = [], onSelectBatchJob, onCr
   const [currentJob, setCurrentJob] = useState(job)
   const [tab, setTab] = useState('markdown')
   const [showDownloadMenu, setShowDownloadMenu] = useState(false)
+  const [showNamePrompt, setShowNamePrompt] = useState(false)
+  const [chatName, setChatName] = useState('')
+  const [retrying, setRetrying] = useState(false)
   // starts empty for a batch and fills in as files finish parsing, so the common case
   // (parse a few related files, turn them all into one chat) is just one click once
   // everything's done. a manual uncheck sticks even if that file wasn't done yet
@@ -45,6 +48,8 @@ export default function ParseJobDetail({ job, batch = [], onSelectBatchJob, onCr
   const deselectedRef = useRef(new Set())
   const pollTimeoutRef = useRef(null)
   const cancelledRef = useRef(false)
+  const namePromptRef = useRef(null)
+  const downloadMenuRef = useRef(null)
 
   useEffect(() => {
     setSelectedIds((current) => {
@@ -74,6 +79,31 @@ export default function ParseJobDetail({ job, batch = [], onSelectBatchJob, onCr
     })
   }
 
+  const selectAll = () => {
+    deselectedRef.current = new Set()
+    setSelectedIds(new Set(batch.filter((item) => item.status === 'complete').map((item) => item.id)))
+  }
+
+  const selectNone = () => {
+    deselectedRef.current = new Set(batch.map((item) => item.id))
+    setSelectedIds(new Set())
+  }
+
+  // pulled out of the mount effect so a manual retry can restart the same polling loop
+  // without waiting for a whole new job prop to come down from the parent
+  const schedulePoll = (jobId) => {
+    pollTimeoutRef.current = setTimeout(async () => {
+      try {
+        const latest = await getParseJob(jobId)
+        if (cancelledRef.current) return
+        setCurrentJob(latest)
+        if (latest.status === 'pending') schedulePoll(jobId)
+      } catch {
+        if (!cancelledRef.current) schedulePoll(jobId)
+      }
+    }, POLL_MS)
+  }
+
   // only polls if the job wasn't already done when this opened, same
   // pending -> complete/failed shape as the ingestion loading screen.
   // also resyncs currentJob whenever a different batch card gets picked
@@ -81,18 +111,7 @@ export default function ParseJobDetail({ job, batch = [], onSelectBatchJob, onCr
     cancelledRef.current = false
     setCurrentJob(job)
 
-    const poll = async () => {
-      try {
-        const latest = await getParseJob(job.id)
-        if (cancelledRef.current) return
-        setCurrentJob(latest)
-        if (latest.status === 'pending') pollTimeoutRef.current = setTimeout(poll, POLL_MS)
-      } catch {
-        if (!cancelledRef.current) pollTimeoutRef.current = setTimeout(poll, POLL_MS)
-      }
-    }
-
-    if (job.status === 'pending') pollTimeoutRef.current = setTimeout(poll, POLL_MS)
+    if (job.status === 'pending') schedulePoll(job.id)
 
     return () => {
       cancelledRef.current = true
@@ -100,23 +119,87 @@ export default function ParseJobDetail({ job, batch = [], onSelectBatchJob, onCr
     }
   }, [job.id, job.status])
 
+  const handleRetry = async () => {
+    setRetrying(true)
+    try {
+      const updated = await retryParseJob(currentJob.id)
+      setCurrentJob(updated)
+      schedulePoll(updated.id)
+    } finally {
+      setRetrying(false)
+    }
+  }
+
+  const openNamePrompt = () => {
+    const firstSelected = batch.find((item) => selectedIds.has(item.id)) || currentJob
+    setChatName(firstSelected.filename.replace(/\.[^/.]+$/, ''))
+    setShowNamePrompt(true)
+  }
+
+  const confirmCreate = () => {
+    setShowNamePrompt(false)
+    onCreateDataset(Array.from(selectedIds), chatName.trim())
+  }
+
+  // Esc closes the same as the x button, standard for a full-screen takeover like this
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [onClose])
+
+  // clicking anywhere outside either popover closes it, same as a normal dropdown
+  useEffect(() => {
+    if (!showNamePrompt && !showDownloadMenu) return undefined
+
+    const handleClickOutside = (event) => {
+      if (showNamePrompt && namePromptRef.current && !namePromptRef.current.contains(event.target)) {
+        setShowNamePrompt(false)
+      }
+      if (showDownloadMenu && downloadMenuRef.current && !downloadMenuRef.current.contains(event.target)) {
+        setShowDownloadMenu(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [showNamePrompt, showDownloadMenu])
+
   return (
     <div className="parse-detail-panel" role="dialog" aria-label="Parsed document">
       <div className="parse-detail-header">
         <span>{currentJob.filename}</span>
         <div className="parse-detail-header-actions">
           {currentJob.status === 'complete' && (
-            <button
-              type="button"
-              className="parse-detail-create-dataset-btn"
-              disabled={selectedIds.size === 0}
-              onClick={() => onCreateDataset(Array.from(selectedIds))}
-            >
-              Create a chat{selectedIds.size > 1 ? ` (${selectedIds.size} docs)` : ''}
-            </button>
+            <div className="parse-detail-download" ref={namePromptRef}>
+              <button
+                type="button"
+                className="parse-detail-create-dataset-btn"
+                disabled={selectedIds.size === 0}
+                onClick={openNamePrompt}
+              >
+                Create a chat{selectedIds.size > 1 ? ` (${selectedIds.size} docs)` : ''}
+              </button>
+              {showNamePrompt && (
+                <div className="parse-detail-download-menu parse-detail-name-prompt">
+                  <label htmlFor="parse-chat-name">Name this chat</label>
+                  <input
+                    id="parse-chat-name"
+                    type="text"
+                    value={chatName}
+                    onChange={(event) => setChatName(event.target.value)}
+                    onKeyDown={(event) => event.key === 'Enter' && confirmCreate()}
+                    autoFocus
+                  />
+                  <button type="button" onClick={confirmCreate}>Create</button>
+                </div>
+              )}
+            </div>
           )}
           {currentJob.status === 'complete' && (
-            <div className="parse-detail-download">
+            <div className="parse-detail-download" ref={downloadMenuRef}>
               <button
                 type="button"
                 className="parse-detail-download-btn"
@@ -147,6 +230,14 @@ export default function ParseJobDetail({ job, batch = [], onSelectBatchJob, onCr
           </button>
         </div>
       </div>
+
+      {batch.length > 1 && (
+        <div className="parse-detail-batch-select-row">
+          <button type="button" onClick={selectAll}>Select all</button>
+          <span>·</span>
+          <button type="button" onClick={selectNone}>Select none</button>
+        </div>
+      )}
 
       {batch.length > 1 && (
         <div className="parse-detail-batch-row">
@@ -197,7 +288,12 @@ export default function ParseJobDetail({ job, batch = [], onSelectBatchJob, onCr
             </div>
           )}
           {currentJob.status === 'failed' && (
-            <p className="parse-detail-error">{currentJob.error || 'Parsing failed.'}</p>
+            <div className="parse-detail-failed">
+              <p className="parse-detail-error">{currentJob.error || 'Parsing failed.'}</p>
+              <button type="button" className="parse-detail-retry-btn" onClick={handleRetry} disabled={retrying}>
+                {retrying ? 'Retrying…' : 'Retry'}
+              </button>
+            </div>
           )}
           {currentJob.status === 'complete' && (
             <>

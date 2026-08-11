@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { createParseJob, deleteParseJob, listParseJobs } from '../lib/api.js'
+import { createParseJob, deleteParseJob, listParseJobs, retryParseJob } from '../lib/api.js'
 import ParseJobDetail from '../components/ParseJobDetail.jsx'
 import './ParseView.css'
 
@@ -67,6 +67,16 @@ export default function ParseView({ onBack, showBrandWord, onCreateDatasetFromJo
     }
   }, [])
 
+  // Esc closes the history overlay same as the x button
+  useEffect(() => {
+    if (!showHistory) return undefined
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') setShowHistory(false)
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [showHistory])
+
   // dedupes by name+size same as HomeView, files just sit here until Start parsing is clicked
   const addFiles = (incoming) => {
     setPendingFiles((current) => {
@@ -107,6 +117,11 @@ export default function ParseView({ onBack, showBrandWord, onCreateDatasetFromJo
   const handleDeleteJob = async (jobId) => {
     await deleteParseJob(jobId)
     setConfirmDeleteId(null)
+    refreshJobs()
+  }
+
+  const handleRetryJob = async (jobId) => {
+    await retryParseJob(jobId)
     refreshJobs()
   }
 
@@ -223,6 +238,18 @@ export default function ParseView({ onBack, showBrandWord, onCreateDatasetFromJo
                       <span className="parse-job-name">{job.filename}</span>
                       <span className={`parse-job-status status-${job.status}`}>{job.status}</span>
                     </button>
+                    {job.status === 'failed' && (
+                      <button
+                        type="button"
+                        className="parse-job-retry"
+                        onClick={(event) => {
+                          event.stopPropagation()
+                          handleRetryJob(job.id)
+                        }}
+                      >
+                        Retry
+                      </button>
+                    )}
                     {confirmDeleteId === job.id ? (
                       <span className="parse-job-confirm">
                         <button type="button" className="parse-job-confirm-delete" onClick={() => handleDeleteJob(job.id)}>
@@ -258,7 +285,7 @@ export default function ParseView({ onBack, showBrandWord, onCreateDatasetFromJo
           job={selectedJob}
           batch={activeBatch.length > 1 ? activeBatch.map((b) => jobs.find((j) => j.id === b.id) || b) : []}
           onSelectBatchJob={setSelectedJob}
-          onCreateDataset={(jobIds) => onCreateDatasetFromJob(jobIds)}
+          onCreateDataset={(jobIds, name) => onCreateDatasetFromJob(jobIds, name)}
           onClose={() => {
             setSelectedJob(null)
             setActiveBatch([])

@@ -129,8 +129,8 @@ export default function App() {
 
   // reuses the exact same ingestion loading -> chat handoff as a fresh upload,
   // since the backend already extracted these files' text while they were parsed
-  const handleCreateDatasetFromJob = async (jobIds) => {
-    const dataset = await createDatasetFromParseJobs(jobIds)
+  const handleCreateDatasetFromJob = async (jobIds, name) => {
+    const dataset = await createDatasetFromParseJobs(jobIds, name)
     setDatasetId(dataset.id)
     setView('loading')
     refreshDatasets()
