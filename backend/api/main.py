@@ -59,6 +59,7 @@ class GoldenQuestionIn(BaseModel):
 
 
 class CreateDatasetFromParseJobIn(BaseModel):
+    job_ids: list[str]
     name: str | None = None
 
 
@@ -328,19 +329,24 @@ def delete_parse_job(job_id: str):
     return {"status": "deleted"}
 
 
-# copies the already-parsed file into a new dataset rather than moving it, so the parse
-# job still has its own file to show/download from afterward
-@app.post("/parse-jobs/{job_id}/create-dataset")
-def create_dataset_from_parse_job(job_id: str, body: CreateDatasetFromParseJobIn):
-    job = _require_parse_job(job_id)
-    if job["status"] != "complete":
-        raise HTTPException(status_code=400, detail="parse_job_not_complete")
+# copies the already-parsed files into a new dataset rather than moving them, so the parse
+# jobs still have their own files to show/download from afterward
+@app.post("/parse-jobs/create-dataset")
+def create_dataset_from_parse_jobs(body: CreateDatasetFromParseJobIn):
+    if not body.job_ids:
+        raise HTTPException(status_code=400, detail="no_jobs_selected")
 
-    name = body.name or Path(job["filename"]).stem
+    jobs = [_require_parse_job(job_id) for job_id in body.job_ids]
+    for job in jobs:
+        if job["status"] != "complete":
+            raise HTTPException(status_code=400, detail="parse_job_not_complete")
+
+    name = body.name or Path(jobs[0]["filename"]).stem
     dataset = db.create_dataset(name)
-    shutil.copy(
-        db.parse_job_dir_for(job_id) / job["filename"],
-        db.dataset_dir_for(dataset["id"]) / job["filename"],
-    )
+    for job in jobs:
+        shutil.copy(
+            db.parse_job_dir_for(job["id"]) / job["filename"],
+            db.dataset_dir_for(dataset["id"]) / job["filename"],
+        )
     ingest.start_ingestion(dataset["id"])
     return dataset

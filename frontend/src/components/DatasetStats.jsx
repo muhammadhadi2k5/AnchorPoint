@@ -23,9 +23,9 @@ export default function DatasetStats({ datasetId, onClose }) {
   return (
     <>
       <div className="stats-backdrop" onClick={onClose} />
-      <div className="stats-panel" role="dialog" aria-label="Dataset stats">
+      <div className="stats-panel" role="dialog" aria-label="Chat stats">
         <div className="stats-header">
-          <span>Dataset stats</span>
+          <span>Chat stats</span>
           <button type="button" className="stats-close" onClick={onClose} aria-label="Close">
             ×
           </button>

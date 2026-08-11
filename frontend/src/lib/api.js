@@ -210,11 +210,11 @@ export function parseJobFileUrl(jobId) {
   return `${BASE_URL}/parse-jobs/${jobId}/file`
 }
 
-export async function createDatasetFromParseJob(jobId, name) {
-  const response = await request(`/parse-jobs/${jobId}/create-dataset`, {
+export async function createDatasetFromParseJobs(jobIds, name) {
+  const response = await request('/parse-jobs/create-dataset', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name: name || null }),
+    body: JSON.stringify({ job_ids: jobIds, name: name || null }),
   })
   return response.json()
 }

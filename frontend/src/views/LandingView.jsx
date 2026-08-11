@@ -5,7 +5,7 @@ import './LandingView.css'
 const STEPS = [
   {
     title: 'Upload your documents',
-    body: 'Drag and drop PDFs, spreadsheets, or scanned pages. Each dataset stays completely separate from the others.',
+    body: 'Drag and drop PDFs, spreadsheets, or scanned pages. Each chat stays completely separate from the others.',
   },
   {
     title: 'We read them for you',
@@ -17,7 +17,7 @@ const STEPS = [
   },
   {
     title: 'Stay in control',
-    body: 'Rename, pin, delete a dataset, or add documents to existing datasets anytime. Nothing changes in your datasets except what you ask for.',
+    body: 'Rename, pin, delete a chat, or add documents to existing chats anytime. Nothing changes in your chats except what you ask for.',
   },
 ]
 

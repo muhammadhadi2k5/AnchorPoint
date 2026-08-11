@@ -112,7 +112,7 @@ export default function HomeView({ onStart, onBack, showBrandWord }) {
 
       <div className="home-form">
         <label className="name-label" htmlFor="dataset-name">
-          Name this dataset
+          Name this chat
         </label>
         <input
           id="dataset-name"

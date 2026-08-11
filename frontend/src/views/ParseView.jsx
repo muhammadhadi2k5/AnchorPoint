@@ -258,7 +258,7 @@ export default function ParseView({ onBack, showBrandWord, onCreateDatasetFromJo
           job={selectedJob}
           batch={activeBatch.length > 1 ? activeBatch.map((b) => jobs.find((j) => j.id === b.id) || b) : []}
           onSelectBatchJob={setSelectedJob}
-          onCreateDataset={(job) => onCreateDatasetFromJob(job.id)}
+          onCreateDataset={(jobIds) => onCreateDatasetFromJob(jobIds)}
           onClose={() => {
             setSelectedJob(null)
             setActiveBatch([])

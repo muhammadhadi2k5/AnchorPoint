@@ -80,7 +80,7 @@ function LiveTab({ datasetId, onSelectEvaluation }) {
 
       {evaluations.length === 0 ? (
         <p className="eval-empty">
-          No evaluations yet. Every new message you send in this dataset's chat gets scored automatically.
+          No evaluations yet. Every new message you send in this chat gets scored automatically.
         </p>
       ) : (
         <ul className="eval-list">

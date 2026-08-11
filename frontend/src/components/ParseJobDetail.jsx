@@ -5,6 +5,12 @@ import './ParseJobDetail.css'
 
 const POLL_MS = 3000
 
+const BATCH_STATUS_LABELS = {
+  pending: 'Parsing…',
+  complete: 'Done',
+  failed: 'Failed',
+}
+
 const EXPORT_FORMATS = {
   markdown: { label: 'Markdown (.md)', ext: 'md', mime: 'text/markdown' },
   text: { label: 'Text (.txt)', ext: 'txt', mime: 'text/plain' },
@@ -32,8 +38,41 @@ export default function ParseJobDetail({ job, batch = [], onSelectBatchJob, onCr
   const [currentJob, setCurrentJob] = useState(job)
   const [tab, setTab] = useState('markdown')
   const [showDownloadMenu, setShowDownloadMenu] = useState(false)
+  // starts empty for a batch and fills in as files finish parsing, so the common case
+  // (parse a few related files, turn them all into one chat) is just one click once
+  // everything's done. a manual uncheck sticks even if that file wasn't done yet
+  const [selectedIds, setSelectedIds] = useState(() => new Set(batch.length > 1 ? [] : [job.id]))
+  const deselectedRef = useRef(new Set())
   const pollTimeoutRef = useRef(null)
   const cancelledRef = useRef(false)
+
+  useEffect(() => {
+    setSelectedIds((current) => {
+      const next = new Set(current)
+      let changed = false
+      for (const item of batch) {
+        if (item.status === 'complete' && !next.has(item.id) && !deselectedRef.current.has(item.id)) {
+          next.add(item.id)
+          changed = true
+        }
+      }
+      return changed ? next : current
+    })
+  }, [batch])
+
+  const toggleSelected = (id) => {
+    setSelectedIds((current) => {
+      const next = new Set(current)
+      if (next.has(id)) {
+        next.delete(id)
+        deselectedRef.current.add(id)
+      } else {
+        next.add(id)
+        deselectedRef.current.delete(id)
+      }
+      return next
+    })
+  }
 
   // only polls if the job wasn't already done when this opened, same
   // pending -> complete/failed shape as the ingestion loading screen.
@@ -70,9 +109,10 @@ export default function ParseJobDetail({ job, batch = [], onSelectBatchJob, onCr
             <button
               type="button"
               className="parse-detail-create-dataset-btn"
-              onClick={() => onCreateDataset(currentJob)}
+              disabled={selectedIds.size === 0}
+              onClick={() => onCreateDataset(Array.from(selectedIds))}
             >
-              Create a chat 
+              Create a chat{selectedIds.size > 1 ? ` (${selectedIds.size} docs)` : ''}
             </button>
           )}
           {currentJob.status === 'complete' && (
@@ -111,17 +151,27 @@ export default function ParseJobDetail({ job, batch = [], onSelectBatchJob, onCr
       {batch.length > 1 && (
         <div className="parse-detail-batch-row">
           {batch.map((item) => (
-            <button
-              type="button"
-              key={item.id}
-              className={`parse-detail-batch-card${item.id === currentJob.id ? ' active' : ''}`}
-              onClick={() => onSelectBatchJob(item)}
-            >
-              <span className="parse-detail-batch-name">{item.filename}</span>
-              <span className={`parse-detail-batch-progress status-${item.status}`}>
-                <span className="parse-detail-batch-progress-fill" />
-              </span>
-            </button>
+            <div key={item.id} className={`parse-detail-batch-card${item.id === currentJob.id ? ' active' : ''}`}>
+              <button type="button" className="parse-detail-batch-card-main" onClick={() => onSelectBatchJob(item)}>
+                <span className="parse-detail-batch-name">{item.filename}</span>
+                <span className={`parse-detail-batch-progress status-${item.status}`}>
+                  <span className="parse-detail-batch-progress-fill" />
+                </span>
+                <span className={`parse-detail-batch-status status-${item.status}`}>
+                  {BATCH_STATUS_LABELS[item.status]}
+                </span>
+              </button>
+              {item.status === 'complete' && (
+                <label className="parse-detail-batch-checkbox-label">
+                  <input
+                    type="checkbox"
+                    checked={selectedIds.has(item.id)}
+                    onChange={() => toggleSelected(item.id)}
+                  />
+                  Include in chat
+                </label>
+              )}
+            </div>
           ))}
         </div>
       )}

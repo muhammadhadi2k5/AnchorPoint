@@ -103,9 +103,9 @@ export default function Sidebar({
         </span>
       </button>
 
-      <button type="button" className="sidebar-new" onClick={onNewDataset} title="New dataset">
+      <button type="button" className="sidebar-new" onClick={onNewDataset} title="New chat">
         <span className="sidebar-new-icon">+</span>
-        <span className="sidebar-new-label">New dataset</span>
+        <span className="sidebar-new-label">New chat</span>
       </button>
 
       <button type="button" className="sidebar-parse" onClick={onOpenParse} title="Parse a document">
@@ -125,7 +125,7 @@ export default function Sidebar({
       </button>
 
       {datasets.length === 0 ? (
-        <p className="sidebar-empty">Nothing here yet. Your datasets will show up once you start one.</p>
+        <p className="sidebar-empty">Nothing here yet. Your chats will show up once you start one.</p>
       ) : (
         <ul className="sidebar-list">
           {datasets.map((dataset) => (
@@ -200,7 +200,7 @@ export default function Sidebar({
         <div className="context-menu" style={{ top: menu.y, left: menu.x }} onClick={(e) => e.stopPropagation()}>
           {menu.confirmDelete ? (
             <>
-              <p className="context-menu-confirm-text">Delete this dataset? This can't be undone.</p>
+              <p className="context-menu-confirm-text">Delete this chat? This can't be undone.</p>
               <button type="button" className="context-menu-danger" onClick={() => { onDeleteDataset(menu.id); setMenu(null) }}>
                 Delete
               </button>

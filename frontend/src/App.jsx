@@ -10,7 +10,7 @@ import EvaluationDashboard from './components/EvaluationDashboard.jsx'
 import {
   addDocuments,
   createDataset,
-  createDatasetFromParseJob,
+  createDatasetFromParseJobs,
   deleteDataset,
   getIngestStatus,
   listDatasets,
@@ -128,9 +128,9 @@ export default function App() {
   const handleOpenParse = () => setView('parse')
 
   // reuses the exact same ingestion loading -> chat handoff as a fresh upload,
-  // since the backend already extracted this file's text while it was parsed
-  const handleCreateDatasetFromJob = async (jobId) => {
-    const dataset = await createDatasetFromParseJob(jobId)
+  // since the backend already extracted these files' text while they were parsed
+  const handleCreateDatasetFromJob = async (jobIds) => {
+    const dataset = await createDatasetFromParseJobs(jobIds)
     setDatasetId(dataset.id)
     setView('loading')
     refreshDatasets()

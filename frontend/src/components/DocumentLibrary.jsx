@@ -21,7 +21,7 @@ export default function DocumentLibrary({ datasetId, onClose, onAddDocuments, on
       <div className="library-backdrop" onClick={onClose} />
       <div className="library-panel" role="dialog" aria-label="Documents">
         <div className="library-header">
-          <span>Documents in this dataset</span>
+          <span>Documents in this chat</span>
           <button type="button" className="library-close" onClick={onClose} aria-label="Close">
             ×
           </button>
