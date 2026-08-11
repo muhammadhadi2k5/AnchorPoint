@@ -127,7 +127,9 @@ export default function Sidebar({
       {datasets.length === 0 ? (
         <p className="sidebar-empty">Nothing here yet. Your chats will show up once you start one.</p>
       ) : (
-        <ul className="sidebar-list">
+        <>
+          <p className="sidebar-section-label">Your chats:</p>
+          <ul className="sidebar-list">
           {datasets.map((dataset) => (
             <li
               key={dataset.id}
@@ -161,7 +163,8 @@ export default function Sidebar({
               )}
             </li>
           ))}
-        </ul>
+          </ul>
+        </>
       )}
 
       <button
