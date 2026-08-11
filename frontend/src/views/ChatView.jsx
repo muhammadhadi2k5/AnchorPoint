@@ -1,9 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
+import remarkMath from 'remark-math'
+import rehypeKatex from 'rehype-katex'
 import { listMessages, sendMessageStream } from '../lib/api.js'
 import CitationDrawer, { formatChunkText } from '../components/CitationDrawer.jsx'
 import DatasetStats from '../components/DatasetStats.jsx'
 import DocumentLibrary from '../components/DocumentLibrary.jsx'
+import 'katex/dist/katex.min.css'
 import './ChatView.css'
 
 const GREETINGS = [
@@ -202,7 +205,7 @@ export default function ChatView({ datasetId, datasetName, onQuotaExceeded, onAd
               <div className={`bubble ${message.role}`}>
                 {message.role === 'assistant' ? (
                   <div className="markdown-body">
-                    <ReactMarkdown>{message.content}</ReactMarkdown>
+                    <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>{message.content}</ReactMarkdown>
                   </div>
                 ) : (
                   message.content
@@ -247,7 +250,7 @@ export default function ChatView({ datasetId, datasetName, onQuotaExceeded, onAd
               ) : (
                 <div className="bubble assistant">
                   <div className="markdown-body">
-                    <ReactMarkdown>{streamingText}</ReactMarkdown>
+                    <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>{streamingText}</ReactMarkdown>
                   </div>
                 </div>
               )}
