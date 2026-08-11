@@ -9,7 +9,7 @@ const STEPS = [
   },
   {
     title: 'We read them for you',
-    body: 'Text gets pulled out and chunked. Scanned or image-heavy pages fall back to OCR automatically, no setup needed.',
+    body: 'Text gets pulled out and chunked. Scanned or image-heavy pages fall back to OCR automatically, Or simply parse a document and export it.',
   },
   {
     title: 'Ask anything',
