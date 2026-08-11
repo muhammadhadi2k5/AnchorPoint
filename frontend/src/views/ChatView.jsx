@@ -3,6 +3,7 @@ import ReactMarkdown from 'react-markdown'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
 import { listMessages, sendMessageStream } from '../lib/api.js'
+import { flattenLatex } from '../lib/latex.js'
 import CitationDrawer, { formatChunkText } from '../components/CitationDrawer.jsx'
 import DatasetStats from '../components/DatasetStats.jsx'
 import DocumentLibrary from '../components/DocumentLibrary.jsx'
@@ -16,14 +17,14 @@ const GREETINGS = [
   'Ready when you are',
 ]
 
-// copies the raw markdown source, same text the message is stored/rendered
-// from, not a plain-text-stripped version
+// copies the markdown source, but with any $...$ LaTeX flattened to plain unicode
+// first - pasting raw "$O(n^2)$" into a normal text field is just noise
 function CopyButton({ text }) {
   const [copied, setCopied] = useState(false)
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(text)
+      await navigator.clipboard.writeText(flattenLatex(text))
       setCopied(true)
       setTimeout(() => setCopied(false), 1500)
     } catch {
@@ -70,7 +71,8 @@ function buildExportMarkdown(datasetName, messages) {
   const lines = [`# ${datasetName} — Chat Export`, '', `_Exported ${new Date().toLocaleString()}_`]
 
   for (const message of messages) {
-    lines.push('', message.role === 'user' ? `**You:** ${message.content}` : `**Assistant:** ${message.content}`)
+    const content = flattenLatex(message.content)
+    lines.push('', message.role === 'user' ? `**You:** ${content}` : `**Assistant:** ${content}`)
     if (message.citations?.length > 0) {
       const sources = message.citations.map((c, i) => `${i + 1}. ${c.source_file}`).join(', ')
       lines.push('', `*Sources: ${sources}*`)
