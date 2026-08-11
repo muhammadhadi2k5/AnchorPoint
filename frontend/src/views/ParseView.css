@@ -169,17 +169,29 @@
 }
 
 .parse-file-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
+  width: 200px;
   font-size: 12.5px;
   color: var(--ink);
   background: var(--sand);
-  border-radius: 999px;
-  padding: 6px 8px 6px 14px;
+  border-radius: 10px;
+  padding: 8px 10px;
+}
+
+.parse-file-chip-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.parse-file-chip-name {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .parse-file-chip-remove {
+  flex-shrink: 0;
   border: none;
   background: none;
   color: var(--ink-soft);
@@ -187,6 +199,32 @@
   line-height: 1;
   cursor: pointer;
   padding: 2px 4px;
+}
+
+.parse-file-chip-progress {
+  display: block;
+  margin-top: 6px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--sand-line);
+  overflow: hidden;
+}
+
+.parse-file-chip-progress-fill {
+  display: block;
+  height: 100%;
+  border-radius: 2px;
+  background: var(--parse-blue);
+  transition: width 0.15s ease;
+}
+
+.parse-file-chip.status-uploaded .parse-file-chip-progress-fill {
+  background: var(--success);
+}
+
+.parse-file-chip.status-error .parse-file-chip-progress-fill {
+  background: var(--error);
+  width: 100% !important;
 }
 
 .parse-main-actions {
@@ -383,6 +421,26 @@
   font-weight: 700;
   color: var(--ink);
   flex-shrink: 0;
+}
+
+.parse-history-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.parse-history-delete-all {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--error);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.parse-history-delete-all:hover {
+  text-decoration: underline;
 }
 
 .parse-history-close {

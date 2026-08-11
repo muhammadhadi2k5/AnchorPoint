@@ -130,11 +130,18 @@ export default function ParseJobDetail({ job, batch = [], onSelectBatchJob, onCr
     }
   }
 
-  const openNamePrompt = () => {
-    const firstSelected = batch.find((item) => selectedIds.has(item.id)) || currentJob
-    setChatName(firstSelected.filename.replace(/\.[^/.]+$/, ''))
-    setShowNamePrompt(true)
+  const toggleNamePrompt = () => {
+    setShowNamePrompt((open) => {
+      if (!open) {
+        const firstSelected = batch.find((item) => selectedIds.has(item.id)) || currentJob
+        setChatName(firstSelected.filename.replace(/\.[^/.]+$/, ''))
+      }
+      return !open
+    })
   }
+
+  const completeBatchCount = batch.filter((item) => item.status === 'complete').length
+  const allSelected = completeBatchCount > 0 && selectedIds.size === completeBatchCount
 
   const confirmCreate = () => {
     setShowNamePrompt(false)
@@ -178,12 +185,39 @@ export default function ParseJobDetail({ job, batch = [], onSelectBatchJob, onCr
                 type="button"
                 className="parse-detail-create-dataset-btn"
                 disabled={selectedIds.size === 0}
-                onClick={openNamePrompt}
+                onClick={toggleNamePrompt}
               >
                 Create a chat{selectedIds.size > 1 ? ` (${selectedIds.size} docs)` : ''}
               </button>
               {showNamePrompt && (
                 <div className="parse-detail-download-menu parse-detail-name-prompt">
+                  {batch.length > 1 && (
+                    <>
+                      <label className="parse-detail-select-all-row">
+                        <input
+                          type="checkbox"
+                          checked={allSelected}
+                          onChange={(event) => (event.target.checked ? selectAll() : selectNone())}
+                        />
+                        All
+                      </label>
+                      <ul className="parse-detail-doc-select-list">
+                        {batch.map((item) => (
+                          <li key={item.id}>
+                            <label>
+                              <input
+                                type="checkbox"
+                                disabled={item.status !== 'complete'}
+                                checked={selectedIds.has(item.id)}
+                                onChange={() => toggleSelected(item.id)}
+                              />
+                              {item.filename}
+                            </label>
+                          </li>
+                        ))}
+                      </ul>
+                    </>
+                  )}
                   <label htmlFor="parse-chat-name">Name this chat</label>
                   <input
                     id="parse-chat-name"
@@ -232,37 +266,22 @@ export default function ParseJobDetail({ job, batch = [], onSelectBatchJob, onCr
       </div>
 
       {batch.length > 1 && (
-        <div className="parse-detail-batch-select-row">
-          <button type="button" onClick={selectAll}>Select all</button>
-          <span>·</span>
-          <button type="button" onClick={selectNone}>Select none</button>
-        </div>
-      )}
-
-      {batch.length > 1 && (
         <div className="parse-detail-batch-row">
           {batch.map((item) => (
-            <div key={item.id} className={`parse-detail-batch-card${item.id === currentJob.id ? ' active' : ''}`}>
-              <button type="button" className="parse-detail-batch-card-main" onClick={() => onSelectBatchJob(item)}>
-                <span className="parse-detail-batch-name">{item.filename}</span>
-                <span className={`parse-detail-batch-progress status-${item.status}`}>
-                  <span className="parse-detail-batch-progress-fill" />
-                </span>
-                <span className={`parse-detail-batch-status status-${item.status}`}>
-                  {BATCH_STATUS_LABELS[item.status]}
-                </span>
-              </button>
-              {item.status === 'complete' && (
-                <label className="parse-detail-batch-checkbox-label">
-                  <input
-                    type="checkbox"
-                    checked={selectedIds.has(item.id)}
-                    onChange={() => toggleSelected(item.id)}
-                  />
-                  Include in chat
-                </label>
-              )}
-            </div>
+            <button
+              type="button"
+              key={item.id}
+              className={`parse-detail-batch-card${item.id === currentJob.id ? ' active' : ''}`}
+              onClick={() => onSelectBatchJob(item)}
+            >
+              <span className="parse-detail-batch-name">{item.filename}</span>
+              <span className={`parse-detail-batch-progress status-${item.status}`}>
+                <span className="parse-detail-batch-progress-fill" />
+              </span>
+              <span className={`parse-detail-batch-status status-${item.status}`}>
+                {BATCH_STATUS_LABELS[item.status]}
+              </span>
+            </button>
           ))}
         </div>
       )}

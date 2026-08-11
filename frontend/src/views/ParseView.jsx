@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { createParseJob, deleteParseJob, listParseJobs, retryParseJob } from '../lib/api.js'
+import { createParseJobWithProgress, deleteParseJob, listParseJobs, retryParseJob } from '../lib/api.js'
 import ParseJobDetail from '../components/ParseJobDetail.jsx'
 import './ParseView.css'
 
@@ -37,10 +37,14 @@ export default function ParseView({ onBack, showBrandWord, onCreateDatasetFromJo
   const [selectedJob, setSelectedJob] = useState(null)
   const [activeBatch, setActiveBatch] = useState([])
   const [confirmDeleteId, setConfirmDeleteId] = useState(null)
+  const [confirmDeleteAll, setConfirmDeleteAll] = useState(false)
   const [showHistory, setShowHistory] = useState(false)
   const fileInputRef = useRef(null)
   const pollTimeoutRef = useRef(null)
   const cancelledRef = useRef(false)
+  // uploads that got removed mid-flight, so the upload can still be deleted the
+  // instant it lands instead of leaving an orphaned job nobody can see
+  const removedWhileUploadingRef = useRef(new Set())
 
   // clears any pending timer first so an upload-triggered refresh and a
   // timer-triggered one can never both land back to back
@@ -77,37 +81,73 @@ export default function ParseView({ onBack, showBrandWord, onCreateDatasetFromJo
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [showHistory])
 
-  // dedupes by name+size same as HomeView, files just sit here until Start parsing is clicked
+  // the "uploading documents" nudge only means something while an upload is actually in
+  // flight - once everything's landed there's nothing left to block Start parsing on
+  useEffect(() => {
+    if (error === 'Uploading documents…' && !pendingFiles.some((entry) => entry.status === 'uploading')) {
+      setError(null)
+    }
+  }, [pendingFiles, error])
+
+  const updateEntry = (key, patch) => {
+    setPendingFiles((current) => current.map((entry) => (entry.key === key ? { ...entry, ...patch } : entry)))
+  }
+
+  // dedupes by name+size same as HomeView, but unlike HomeView each file starts
+  // uploading the moment it's added instead of waiting for a submit click - by the
+  // time Start parsing is clicked the PDF is already sitting on the backend, ready
+  // for the native embed to load instantly instead of showing a blank pane first.
+  // the actual uploads fire here, outside the setState updater - react can call an
+  // updater twice (strict mode does this on purpose), which would double-upload
+  // every file if the network calls lived inside it
   const addFiles = (incoming) => {
-    setPendingFiles((current) => {
-      const existingKeys = new Set(current.map((f) => `${f.name}-${f.size}`))
-      const newFiles = incoming.filter((file) => !existingKeys.has(`${file.name}-${file.size}`))
-      return [...current, ...newFiles]
-    })
+    const existingKeys = new Set(pendingFiles.map((entry) => entry.key))
+    const newEntries = incoming
+      .filter((file) => !existingKeys.has(`${file.name}-${file.size}`))
+      .map((file) => ({ key: `${file.name}-${file.size}`, file, progress: 0, status: 'uploading', job: null }))
+
+    if (newEntries.length === 0) return
+    setPendingFiles((current) => [...current, ...newEntries])
+
+    for (const entry of newEntries) {
+      createParseJobWithProgress(entry.file, (progress) => updateEntry(entry.key, { progress }))
+        .then((job) => {
+          if (removedWhileUploadingRef.current.has(entry.key)) {
+            removedWhileUploadingRef.current.delete(entry.key)
+            deleteParseJob(job.id)
+            return
+          }
+          updateEntry(entry.key, { status: 'uploaded', progress: 100, job })
+        })
+        .catch(() => {
+          removedWhileUploadingRef.current.delete(entry.key)
+          updateEntry(entry.key, { status: 'error', progress: 0 })
+          setError(`Couldn't upload ${entry.file.name}`)
+        })
+    }
   }
 
-  const removeFile = (index) => {
-    setPendingFiles((current) => current.filter((_, i) => i !== index))
+  const removeFile = (key) => {
+    const entry = pendingFiles.find((e) => e.key === key)
+    if (entry?.status === 'uploading') removedWhileUploadingRef.current.add(key)
+    else if (entry?.job) deleteParseJob(entry.job.id)
+    setPendingFiles((current) => current.filter((e) => e.key !== key))
   }
 
-  // each file becomes its own job, one create call per file. opens the detail
-  // view on the last one uploaded so you land straight on it instead of the list.
-  // the whole created batch is kept around too, so the detail view can offer
-  // quick switching between everything from this one upload
-  const handleStartParsing = async () => {
+  // by now every file already finished uploading, so this just hands off the
+  // already-created jobs to the detail view - opens the last one uploaded so
+  // you land straight on it instead of the list
+  const handleStartParsing = () => {
     if (pendingFiles.length === 0) {
       setError('Add at least one document to continue')
       return
     }
-    setError(null)
-    const created = []
-    for (const file of pendingFiles) {
-      try {
-        created.push(await createParseJob(file))
-      } catch {
-        setError(`Couldn't start parsing ${file.name}`)
-      }
+    if (pendingFiles.some((entry) => entry.status === 'uploading')) {
+      setError('Uploading documents…')
+      return
     }
+    setError(null)
+    const created = pendingFiles.filter((entry) => entry.status === 'uploaded').map((entry) => entry.job)
     setPendingFiles([])
     setActiveBatch(created)
     refreshJobs()
@@ -122,6 +162,12 @@ export default function ParseView({ onBack, showBrandWord, onCreateDatasetFromJo
 
   const handleRetryJob = async (jobId) => {
     await retryParseJob(jobId)
+    refreshJobs()
+  }
+
+  const handleDeleteAllJobs = async () => {
+    await Promise.all(jobs.map((job) => deleteParseJob(job.id)))
+    setConfirmDeleteAll(false)
     refreshJobs()
   }
 
@@ -176,18 +222,23 @@ export default function ParseView({ onBack, showBrandWord, onCreateDatasetFromJo
 
       {pendingFiles.length > 0 && (
         <div className="parse-file-chips">
-          {pendingFiles.map((file, index) => (
-            <span className="parse-file-chip" key={`${file.name}-${file.size}`}>
-              {file.name}
-              <button
-                type="button"
-                className="parse-file-chip-remove"
-                aria-label={`Remove ${file.name}`}
-                onClick={() => removeFile(index)}
-              >
-                ×
-              </button>
-            </span>
+          {pendingFiles.map((entry) => (
+            <div className={`parse-file-chip status-${entry.status}`} key={entry.key}>
+              <div className="parse-file-chip-top">
+                <span className="parse-file-chip-name">{entry.file.name}</span>
+                <button
+                  type="button"
+                  className="parse-file-chip-remove"
+                  aria-label={`Remove ${entry.file.name}`}
+                  onClick={() => removeFile(entry.key)}
+                >
+                  ×
+                </button>
+              </div>
+              <span className="parse-file-chip-progress">
+                <span className="parse-file-chip-progress-fill" style={{ width: `${entry.progress}%` }} />
+              </span>
+            </div>
           ))}
         </div>
       )}
@@ -211,14 +262,32 @@ export default function ParseView({ onBack, showBrandWord, onCreateDatasetFromJo
           <div className="parse-history-panel" onClick={(event) => event.stopPropagation()}>
             <div className="parse-history-header">
               <span>Parse history</span>
-              <button
-                type="button"
-                className="parse-history-close"
-                onClick={() => setShowHistory(false)}
-                aria-label="Close"
-              >
-                ×
-              </button>
+              <div className="parse-history-header-actions">
+                {jobs.length > 0 && (
+                  confirmDeleteAll ? (
+                    <span className="parse-job-confirm">
+                      <button type="button" className="parse-job-confirm-delete" onClick={handleDeleteAllJobs}>
+                        Delete all
+                      </button>
+                      <button type="button" className="parse-job-confirm-cancel" onClick={() => setConfirmDeleteAll(false)}>
+                        Cancel
+                      </button>
+                    </span>
+                  ) : (
+                    <button type="button" className="parse-history-delete-all" onClick={() => setConfirmDeleteAll(true)}>
+                      Delete all
+                    </button>
+                  )
+                )}
+                <button
+                  type="button"
+                  className="parse-history-close"
+                  onClick={() => setShowHistory(false)}
+                  aria-label="Close"
+                >
+                  ×
+                </button>
+              </div>
             </div>
 
             {jobs.length === 0 ? (

@@ -190,6 +190,30 @@ export async function createParseJob(file) {
   return response.json()
 }
 
+// fetch has no upload progress event, XHR still does - only place in this file that
+// needs it, everything else here is small enough that "it happened" is all that matters
+export function createParseJobWithProgress(file, onProgress) {
+  return new Promise((resolve, reject) => {
+    const form = new FormData()
+    form.append('file', file)
+
+    const xhr = new XMLHttpRequest()
+    xhr.upload.onprogress = (event) => {
+      if (event.lengthComputable) onProgress(Math.round((event.loaded / event.total) * 100))
+    }
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        resolve(JSON.parse(xhr.responseText))
+      } else {
+        reject(new Error(`upload failed with status ${xhr.status}`))
+      }
+    }
+    xhr.onerror = () => reject(new Error('upload failed'))
+    xhr.open('POST', `${BASE_URL}/parse-jobs`)
+    xhr.send(form)
+  })
+}
+
 export async function listParseJobs() {
   const response = await request('/parse-jobs')
   return response.json()
