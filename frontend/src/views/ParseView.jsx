@@ -93,13 +93,7 @@ export default function ParseView({ onBack, showBrandWord, onCreateDatasetFromJo
     setPendingFiles((current) => current.map((entry) => (entry.key === key ? { ...entry, ...patch } : entry)))
   }
 
-  // dedupes by name+size same as HomeView, but unlike HomeView each file starts
-  // uploading the moment it's added instead of waiting for a submit click - by the
-  // time Start parsing is clicked the PDF is already sitting on the backend, ready
-  // for the native embed to load instantly instead of showing a blank pane first.
-  // the actual uploads fire here, outside the setState updater - react can call an
-  // updater twice (strict mode does this on purpose), which would double-upload
-  // every file if the network calls lived inside it
+  // upload files immediately to chrome pdf viewer
   const addFiles = (incoming) => {
     const existingKeys = new Set(pendingFiles.map((entry) => entry.key))
     const newEntries = incoming
@@ -222,9 +216,39 @@ export default function ParseView({ onBack, showBrandWord, onCreateDatasetFromJo
 
       {pendingFiles.length > 0 && (
         <div className="parse-file-chips">
-          {pendingFiles.map((entry) => (
-            <div className={`parse-file-chip status-${entry.status}`} key={entry.key}>
-              <div className="parse-file-chip-top">
+          {pendingFiles.map((entry) => {
+            const circumference = 2 * Math.PI * 6
+            return (
+              <div className={`parse-file-chip status-${entry.status}`} key={entry.key}>
+                {entry.status === 'uploaded' ? (
+                  <svg className="parse-file-chip-icon parse-file-chip-check" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
+                    <path
+                      d="M3.5 8.5l3 3 6-7"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                ) : (
+                  <svg className="parse-file-chip-icon parse-file-chip-ring" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
+                    <circle cx="8" cy="8" r="6" fill="none" stroke="var(--sand-line)" strokeWidth="2" />
+                    <circle
+                      className="parse-file-chip-ring-fill"
+                      cx="8"
+                      cy="8"
+                      r="6"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeDasharray={circumference}
+                      strokeDashoffset={circumference * (1 - entry.progress / 100)}
+                      transform="rotate(-90 8 8)"
+                    />
+                  </svg>
+                )}
                 <span className="parse-file-chip-name">{entry.file.name}</span>
                 <button
                   type="button"
@@ -235,11 +259,8 @@ export default function ParseView({ onBack, showBrandWord, onCreateDatasetFromJo
                   ×
                 </button>
               </div>
-              <span className="parse-file-chip-progress">
-                <span className="parse-file-chip-progress-fill" style={{ width: `${entry.progress}%` }} />
-              </span>
-            </div>
-          ))}
+            )
+          })}
         </div>
       )}
 
