@@ -58,12 +58,6 @@
   background: var(--parse-blue-deep);
 }
 
-.parse-detail-create-dataset-btn:disabled {
-  background: var(--sand);
-  color: var(--ink-soft);
-  cursor: not-allowed;
-}
-
 .parse-detail-download {
   position: relative;
 }
@@ -145,6 +139,18 @@
 
 .parse-detail-name-prompt button:hover {
   background: var(--parse-blue-deep);
+}
+
+.parse-detail-name-prompt button:disabled {
+  background: var(--sand);
+  color: var(--ink-soft);
+  cursor: not-allowed;
+}
+
+.parse-detail-name-prompt-hint {
+  margin: 0;
+  font-size: 11px;
+  color: var(--error);
 }
 
 .parse-detail-select-all-row {

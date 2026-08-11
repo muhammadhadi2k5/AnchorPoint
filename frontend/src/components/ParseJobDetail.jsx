@@ -144,6 +144,7 @@ export default function ParseJobDetail({ job, batch = [], onSelectBatchJob, onCr
   const allSelected = completeBatchCount > 0 && selectedIds.size === completeBatchCount
 
   const confirmCreate = () => {
+    if (selectedIds.size === 0) return
     setShowNamePrompt(false)
     onCreateDataset(Array.from(selectedIds), chatName.trim())
   }
@@ -181,12 +182,7 @@ export default function ParseJobDetail({ job, batch = [], onSelectBatchJob, onCr
         <div className="parse-detail-header-actions">
           {currentJob.status === 'complete' && (
             <div className="parse-detail-download" ref={namePromptRef}>
-              <button
-                type="button"
-                className="parse-detail-create-dataset-btn"
-                disabled={selectedIds.size === 0}
-                onClick={toggleNamePrompt}
-              >
+              <button type="button" className="parse-detail-create-dataset-btn" onClick={toggleNamePrompt}>
                 Create a chat{selectedIds.size > 1 ? ` (${selectedIds.size} docs)` : ''}
               </button>
               {showNamePrompt && (
@@ -227,7 +223,12 @@ export default function ParseJobDetail({ job, batch = [], onSelectBatchJob, onCr
                     onKeyDown={(event) => event.key === 'Enter' && confirmCreate()}
                     autoFocus
                   />
-                  <button type="button" onClick={confirmCreate}>Create</button>
+                  <button type="button" onClick={confirmCreate} disabled={selectedIds.size === 0}>
+                    Create
+                  </button>
+                  {selectedIds.size === 0 && (
+                    <p className="parse-detail-name-prompt-hint">Select at least one document</p>
+                  )}
                 </div>
               )}
             </div>
