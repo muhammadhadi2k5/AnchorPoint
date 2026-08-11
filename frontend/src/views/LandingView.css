@@ -17,6 +17,42 @@
   text-align: center;
 }
 
+/* faint static dot grid, fades out toward the edges via mask so it doesn't read as a
+   hard-edged sheet of graph paper. sits behind everything else (-3) */
+.landing-dot-grid {
+  position: absolute;
+  inset: 0;
+  z-index: -3;
+  background-image: radial-gradient(circle, var(--ink) 1.6px, transparent 1.6px);
+  background-size: 24px 24px;
+  opacity: 0.22;
+  mask-image: radial-gradient(
+    ellipse 80% 78% at 50% 44%,
+    transparent 0%,
+    transparent 34%,
+    black 92%,
+    black 100%
+  );
+  -webkit-mask-image: radial-gradient(
+    ellipse 80% 78% at 50% 44%,
+    transparent 0%,
+    transparent 34%,
+    black 92%,
+    black 100%
+  );
+  pointer-events: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .landing-dot-grid {
+    opacity: 0.3;
+  }
+}
+
+:root[data-theme='dark'] .landing-dot-grid {
+  opacity: 0.3;
+}
+
 /* same soft coral fade as the chat pane's wash, just here for consistency. sits behind the
    wave (-2 vs -1) so the wave still looks like the sharp edge in front */
 .landing-glow {
