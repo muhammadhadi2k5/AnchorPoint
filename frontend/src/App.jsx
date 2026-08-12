@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import HomeView from './views/HomeView.jsx'
 import IngestionLoadingView from './views/IngestionLoadingView.jsx'
 import ChatView from './views/ChatView.jsx'
@@ -45,6 +45,9 @@ export default function App() {
 
   const refreshDatasets = () => listDatasets().then(setDatasets)
 
+  // double click on Start used to push history twice and broke Back, this stops the 2nd fire
+  const enteringAppRef = useRef(false)
+
   // pushes a history entry on the way in, so both the browser's back button and our own
   // back button go through this same handler instead of two paths that could get out of sync
   useEffect(() => {
@@ -52,6 +55,7 @@ export default function App() {
       if (event.state?.stage === 'app') {
         setStage('app')
       } else {
+        enteringAppRef.current = false
         setStage('landing')
         setView('home')
         setDatasetId(null)
@@ -62,12 +66,15 @@ export default function App() {
   }, [])
 
   const handleEnterApp = () => {
+    if (enteringAppRef.current) return
+    enteringAppRef.current = true
     window.history.pushState({ stage: 'app' }, '')
     setStage('app')
     refreshDatasets()
   }
 
   const handleBackToLanding = () => {
+    enteringAppRef.current = false
     window.history.back()
   }
 
