@@ -20,26 +20,85 @@ Each dataset is its own fully isolated workspace, own documents, own vector coll
 own conversation, so this isn't "one big pile of documents," it's more like a set of
 separate notebooks you can spin up per project.
 
-## Running it
+There's also a standalone Parse feature: drop in a document and get back clean, structured
+markdown, JSON or Text file, exportable on its own.
 
-There are two ways to run this: the web app, or the original CLI pipeline. Both use the
-same core code underneath.
+## Setup
 
-**Web app** (two terminals):
+### 1. Install prerequisites
+
+- **uv** (also manages Python 3.13 for you, no separate Python install needed)
+
+  how to install:
+  ```
+  powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+  ```
+
+- **Node.js (npm)**
+
+  how to install:
+  ```
+  winget install OpenJS.NodeJS.LTS
+  ```
+  (or the LTS installer from nodejs.org)
+
+- **Docker Desktop**
+
+  how to install: download from docker.com
+
+Restart your terminal after installing uv or Node.js.
+
+### 2. Clone the repo
+
+```
+git clone https://github.com/muhammadhadi2k5/AnchorPoint.git
+cd AnchorPoint
+```
+
+### 3. Start Qdrant (Docker)
+
+Make sure Docker Desktop is running first.
+
+```
+docker run -d --name qdrant -p 6333:6333 -p 6334:6334 -v qdrant_storage:/qdrant/storage qdrant/qdrant
+```
+
+### 4. Backend setup
 
 ```
 cd backend
+uv sync
+```
+
+Create `backend/.env`:
+
+```
+GEMINI_API_KEY=your_key_here
+```
+
+Get your free gemini api key form: https://aistudio.google.com/api-keys and paste it in the .env file
+
+### 5. Start the backend
+
+```
 uv run uvicorn api.main:app --port 8000 --host 0.0.0.0
 ```
 
+### 6. Frontend setup (new terminal, from project root)
+
 ```
 cd frontend
+npm install
 npm run dev
 ```
 
-Then open `http://localhost:5173`.
+### 7. Open the app
 
-**CLI**:
+`http://localhost:5173`
+
+### CLI (alternative to the web app)
+
+Put your documents in the `data/` folder at the project root before running ingestion.
 
 ```
 cd backend
@@ -76,12 +135,6 @@ the actual path a document takes: it gets loaded and chunked in ingestion, found
 retrieval, and turned into an answer in generation. Reading the code in any other order
 means seeing the second half of a function before you know what it's holding.
 
-## Prerequisites
-
-- Docker Desktop running (Qdrant runs in a container, both the web app and the CLI need it)
-- `backend/.env` with `GEMINI_API_KEY`
-- `uv` installed
-- `npm` installed
 <br>
 <br>
 <div align="center"> 
