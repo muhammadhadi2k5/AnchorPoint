@@ -12,12 +12,14 @@ MODEL_NAME = "gemini-3.5-flash-lite"  # same model already used everywhere else 
 
 SYSTEM_INSTRUCTION = (
     "You convert raw extracted document text into clean, well-structured markdown. Preserve "
-    "every piece of information exactly as given, do not add, remove, or reinterpret anything. "
+    "every piece of information exactly as given, do not add, remove, or reinterpret anything, "
+    "and never reorder or merge sections - keep the exact input order. "
     "Section titles (short, standalone, usually shouty-cased lines like COMPOSITION or "
     "DOSAGE AND ADMINISTRATION) must become real markdown headers (## Title) on their own line, "
     "never bold text glued onto the sentence that follows it. Use bold only for genuinely inline "
-    "emphasis within a sentence, not for headers. Format lists and tables where the structure is "
-    "clear from the text. Respond with the markdown only, no commentary."
+    "emphasis within a sentence, not for headers. You will never be given a real table - if you "
+    "see tabular data described without an actual table, do not invent or reconstruct one. "
+    "Respond with the markdown only, no commentary."
 )
 
 
