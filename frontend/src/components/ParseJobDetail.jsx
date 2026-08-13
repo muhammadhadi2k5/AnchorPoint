@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkMath from 'remark-math'
+import remarkGfm from 'remark-gfm'
 import rehypeKatex from 'rehype-katex'
+import rehypeRaw from 'rehype-raw'
 import { getParseJob, parseJobFileUrl, retryParseJob } from '../lib/api.js'
 import 'katex/dist/katex.min.css'
 import './ParseJobDetail.css'
@@ -347,7 +349,7 @@ export default function ParseJobDetail({ job, batch = [], onSelectBatchJob, onCr
               <div className="parse-detail-content">
                 {tab === 'markdown' && (
                   <div className="parse-detail-markdown">
-                    <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>{currentJob.markdown}</ReactMarkdown>
+                    <ReactMarkdown remarkPlugins={[remarkMath, remarkGfm]} rehypePlugins={[rehypeRaw, rehypeKatex]}>{currentJob.markdown}</ReactMarkdown>
                   </div>
                 )}
                 {tab === 'text' && <pre className="parse-detail-raw">{currentJob.markdown}</pre>}

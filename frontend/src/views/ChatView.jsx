@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkMath from 'remark-math'
+import remarkGfm from 'remark-gfm'
 import rehypeKatex from 'rehype-katex'
+import rehypeRaw from 'rehype-raw'
 import { listMessages, sendMessageStream } from '../lib/api.js'
 import { flattenLatex } from '../lib/latex.js'
 import CitationDrawer, { formatChunkText } from '../components/CitationDrawer.jsx'
@@ -207,7 +209,7 @@ export default function ChatView({ datasetId, datasetName, onQuotaExceeded, onAd
               <div className={`bubble ${message.role}`}>
                 {message.role === 'assistant' ? (
                   <div className="markdown-body">
-                    <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>{message.content}</ReactMarkdown>
+                    <ReactMarkdown remarkPlugins={[remarkMath, remarkGfm]} rehypePlugins={[rehypeRaw, rehypeKatex]}>{message.content}</ReactMarkdown>
                   </div>
                 ) : (
                   message.content
@@ -252,7 +254,7 @@ export default function ChatView({ datasetId, datasetName, onQuotaExceeded, onAd
               ) : (
                 <div className="bubble assistant">
                   <div className="markdown-body">
-                    <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>{streamingText}</ReactMarkdown>
+                    <ReactMarkdown remarkPlugins={[remarkMath, remarkGfm]} rehypePlugins={[rehypeRaw, rehypeKatex]}>{streamingText}</ReactMarkdown>
                   </div>
                 </div>
               )}

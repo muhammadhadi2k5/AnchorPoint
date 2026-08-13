@@ -530,6 +530,26 @@
   margin: 0 0 10px;
 }
 
+.parse-detail-markdown table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 4px 0 14px;
+  font-size: 12.5px;
+}
+
+.parse-detail-markdown th,
+.parse-detail-markdown td {
+  border: 1px solid var(--sand-line);
+  padding: 6px 10px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.parse-detail-markdown th {
+  background: var(--cream-2);
+  font-weight: 700;
+}
+
 .parse-detail-raw {
   margin: 0;
   font-family: ui-monospace, monospace;
