@@ -94,15 +94,21 @@ def _table_grid_to_markdown(grid):
 
 
 # gaps in x0 mark column gutters, works for any column count not just 2
-def _detect_column_boundaries(x0_values, gap_threshold=35):
+def _detect_column_boundaries(x0_values, gap_threshold=35, min_column_items=3):
     if not x0_values:
         return [0]
-    ordered = sorted(set(x0_values))
-    boundaries = [ordered[0]]
-    for prev, curr in zip(ordered, ordered[1:]):
+    ordered_unique = sorted(set(x0_values))
+    boundaries = [ordered_unique[0]]
+    for prev, curr in zip(ordered_unique, ordered_unique[1:]):
         if curr - prev > gap_threshold:
             boundaries.append(curr)
-    return boundaries
+
+    counts = [0] * len(boundaries)
+    for x0 in x0_values:
+        counts[_column_index(x0, boundaries)] += 1
+
+    # drop columns too small to be real (a stray TM symbol, a barcode label, etc)
+    return [boundaries[0]] + [b for b, c in zip(boundaries[1:], counts[1:]) if c >= min_column_items]
 
 
 def _column_index(x0, boundaries):
@@ -148,16 +154,15 @@ def _extract_page_with_tables(page, tables):
     return "\n\n".join(item["text"] for item in items)
 
 
-# only touches pages with a real table, everything else stays exactly as pypdf gave it
+# runs on every page, not just ones with a table - a page can be multi-column with no table
 def _apply_table_extraction(file_path, documents):
     pdf = fitz.open(file_path)
     for i, page in enumerate(pdf):
         tables = [t for t in page.find_tables().tables if not _is_page_frame(t, page)]
-        if tables:
-            documents[i] = Document(
-                page_content=_extract_page_with_tables(page, tables),
-                metadata=documents[i].metadata,
-            )
+        documents[i] = Document(
+            page_content=_extract_page_with_tables(page, tables),
+            metadata=documents[i].metadata,
+        )
     pdf.close()
     return documents
 
